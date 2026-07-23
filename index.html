@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+      name="description"
+      content="Privacy-preserving AI governance triage calculator and configurable multi-board governance router."
+    >
+    <title>Westminster AI Multi-Board Triage &amp; Governance Router</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to the calculator</a>
+
+    <header class="site-header">
+      <div class="wrap">
+        <p class="crest">Westminster City Council</p>
+        <h1>AI Multi-Board Triage &amp; Governance Router</h1>
+        <p class="header-lede">
+          Classify an AI system once, map the decisions onto existing governance
+          forums, and export a row in the exact input order used by the Westminster
+          AI Register.
+        </p>
+        <div class="header-badges" aria-label="Calculator characteristics">
+          <span>Third calculator</span>
+          <span>Multi-board model</span>
+          <span>Stores no data</span>
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="intro-panel" aria-labelledby="intro-title">
+        <div>
+          <p class="eyebrow">How this version is different</p>
+          <h2 id="intro-title">Governance travels with the system</h2>
+          <p>
+            The original AGPI and risk calculations are retained. This version adds
+            a six-gate governance relay, configurable forum names, a decision-ready
+            evidence plan, an Excel-ready Register row and a separate planned-gate
+            export.
+          </p>
+        </div>
+        <div class="principle">
+          <strong>Authority stays with each forum.</strong>
+          <span>
+            The AI Assurance Board carries continuity and issues one assurance
+            opinion; it does not replace strategic, technical, commercial or release
+            authority.
+          </span>
+        </div>
+      </section>
+
+      <nav class="step-nav" aria-label="Calculator steps">
+        <a href="#profile">1. System profile</a>
+        <a href="#priority">2. AGPI priority</a>
+        <a href="#risk">3. Risk &amp; escalation</a>
+        <a href="#route">4. Board route</a>
+      </nav>
+
+      <form id="triageForm" novalidate>
+        <section class="step" id="profile" aria-labelledby="profile-title">
+          <p class="eyebrow">Step 1 of 4</p>
+          <h2 id="profile-title">System profile and Register fields</h2>
+          <p class="lede">
+            These fields create the input portion of the AI Register row. The nine
+            summary columns added to the Register remain formula-managed and are not
+            overwritten by the export.
+          </p>
+
+          <div class="form-grid">
+            <label class="field">
+              <span>AI Register ID <small>optional</small></span>
+              <input id="registerId" autocomplete="off" placeholder="AIR-XXXX">
+            </label>
+            <label class="field">
+              <span>System or model name <b aria-hidden="true">*</b></span>
+              <input id="systemName" required autocomplete="off">
+            </label>
+            <label class="field span-2">
+              <span>Purpose or description <b aria-hidden="true">*</b></span>
+              <textarea id="purpose" rows="2" required></textarea>
+            </label>
+            <label class="field">
+              <span>Service area</span>
+              <input id="serviceArea" autocomplete="organization-title">
+            </label>
+            <label class="field">
+              <span>Service owner</span>
+              <input id="serviceOwner" autocomplete="name">
+            </label>
+            <label class="field">
+              <span>Supplier or developer</span>
+              <input id="supplierDeveloper" autocomplete="organization">
+            </label>
+            <label class="field">
+              <span>Source</span>
+              <select id="source">
+                <option>Internally developed</option>
+                <option>Procured</option>
+                <option>Embedded in platform / supplier feature</option>
+                <option>Free / public tool</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>AI capability</span>
+              <select id="capability">
+                <option>Generative AI</option>
+                <option>Agentic AI</option>
+                <option>Predictive AI</option>
+                <option>Computer Vision</option>
+                <option>Natural Language Processing</option>
+                <option>Other Machine Learning</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Automated action authority</span>
+              <select id="actionAuthority">
+                <option>None — outputs only</option>
+                <option>Human approves each action</option>
+                <option>Acts within defined bounds — monitored</option>
+                <option>Fully autonomous</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Systems or tools accessed</span>
+              <input id="systemsAccessed" autocomplete="off">
+            </label>
+            <label class="field">
+              <span>Lifecycle stage</span>
+              <select id="lifecycle">
+                <option>Idea</option>
+                <option>Pilot</option>
+                <option>Testing</option>
+                <option>Live</option>
+                <option>Retired</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Personal or special category data</span>
+              <select id="dataType">
+                <option>None</option>
+                <option>Personal data</option>
+                <option>Special category data</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>External procurement or contract approval needed?</span>
+              <select id="procurementRequired">
+                <option>No</option>
+                <option>Yes</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Could outputs materially affect individuals or services?</span>
+              <select id="affectsIndividuals">
+                <option>No</option>
+                <option>Yes</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Public-facing or resident-facing output?</span>
+              <select id="publicFacing">
+                <option>No</option>
+                <option>Yes</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Date first used <small>if already live</small></span>
+              <input id="dateFirstUsed" type="date">
+            </label>
+          </div>
+
+          <details class="forum-config">
+            <summary>Configure the governance forum names</summary>
+            <p>
+              The defaults are the working Westminster configuration and must be
+              validated locally. Editing a forum changes the route and exports; it
+              does not change the decision requirement.
+            </p>
+            <div class="form-grid compact" id="forumFields"></div>
+          </details>
+        </section>
+
+        <section class="step" id="priority" aria-labelledby="priority-title">
+          <p class="eyebrow">Step 2 of 4</p>
+          <h2 id="priority-title">
+            Governance priority
+            <span class="ref">AGPI · Playbook §3.9.6</span>
+          </h2>
+          <p class="lede">
+            Score each dimension from 1 (very low concern) to 5 (critical concern).
+            The established weighted AGPI calculation is unchanged.
+          </p>
+
+          <div id="dimensions"></div>
+
+          <div class="gauge" aria-hidden="true">
+            <div class="gauge-bar"><div class="needle" id="needle"></div></div>
+            <div class="bands">
+              <span>P5 Observe</span>
+              <span>P4 Routine</span>
+              <span>P3 Standard</span>
+              <span>P2 High</span>
+              <span>P1 Critical</span>
+            </div>
+          </div>
+
+          <div class="result-panel" role="status" aria-live="polite">
+            <p class="result-title">
+              AGPI score: <span id="agpiScore">0</span> / 100
+              <span aria-hidden="true">·</span>
+              <span id="agpiPriority">Priority 5 – Observe</span>
+            </p>
+            <p id="agpiAction"></p>
+          </div>
+        </section>
+
+        <section class="step" id="risk" aria-labelledby="risk-title">
+          <p class="eyebrow">Step 3 of 4</p>
+          <h2 id="risk-title">Risk classification and mandatory escalation</h2>
+          <p class="lede">
+            Impact uses the highest of five dimensions. Inherent risk is likelihood
+            multiplied by impact; residual risk applies the established control
+            effectiveness factor.
+          </p>
+
+          <h3>Mandatory escalation triggers</h3>
+          <p class="sublede">
+            Select every characteristic that applies. A trigger increases assurance
+            intensity and requires immediate notification to the AI Governance Lead
+            and AI Assurance Board.
+          </p>
+          <div id="triggers"></div>
+          <div class="warning-panel" id="escalationBanner" role="status" aria-live="polite">
+            <strong>Mandatory escalation applies.</strong>
+            <span id="escalationText"></span>
+          </div>
+
+          <h3>Impact by dimension</h3>
+          <div class="impact-grid" id="impacts"></div>
+
+          <div class="pair">
+            <label class="field">
+              <span>Likelihood</span>
+              <small>How probable is it that the risk materialises?</small>
+              <select id="likelihood">
+                <option value="1">1 · Rare</option>
+                <option value="2">2 · Unlikely</option>
+                <option value="3" selected>3 · Possible</option>
+                <option value="4">4 · Likely</option>
+                <option value="5">5 · Almost certain</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Control effectiveness</span>
+              <small>How effectively do controls reduce the risk?</small>
+              <select id="control">
+                <option value="1">1 · Very strong</option>
+                <option value="2">2 · Strong</option>
+                <option value="3" selected>3 · Moderate</option>
+                <option value="4">4 · Weak</option>
+                <option value="5">5 · Ineffective</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="risk-output" role="status" aria-live="polite">
+            <div class="stat">
+              <span>Highest impact</span>
+              <strong id="impactScore">2</strong>
+            </div>
+            <div class="stat">
+              <span>Inherent risk</span>
+              <strong id="inherentRisk">6</strong>
+            </div>
+            <div class="stat">
+              <span>Residual risk</span>
+              <strong id="residualRisk">3.6</strong>
+            </div>
+            <div class="stat" id="tierStat">
+              <span>Risk tier</span>
+              <strong id="riskTier">Low</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="step route-step" id="route" aria-labelledby="route-title">
+          <p class="eyebrow">Step 4 of 4</p>
+          <h2 id="route-title">Multi-board governance route</h2>
+          <p class="lede">
+            One classification and evidence set travels through the decision relay.
+            Each completed decision must be added to the Gate Log; this planned route
+            is not itself evidence that a gate has been passed.
+          </p>
+
+          <div class="summary-grid" aria-live="polite">
+            <div>
+              <span>Governance priority</span>
+              <strong id="summaryPriority"></strong>
+            </div>
+            <div>
+              <span>Risk tier</span>
+              <strong id="summaryTier"></strong>
+            </div>
+            <div>
+              <span>Assurance intensity</span>
+              <strong id="summaryIntensity"></strong>
+            </div>
+            <div>
+              <span>Next gate</span>
+              <strong id="summaryNextGate"></strong>
+            </div>
+            <div>
+              <span>Commercial gate</span>
+              <strong id="summaryCommercial"></strong>
+            </div>
+            <div>
+              <span>Escalation</span>
+              <strong id="summaryEscalation"></strong>
+            </div>
+          </div>
+
+          <h3>Required evidence package</h3>
+          <ul class="evidence-list" id="evidenceList"></ul>
+
+          <div class="table-wrap">
+            <table class="route-table">
+              <caption>
+                Planned governance route — forum names are configurable
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Gate</th>
+                  <th scope="col">Decision and forum</th>
+                  <th scope="col">Evidence and handoff</th>
+                  <th scope="col">Status</th>
+                </tr>
+              </thead>
+              <tbody id="routeRows"></tbody>
+            </table>
+          </div>
+
+          <div class="export-panel">
+            <div>
+              <h3>Export the result</h3>
+              <p>
+                The Register CSV contains the 35 input columns in their exact order.
+                Formula-managed multi-board summary columns are deliberately excluded.
+              </p>
+              <p class="validation-message" id="validationMessage" role="alert"></p>
+            </div>
+            <div class="button-row">
+              <button type="button" id="downloadRegister">
+                Download Register row
+              </button>
+              <button type="button" id="downloadGates" class="secondary">
+                Download gate plan
+              </button>
+              <button type="button" id="downloadSummary" class="secondary">
+                Download full summary
+              </button>
+              <button type="button" id="copySummary" class="ghost">
+                Copy summary
+              </button>
+              <button type="button" id="printResult" class="ghost">Print</button>
+              <span id="copyStatus" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+        </section>
+      </form>
+    </main>
+
+    <footer>
+      <p>
+        <strong>Decision support only.</strong> Numerical results do not replace
+        professional judgement, statutory assessments, delegated authority or local
+        terms of reference. Where uncertainty exists, apply the higher level of
+        scrutiny until formal review is complete.
+      </p>
+      <p>
+        This calculator runs entirely in the browser. It uses no cookies, analytics,
+        external services or persistent storage. Refreshing the page clears all
+        entries.
+      </p>
+      <p>
+        Aligned to Westminster AI Governance Playbook v19 and Multi-Board Gate Map
+        v0.1 · Kim Abercromby
+      </p>
+    </footer>
+
+    <script src="logic.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
