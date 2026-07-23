@@ -8,7 +8,965 @@
       content="Privacy-preserving AI governance triage calculator and configurable multi-board governance router."
     >
     <title>Westminster AI Multi-Board Triage &amp; Governance Router</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+:root {
+  --navy: #0a2342;
+  --navy-2: #133a63;
+  --gold: #c9a442;
+  --gold-soft: #f5edd6;
+  --ink: #17202a;
+  --muted: #556270;
+  --paper: #f5f7fa;
+  --card: #ffffff;
+  --line: #ccd4dc;
+  --focus: #0072ce;
+  --danger: #a12622;
+  --danger-soft: #fff0ef;
+  --success-soft: #e9f7ef;
+  --shadow: 0 12px 34px rgb(10 35 66 / 10%);
+  color-scheme: light;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--paper);
+  line-height: 1.55;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+a {
+  color: var(--navy-2);
+}
+
+.skip-link {
+  position: absolute;
+  z-index: 20;
+  top: -5rem;
+  left: 1rem;
+  padding: 0.75rem 1rem;
+  color: #fff;
+  background: var(--navy);
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+.wrap,
+main,
+footer {
+  width: min(1120px, calc(100% - 2rem));
+  margin-inline: auto;
+}
+
+.site-header {
+  padding: 3.5rem 0 3rem;
+  color: #fff;
+  background:
+    linear-gradient(120deg, rgb(10 35 66 / 98%), rgb(19 58 99 / 94%)),
+    var(--navy);
+  border-bottom: 6px solid var(--gold);
+}
+
+.crest,
+.eyebrow {
+  margin: 0 0 0.45rem;
+  color: var(--gold);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  max-width: 850px;
+  margin-bottom: 0.65rem;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  line-height: 1.04;
+}
+
+h2 {
+  margin-bottom: 0.65rem;
+  color: var(--navy);
+  font-size: clamp(1.55rem, 3vw, 2.1rem);
+  line-height: 1.18;
+}
+
+h3 {
+  margin: 2rem 0 0.5rem;
+  color: var(--navy);
+  font-size: 1.16rem;
+}
+
+.header-lede {
+  max-width: 800px;
+  margin-bottom: 1.25rem;
+  font-size: 1.08rem;
+}
+
+.header-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.header-badges span {
+  padding: 0.35rem 0.65rem;
+  color: var(--navy);
+  background: var(--gold-soft);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+main {
+  padding-block: 2rem 4rem;
+}
+
+.intro-panel,
+.step {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+
+.intro-panel {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.25rem;
+  padding: 1.5rem;
+}
+
+.intro-panel p:last-child,
+.principle span {
+  margin-bottom: 0;
+}
+
+.principle {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 1rem 1.1rem;
+  background: var(--gold-soft);
+  border-left: 5px solid var(--gold);
+  border-radius: 8px;
+}
+
+.step-nav {
+  position: sticky;
+  z-index: 5;
+  top: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-bottom: 1.25rem;
+  overflow: hidden;
+  background: var(--navy);
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgb(10 35 66 / 16%);
+}
+
+.step-nav a {
+  padding: 0.8rem 0.6rem;
+  color: #fff;
+  border-right: 1px solid rgb(255 255 255 / 20%);
+  text-align: center;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.step-nav a:last-child {
+  border-right: 0;
+}
+
+.step-nav a:hover,
+.step-nav a:focus-visible {
+  color: var(--navy);
+  background: var(--gold);
+}
+
+.step {
+  margin-bottom: 1.5rem;
+  padding: clamp(1.2rem, 3vw, 2rem);
+  scroll-margin-top: 5rem;
+}
+
+.lede,
+.sublede {
+  max-width: 850px;
+  color: var(--muted);
+}
+
+.sublede {
+  margin-bottom: 1rem;
+}
+
+.ref {
+  display: inline-block;
+  margin-left: 0.5rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.2rem;
+}
+
+.form-grid.compact {
+  margin-top: 1rem;
+}
+
+.field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.field > span {
+  color: var(--navy);
+  font-weight: 700;
+}
+
+.field small,
+.field span small {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.field b {
+  color: var(--danger);
+}
+
+.span-2 {
+  grid-column: span 2;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.62rem 0.7rem;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid #8794a1;
+  border-radius: 6px;
+}
+
+textarea {
+  resize: vertical;
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: var(--navy-2);
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+button:focus-visible,
+a:focus-visible,
+summary:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+input:user-invalid,
+textarea:user-invalid {
+  border: 2px solid var(--danger);
+}
+
+.forum-config {
+  margin-top: 1.3rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.forum-config summary {
+  color: var(--navy);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.forum-config > p {
+  max-width: 780px;
+  margin: 0.75rem 0 0;
+  color: var(--muted);
+}
+
+.dimension {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.25fr) minmax(410px, 2fr);
+  gap: 1.25rem;
+  min-inline-size: 0;
+  margin: 0;
+  padding: 1rem 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+.dimension:first-child {
+  border-top: 0;
+}
+
+.dimension-name {
+  margin: 0;
+  color: var(--navy);
+  font-size: 1rem;
+}
+
+.dimension-question {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.91rem;
+}
+
+.weight {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.08rem 0.35rem;
+  color: var(--navy);
+  background: var(--gold-soft);
+  border-radius: 999px;
+  font-size: 0.72rem;
+}
+
+.scale {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.35rem;
+  align-self: center;
+}
+
+.scale label {
+  position: relative;
+}
+
+.scale input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.scale > label > span {
+  display: flex;
+  min-height: 4.2rem;
+  padding: 0.45rem 0.3rem;
+  align-items: center;
+  justify-content: center;
+  color: var(--navy);
+  background: #f7f9fb;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+  font-size: 0.73rem;
+  line-height: 1.2;
+}
+
+.scale span strong {
+  display: block;
+  margin-bottom: 0.15rem;
+  font-size: 1rem;
+}
+
+.scale input:checked + span {
+  color: #fff;
+  background: var(--navy-2);
+  border-color: var(--navy-2);
+  box-shadow: inset 0 -4px 0 var(--gold);
+}
+
+.scale input:focus-visible + span {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.gauge {
+  margin-top: 1.3rem;
+}
+
+.gauge-bar {
+  position: relative;
+  height: 18px;
+  background:
+    linear-gradient(
+      to right,
+      #dceee5 0 20%,
+      #c8dfed 20% 40%,
+      #f4e9af 40% 60%,
+      #f1c98d 60% 80%,
+      #e99c98 80% 100%
+    );
+  border: 1px solid #9aa5b1;
+  border-radius: 999px;
+}
+
+.needle {
+  position: absolute;
+  top: -6px;
+  left: 0%;
+  width: 4px;
+  height: 30px;
+  background: var(--navy);
+  border-radius: 2px;
+  transform: translateX(-2px);
+  transition: left 160ms ease;
+}
+
+.bands {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  margin-top: 0.35rem;
+  color: var(--muted);
+  text-align: center;
+  font-size: 0.7rem;
+}
+
+.result-panel {
+  margin-top: 1.2rem;
+  padding: 1rem 1.1rem;
+  color: #fff;
+  background: var(--navy);
+  border-left: 6px solid var(--gold);
+  border-radius: 8px;
+}
+
+.result-panel p:last-child {
+  margin-bottom: 0;
+}
+
+.result-title {
+  margin-bottom: 0.25rem;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.trigger-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.trigger {
+  display: flex;
+  gap: 0.7rem;
+  padding: 0.8rem;
+  align-items: flex-start;
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+
+.trigger:has(input:checked) {
+  background: var(--danger-soft);
+  border-color: var(--danger);
+}
+
+.trigger input {
+  width: 1.15rem;
+  min-height: 1.15rem;
+  margin-top: 0.2rem;
+  flex: 0 0 auto;
+  accent-color: var(--danger);
+}
+
+.warning-panel {
+  display: none;
+  gap: 0.2rem;
+  margin-top: 0.8rem;
+  padding: 0.8rem 1rem;
+  flex-direction: column;
+  color: #671612;
+  background: var(--danger-soft);
+  border-left: 5px solid var(--danger);
+  border-radius: 6px;
+}
+
+.warning-panel.visible {
+  display: flex;
+}
+
+.impact-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.impact-field {
+  padding: 0.8rem;
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.risk-output {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  margin-top: 1.25rem;
+  overflow: hidden;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.stat {
+  padding: 1rem;
+  background: #fff;
+  text-align: center;
+}
+
+.stat span,
+.summary-grid span {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.stat strong {
+  color: var(--navy);
+  font-size: 1.5rem;
+}
+
+.tier-low {
+  background: var(--success-soft);
+}
+
+.tier-medium {
+  background: #fff8d9;
+}
+
+.tier-high {
+  background: #fff0d5;
+}
+
+.tier-critical {
+  background: var(--danger-soft);
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  margin: 1.25rem 0 1.75rem;
+  overflow: hidden;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.summary-grid > div {
+  min-height: 95px;
+  padding: 1rem;
+  background: #fff;
+}
+
+.summary-grid strong {
+  color: var(--navy);
+  font-size: 1rem;
+}
+
+.evidence-list {
+  columns: 2;
+  margin: 0;
+  padding-left: 1.35rem;
+}
+
+.evidence-list li {
+  margin-bottom: 0.35rem;
+  break-inside: avoid;
+}
+
+.table-wrap {
+  margin-top: 1.5rem;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.route-table {
+  width: 100%;
+  min-width: 850px;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+.route-table caption {
+  padding: 0.8rem;
+  color: var(--navy);
+  background: var(--gold-soft);
+  font-weight: 800;
+  text-align: left;
+}
+
+.route-table th,
+.route-table td {
+  padding: 0.8rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  text-align: left;
+}
+
+.route-table th {
+  color: #fff;
+  background: var(--navy);
+  font-size: 0.82rem;
+}
+
+.route-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.gate-number {
+  display: inline-grid;
+  width: 2rem;
+  height: 2rem;
+  margin-right: 0.35rem;
+  place-items: center;
+  color: var(--navy);
+  background: var(--gold);
+  border-radius: 50%;
+  font-weight: 800;
+}
+
+.gate-requirement,
+.gate-forum,
+.gate-decision,
+.handoff {
+  display: block;
+}
+
+.gate-requirement {
+  margin-top: 0.4rem;
+  color: var(--navy);
+  font-weight: 800;
+}
+
+.gate-forum {
+  margin: 0.2rem 0 0.4rem;
+  color: var(--navy-2);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.gate-decision,
+.handoff {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.gate-evidence {
+  margin: 0 0 0.45rem;
+  padding-left: 1.1rem;
+  font-size: 0.86rem;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.28rem 0.5rem;
+  color: var(--navy);
+  background: var(--gold-soft);
+  border: 1px solid #d9c278;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.status-badge.not-required {
+  color: var(--muted);
+  background: #eef1f4;
+  border-color: var(--line);
+}
+
+.export-panel {
+  display: grid;
+  grid-template-columns: 1fr 1.35fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: var(--navy);
+  border-radius: 9px;
+}
+
+.export-panel h3,
+.export-panel p {
+  color: #fff;
+}
+
+.export-panel h3 {
+  margin-top: 0;
+}
+
+.export-panel p {
+  margin-bottom: 0.5rem;
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-content: center;
+}
+
+button {
+  min-height: 2.65rem;
+  padding: 0.62rem 0.9rem;
+  color: var(--navy);
+  background: var(--gold);
+  border: 2px solid var(--gold);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+button:hover {
+  filter: brightness(1.06);
+}
+
+button.secondary {
+  color: var(--navy);
+  background: #fff;
+  border-color: #fff;
+}
+
+button.ghost {
+  color: #fff;
+  background: transparent;
+  border-color: rgb(255 255 255 / 55%);
+}
+
+.validation-message {
+  min-height: 1.4rem;
+  color: #ffe7e5 !important;
+  font-weight: 700;
+}
+
+#copyStatus {
+  width: 100%;
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+footer {
+  padding: 1.5rem 0 3rem;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  font-size: 0.86rem;
+}
+
+footer p {
+  max-width: 900px;
+}
+
+@media (max-width: 820px) {
+  .intro-panel,
+  .export-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .dimension {
+    grid-template-columns: 1fr;
+  }
+
+  .impact-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .wrap,
+  main,
+  footer {
+    width: min(100% - 1rem, 1120px);
+  }
+
+  .site-header {
+    padding: 2.2rem 0;
+  }
+
+  .step-nav {
+    position: static;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .form-grid,
+  .pair,
+  .trigger-list,
+  .impact-grid,
+  .summary-grid,
+  .risk-output {
+    grid-template-columns: 1fr;
+  }
+
+  .span-2 {
+    grid-column: auto;
+  }
+
+  .scale {
+    grid-template-columns: 1fr;
+  }
+
+  .scale > label > span {
+    min-height: 2.8rem;
+    justify-content: flex-start;
+    padding-inline: 0.8rem;
+    text-align: left;
+  }
+
+  .scale span strong {
+    display: inline;
+    margin-right: 0.35rem;
+  }
+
+  .bands {
+    display: none;
+  }
+
+  .evidence-list {
+    columns: 1;
+  }
+
+  .button-row button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .needle {
+    transition: none;
+  }
+}
+
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  body {
+    background: #fff;
+    font-size: 10pt;
+  }
+
+  .site-header {
+    padding: 1rem 0;
+    color: var(--ink);
+    background: #fff;
+    border-bottom: 3px solid var(--gold);
+  }
+
+  .site-header h1 {
+    color: var(--navy);
+    font-size: 22pt;
+  }
+
+  .header-badges,
+  .step-nav,
+  .intro-panel,
+  #profile,
+  #priority,
+  #risk,
+  .export-panel {
+    display: none !important;
+  }
+
+  main {
+    width: 100%;
+    padding: 0;
+  }
+
+  .step {
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .summary-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .table-wrap {
+    overflow: visible;
+  }
+
+  .route-table {
+    min-width: 0;
+    font-size: 8pt;
+  }
+
+  .route-table th,
+  .route-table td {
+    padding: 0.35rem;
+  }
+
+  footer {
+    width: 100%;
+    padding: 0.8rem 0;
+  }
+}
+    </style>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to the calculator</a>
@@ -26,6 +984,7 @@
           <span>Third calculator</span>
           <span>Multi-board model</span>
           <span>Stores no data</span>
+          <span>Single file, no dependencies</span>
         </div>
       </div>
     </header>
@@ -66,7 +1025,7 @@
           <p class="lede">
             These fields create the input portion of the AI Register row. The nine
             summary columns added to the Register remain formula-managed and are not
-            overwritten by the export.
+            overwritten by the export, and neither are the two calculated risk columns.
           </p>
 
           <div class="form-grid">
@@ -346,8 +1305,10 @@
             <div>
               <h3>Export the result</h3>
               <p>
-                The Register CSV contains the 35 input columns in their exact order.
-                Formula-managed multi-board summary columns are deliberately excluded.
+                The Register CSV contains the 40 input columns in their exact order,
+                from Register ID through to Public / Resident Facing. Residual Risk and
+                Risk Tier are left empty because the workbook calculates them, and the
+                nine formula-managed summary columns are excluded entirely.
               </p>
               <p class="validation-message" id="validationMessage" role="alert"></p>
             </div>
@@ -385,12 +1346,1183 @@
         entries.
       </p>
       <p>
-        Aligned to Westminster AI Governance Playbook v19 and Multi-Board Gate Map
-        v0.1 · Kim Abercromby
+        Aligned to Westminster AI Governance Playbook v19 and the Multi-Board AI
+        Register v0.2 · Kim Abercromby
       </p>
     </footer>
 
-    <script src="logic.js"></script>
-    <script src="app.js"></script>
+    <script id="triage-logic">
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === "object" && module.exports) module.exports = api;
+  root.TriageLogic = api;
+})(typeof globalThis !== "undefined" ? globalThis : this, function () {
+  "use strict";
+
+  const DIMENSIONS = [
+    {
+      id: "resident",
+      name: "Resident Impact",
+      weight: 25,
+      question:
+        "Could the AI influence services, decisions or outcomes affecting residents or service users?",
+    },
+    {
+      id: "trust",
+      name: "Public Trust and Reputation",
+      weight: 20,
+      question:
+        "Could failures reduce confidence in Westminster or attract significant public scrutiny?",
+    },
+    {
+      id: "legal",
+      name: "Legal and Regulatory Exposure",
+      weight: 20,
+      question:
+        "Does the AI engage statutory duties, regulatory requirements or legal obligations?",
+    },
+    {
+      id: "visibility",
+      name: "Governance Visibility and Accountability",
+      weight: 15,
+      question:
+        "Is ownership clear? Is the AI registered, documented and appropriately governed?",
+    },
+    {
+      id: "strategic",
+      name: "Strategic Value and Organisational Dependency",
+      weight: 10,
+      question:
+        "How important is the AI to delivering strategic objectives and operational performance?",
+    },
+    {
+      id: "oversight",
+      name: "Human Oversight and Decision Authority",
+      weight: 10,
+      question:
+        "Does meaningful human oversight exist, and can AI-assisted decisions be reviewed or challenged?",
+    },
+  ];
+
+  const SCALE_LABELS = [
+    "Very low concern",
+    "Low concern",
+    "Moderate concern",
+    "Significant concern",
+    "Critical concern",
+  ];
+
+  const PRIORITIES = [
+    {
+      min: 80,
+      label: "Priority 1 – Critical",
+      action:
+        "Immediate governance review, executive oversight and comprehensive assurance before deployment or continued operation.",
+    },
+    {
+      min: 60,
+      label: "Priority 2 – High",
+      action:
+        "Enhanced governance assessment, formal risk review and active assurance oversight.",
+    },
+    {
+      min: 40,
+      label: "Priority 3 – Standard",
+      action:
+        "Standard governance assessment, evidence review and ongoing monitoring.",
+    },
+    {
+      min: 20,
+      label: "Priority 4 – Routine",
+      action:
+        "Registration, proportionate evidence and periodic review.",
+    },
+    {
+      min: 0,
+      label: "Priority 5 – Observe",
+      action:
+        "Local management oversight with reassessment before operational deployment or material change.",
+    },
+  ];
+
+  const TRIGGERS = [
+    {
+      id: "specialData",
+      text: "Processing of special category personal data as defined by the UK GDPR",
+    },
+    {
+      id: "vulnerable",
+      text: "AI used in relation to vulnerable residents, including children, adults with care and support needs, and individuals experiencing homelessness",
+    },
+    {
+      id: "housingCare",
+      text: "AI that directly influences housing allocation, social care assessments or homelessness prevention decisions",
+    },
+    {
+      id: "novel",
+      text: "Novel or first-of-type AI deployment for which the organisation has no prior operational experience",
+    },
+    {
+      id: "statutory",
+      text: "AI that produces or directly informs statutory decisions",
+    },
+    {
+      id: "materialChange",
+      text: "Significant supplier, model, data or scope change that materially alters an existing deployment",
+    },
+    {
+      id: "agentic",
+      text: "Agentic AI that takes autonomous actions without per-action human review",
+    },
+  ];
+
+  const IMPACT_DIMENSIONS = [
+    {
+      id: "residentImpact",
+      name: "Resident impact",
+      hint: "Physical, psychological, financial or social harm to individuals or communities",
+    },
+    {
+      id: "legalImpact",
+      name: "Legal and regulatory impact",
+      hint: "Regulatory sanctions, enforcement, legal proceedings or breach of statutory obligations",
+    },
+    {
+      id: "reputationImpact",
+      name: "Reputational impact",
+      hint: "Damage to public trust, media coverage or political scrutiny",
+    },
+    {
+      id: "operationalImpact",
+      name: "Operational impact",
+      hint: "Disruption to service delivery, operational failures or remediation costs",
+    },
+    {
+      id: "financialImpact",
+      name: "Financial impact",
+      hint: "Direct financial costs including compensation, fines and lost efficiency",
+    },
+  ];
+
+  const TIERS = [
+    { max: 5, name: "Low" },
+    { max: 10, name: "Medium" },
+    { max: 15, name: "High" },
+    { max: 25, name: "Critical" },
+  ];
+
+  const DEFAULT_FORUMS = {
+    strategic: "Strategic planning / prioritisation forum",
+    technical: "Technical Design Review",
+    assurance: "AI Assurance Board",
+    digital: "Digital Governance Board",
+    commercial: "Procurement Board / delegated commercial authority",
+    release: "Delivery / release authority (including ethics gate)",
+  };
+
+  const REGISTER_HEADERS = [
+    "Register ID",
+    "System / Model Name",
+    "Purpose / Description",
+    "Service Area",
+    "Service Owner",
+    "Supplier / Developer",
+    "Source",
+    "AI Capability",
+    "Automated Action Authority",
+    "Systems / Tools Accessed",
+    "Lifecycle Stage",
+    "Date Registered",
+    "Personal / Special Category Data",
+    "Triage Date",
+    "AGPI Score (0-100)",
+    "Governance Priority",
+    "Inherent Risk (1-25)",
+    "Control Effectiveness (1-5)",
+    "Residual Risk",
+    "Risk Tier",
+    "DPIA Required",
+    "DPIA Reference",
+    "EIA Required",
+    "EIA Reference",
+    "ATRS Record Required",
+    "Model Card Complete",
+    "Governance Approval Status",
+    "Approved By",
+    "Approval Date",
+    "Monitoring in Place",
+    "Last Review Date",
+    "Next Review Date",
+    "Status",
+    "Notes",
+    "Date First Used",
+    "Escalation Triggered?",
+    "Escalation Trigger(s)",
+    "Procurement Approval Needed?",
+    "Materially Affects Individuals?",
+    "Public / Resident Facing?",
+  ];
+
+  // Columns S and T (Residual Risk, Risk Tier) are calculated in the workbook.
+  // The exporter must leave them empty so a paste cannot destroy their formulas.
+  const CALCULATED_INDEXES = [18, 19];
+
+  function clampScore(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return 1;
+    return Math.min(5, Math.max(1, number));
+  }
+
+  function calculateAgpi(scores) {
+    const total = DIMENSIONS.reduce((sum, dimension) => {
+      const score = clampScore(scores[dimension.id]);
+      return sum + ((score - 1) / 4) * dimension.weight;
+    }, 0);
+    return Math.round(total * 100) / 100;
+  }
+
+  function priorityFor(score) {
+    const safeScore = Math.min(100, Math.max(0, Number(score) || 0));
+    return PRIORITIES.find((priority) => safeScore >= priority.min);
+  }
+
+  function calculateRisk(impactScores, likelihood, controlEffectiveness) {
+    const impacts = IMPACT_DIMENSIONS.map((dimension) =>
+      clampScore(impactScores[dimension.id]),
+    );
+    const impact = Math.max(...impacts);
+    const likelihoodScore = clampScore(likelihood);
+    const controlScore = clampScore(controlEffectiveness);
+    const inherent = likelihoodScore * impact;
+    const residual = Math.round(inherent * (controlScore / 5) * 10) / 10;
+    const tier = TIERS.find((item) => residual <= item.max) || TIERS[3];
+    return {
+      impact,
+      likelihood: likelihoodScore,
+      control: controlScore,
+      inherent,
+      residual,
+      tier,
+    };
+  }
+
+  function commercialRequired(profile) {
+    return (
+      profile.procurementRequired === "Yes" ||
+      profile.source === "Procured" ||
+      profile.source === "Embedded in platform / supplier feature"
+    );
+  }
+
+  function assuranceIntensity(score, tierName, triggerIds) {
+    if (
+      triggerIds.length ||
+      tierName === "Critical" ||
+      Number(score) >= 80
+    ) {
+      return "Comprehensive / immediate";
+    }
+    if (tierName === "High" || Number(score) >= 60) return "Enhanced";
+    if (tierName === "Medium" || Number(score) >= 40) return "Standard";
+    return "Proportionate";
+  }
+
+  function assessmentRequirements(profile, results) {
+    const triggerSet = new Set(results.triggerIds);
+    const personalData = profile.dataType === "Personal data";
+    const specialData =
+      profile.dataType === "Special category data" ||
+      triggerSet.has("specialData");
+    const highImpact =
+      results.risk.tier.name === "High" ||
+      results.risk.tier.name === "Critical" ||
+      results.risk.impact >= 4;
+    const affectsPeople = profile.affectsIndividuals === "Yes";
+
+    let dpia = "";
+    if (specialData || triggerSet.has("housingCare") || triggerSet.has("statutory")) {
+      dpia = "Yes";
+    } else if (profile.dataType === "None") {
+      dpia = "No";
+    } else if (personalData) {
+      dpia = "";
+    }
+
+    const eia = highImpact || affectsPeople ? "Yes" : "";
+    const humanRights =
+      results.risk.tier.name === "Critical" ||
+      triggerSet.has("vulnerable") ||
+      triggerSet.has("housingCare") ||
+      triggerSet.has("statutory");
+    const atrs =
+      profile.publicFacing === "Yes" ||
+      affectsPeople ||
+      triggerSet.has("statutory")
+        ? "Yes"
+        : "No";
+    const supplierDueDiligence = commercialRequired(profile);
+
+    return {
+      dpia,
+      eia,
+      humanRights,
+      atrs,
+      supplierDueDiligence,
+      dpiaScreening: personalData && !dpia,
+    };
+  }
+
+  function buildEvidenceList(profile, results) {
+    const requirements = assessmentRequirements(profile, results);
+    const evidence = [
+      "AI Intake Form and AI Register entry",
+      "AGPI triage result",
+      "AI Risk Assessment Worksheet",
+      "Responsible AI Assessment",
+      "Security Review Checklist",
+      "Model Card",
+      "Evidence Index",
+    ];
+    if (requirements.dpia === "Yes" || requirements.dpiaScreening) {
+      evidence.push(
+        requirements.dpia === "Yes"
+          ? "Data Protection Impact Assessment"
+          : "DPIA screening outcome",
+      );
+    }
+    if (requirements.eia === "Yes") evidence.push("Equality Impact Assessment");
+    if (requirements.humanRights) evidence.push("Human Rights Assessment");
+    if (requirements.supplierDueDiligence) {
+      evidence.push("Supplier AI Due Diligence Questionnaire");
+    }
+    if (requirements.atrs === "Yes") evidence.push("ATRS Record");
+    if (
+      results.risk.tier.name === "High" ||
+      results.risk.tier.name === "Critical" ||
+      results.triggerIds.length
+    ) {
+      evidence.push("Independent or enhanced assurance evidence");
+    }
+    return [...new Set(evidence)];
+  }
+
+  function buildRoute(profile, results, forums) {
+    const configured = { ...DEFAULT_FORUMS, ...(forums || {}) };
+    const commercial = commercialRequired(profile);
+    const retrospective = profile.lifecycle === "Live";
+    const assuranceEvidence = buildEvidenceList(profile, results);
+
+    return [
+      {
+        sequence: 1,
+        key: "strategic",
+        requirement: "Strategic prioritisation",
+        forum: configured.strategic,
+        decision: retrospective
+          ? "Confirm the purpose, owner, priority and continued strategic fit through retrospective intake."
+          : "Confirm that the proposal is aligned, sufficiently defined and worth progressing.",
+        evidence: [
+          "AI Intake Form",
+          "AI Register ID",
+          "Named service owner",
+          "Purpose and expected benefits",
+          "AGPI triage result",
+          "Indicative cost and dependencies",
+        ],
+        status: retrospective ? "Required — retrospective baseline" : "Required",
+        handoff:
+          "Record scope, priority, owner and decision; route to technical review with any conditions.",
+      },
+      {
+        sequence: 2,
+        key: "technical",
+        requirement: "Technical endorsement",
+        forum: configured.technical,
+        decision:
+          "Confirm that the design is feasible, secure, supportable and aligned to architecture and data standards.",
+        evidence: [
+          "Solution design and data flows",
+          "Integrations and permissions",
+          "Model or supplier information",
+          "Security checklist",
+          "Test approach and acceptance criteria",
+        ],
+        status: retrospective ? "Required — retrospective technical baseline" : "Required",
+        handoff:
+          "Append the technical decision and conditions to the Gate Log; file the design baseline in the Evidence Index.",
+      },
+      {
+        sequence: 3,
+        key: "assurance",
+        requirement: "AI assurance opinion",
+        forum: configured.assurance,
+        decision:
+          "Determine whether AI-specific risk is sufficiently understood and controlled to issue an assurance opinion.",
+        evidence: assuranceEvidence,
+        status: `Required — ${results.assuranceIntensity.toLowerCase()} assurance`,
+        handoff:
+          "Issue a versioned assurance opinion; carry forward open conditions and evidence gaps as a precondition for digital governance.",
+      },
+      {
+        sequence: 4,
+        key: "digital",
+        requirement: "Digital portfolio decision",
+        forum: configured.digital,
+        decision:
+          "Decide whether the digital investment should progress within portfolio, funding, dependency and delivery constraints.",
+        evidence: [
+          "Business case or proportionate benefits statement",
+          "Technical endorsement",
+          "Versioned AI assurance opinion",
+          "Dependencies and resourcing",
+          "Material open conditions",
+        ],
+        status: "Required",
+        handoff:
+          "Record the portfolio decision and conditions; confirm the delivery and commercial route.",
+      },
+      {
+        sequence: 5,
+        key: "commercial",
+        requirement: "Procurement / commercial approval",
+        forum: configured.commercial,
+        decision:
+          "Confirm that the procurement route, supplier and contract are acceptable under the relevant delegated authority.",
+        evidence: [
+          "Supplier AI due diligence",
+          "Evaluation and funding approval",
+          "Data, security and AI contract terms",
+          "Audit and change-notification rights",
+          "Versioned AI assurance opinion",
+        ],
+        status: commercial ? "Required" : "Not required — record N/A and rationale",
+        handoff: commercial
+          ? "Record the commercial decision, contract conditions and supplier obligations."
+          : "Record N/A and the rationale so the audit trail shows why no commercial gate was used.",
+      },
+      {
+        sequence: 6,
+        key: "release",
+        requirement: retrospective
+          ? "Deployment continuation / release decision"
+          : "Deployment / release decision",
+        forum: configured.release,
+        decision: retrospective
+          ? "Decide whether the live service may continue, continue with conditions, be suspended or return for remediation."
+          : "Confirm that the service is operationally, ethically and evidentially ready to deploy.",
+        evidence: [
+          "Test results and acceptance evidence",
+          "Closure or formal acceptance of conditions",
+          "Monitoring plan and review schedule",
+          "Incident, rollback and suspension arrangements",
+          "Training and operational support",
+          "Final Model Card and Evidence Index",
+          ...(assessmentRequirements(profile, results).atrs === "Yes"
+            ? ["ATRS Record"]
+            : []),
+        ],
+        status: retrospective ? "Required — continuation decision" : "Required",
+        handoff:
+          "Record the release decision and approved operating baseline, next review date and re-triage triggers; begin or confirm monitoring.",
+      },
+    ];
+  }
+
+  function formatDate(date) {
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(date || new Date());
+  }
+
+  function buildRegisterRow(profile, results, now) {
+    const requirements = assessmentRequirements(profile, results);
+    const date = formatDate(now || new Date());
+    const retrospective = profile.lifecycle === "Live";
+    // Governance Approval Status (column AA) carries the retrospective state;
+    // Status (column AG) carries the operational state. They are different columns.
+    const approvalStatus = retrospective
+      ? "Retrospective intake — pending"
+      : "Pending";
+    const status = retrospective
+      ? "Active"
+      : profile.lifecycle === "Retired"
+        ? "Decommissioned"
+        : "";
+    const notes = [
+      "Generated by Westminster Multi-Board Triage Calculator.",
+      "Validate assessment requirements, forum names and delegated authorities locally.",
+      requirements.dpiaScreening
+        ? "Personal data indicated: record the DPIA screening outcome before approval."
+        : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    const values = [
+      profile.registerId || "",
+      profile.systemName || "",
+      profile.purpose || "",
+      profile.serviceArea || "",
+      profile.serviceOwner || "",
+      profile.supplierDeveloper || "",
+      profile.source || "",
+      profile.capability || "",
+      profile.actionAuthority || "",
+      profile.systemsAccessed || "",
+      profile.lifecycle || "",
+      date,
+      profile.dataType || "",
+      date,
+      results.agpiScore,
+      results.priority.label,
+      results.risk.inherent,
+      results.risk.control,
+      "",
+      "",
+      requirements.dpia,
+      "",
+      requirements.eia,
+      "",
+      requirements.atrs,
+      "No",
+      approvalStatus,
+      "",
+      "",
+      "",
+      "",
+      "",
+      status,
+      notes,
+      profile.dateFirstUsed || "",
+      results.triggerIds.length ? "Yes" : "No",
+      triggerTextFor(results.triggerIds).join("; "),
+      commercialRequired(profile) ? "Yes" : "No",
+      profile.affectsIndividuals || "",
+      profile.publicFacing || "",
+    ];
+    return { headers: REGISTER_HEADERS.slice(), values, calculatedIndexes: CALCULATED_INDEXES.slice() };
+  }
+
+  function triggerTextFor(ids) {
+    const selected = new Set(ids || []);
+    return TRIGGERS.filter((trigger) => selected.has(trigger.id)).map(
+      (trigger) => trigger.text,
+    );
+  }
+
+  function csvEscape(value) {
+    const text = value == null ? "" : String(value);
+    const safeText = /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
+    return `"${safeText.replace(/"/g, '""')}"`;
+  }
+
+  function toCsv(headers, rows) {
+    const lines = [
+      headers.map(csvEscape).join(","),
+      ...rows.map((row) => row.map(csvEscape).join(",")),
+    ];
+    return `\uFEFF${lines.join("\r\n")}\r\n`;
+  }
+
+  function buildGatePlanCsv(profile, route) {
+    const headers = [
+      "Register ID",
+      "System / Model Name",
+      "Gate Sequence",
+      "Gate Requirement",
+      "Decision Needed",
+      "Forum / Decision Authority",
+      "Evidence Required",
+      "Planned Status",
+      "Handoff / Record Update",
+    ];
+    const rows = route.map((gate) => [
+      profile.registerId || "",
+      profile.systemName || "",
+      gate.sequence,
+      gate.requirement,
+      gate.decision,
+      gate.forum,
+      gate.evidence.join("; "),
+      gate.status,
+      gate.handoff,
+    ]);
+    return toCsv(headers, rows);
+  }
+
+  return {
+    DIMENSIONS,
+    SCALE_LABELS,
+    PRIORITIES,
+    TRIGGERS,
+    IMPACT_DIMENSIONS,
+    TIERS,
+    DEFAULT_FORUMS,
+    REGISTER_HEADERS,
+    CALCULATED_INDEXES,
+    calculateAgpi,
+    priorityFor,
+    calculateRisk,
+    commercialRequired,
+    assuranceIntensity,
+    assessmentRequirements,
+    buildEvidenceList,
+    buildRoute,
+    buildRegisterRow,
+    buildGatePlanCsv,
+    triggerTextFor,
+    toCsv,
+    formatDate,
+  };
+});
+    </script>
+    <script id="triage-app">
+(function () {
+  "use strict";
+
+  const logic = window.TriageLogic;
+  const byId = (id) => document.getElementById(id);
+  const form = byId("triageForm");
+
+  if (!logic || !form) {
+    throw new Error("The calculator could not initialise.");
+  }
+
+  const profileFieldIds = [
+    "registerId",
+    "systemName",
+    "purpose",
+    "serviceArea",
+    "serviceOwner",
+    "supplierDeveloper",
+    "source",
+    "capability",
+    "actionAuthority",
+    "systemsAccessed",
+    "lifecycle",
+    "dataType",
+    "procurementRequired",
+    "affectsIndividuals",
+    "publicFacing",
+    "dateFirstUsed",
+  ];
+
+  const forumLabels = {
+    strategic: "Strategic prioritisation forum",
+    technical: "Technical design authority",
+    assurance: "AI assurance authority",
+    digital: "Digital portfolio authority",
+    commercial: "Commercial authority",
+    release: "Deployment / release authority",
+  };
+
+  function appendTextElement(parent, tag, className, text) {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    element.textContent = text;
+    parent.appendChild(element);
+    return element;
+  }
+
+  function buildForumFields() {
+    const container = byId("forumFields");
+    Object.entries(logic.DEFAULT_FORUMS).forEach(([key, value]) => {
+      const label = document.createElement("label");
+      label.className = "field";
+      appendTextElement(label, "span", "", forumLabels[key]);
+      const input = document.createElement("input");
+      input.id = `forum-${key}`;
+      input.value = value;
+      input.dataset.forum = key;
+      input.autocomplete = "off";
+      label.appendChild(input);
+      container.appendChild(label);
+    });
+  }
+
+  function buildDimensions() {
+    const container = byId("dimensions");
+    logic.DIMENSIONS.forEach((dimension) => {
+      const section = document.createElement("fieldset");
+      section.className = "dimension";
+
+      const legend = document.createElement("legend");
+      legend.className = "visually-hidden";
+      legend.textContent = `${dimension.name}, weight ${dimension.weight}%`;
+      section.appendChild(legend);
+
+      const description = document.createElement("div");
+      const title = appendTextElement(
+        description,
+        "p",
+        "dimension-name",
+        dimension.name,
+      );
+      const weight = appendTextElement(
+        title,
+        "span",
+        "weight",
+        `${dimension.weight}%`,
+      );
+      weight.setAttribute("aria-label", `Weight ${dimension.weight} percent`);
+      appendTextElement(
+        description,
+        "p",
+        "dimension-question",
+        dimension.question,
+      );
+      section.appendChild(description);
+
+      const scale = document.createElement("div");
+      scale.className = "scale";
+      logic.SCALE_LABELS.forEach((scaleLabel, index) => {
+        const score = index + 1;
+        const label = document.createElement("label");
+        const input = document.createElement("input");
+        input.type = "radio";
+        input.name = `score-${dimension.id}`;
+        input.value = String(score);
+        input.checked = score === 1;
+        input.dataset.dimension = dimension.id;
+        input.setAttribute(
+          "aria-label",
+          `${dimension.name}: ${score}, ${scaleLabel}`,
+        );
+
+        const span = document.createElement("span");
+        const contents = document.createElement("span");
+        appendTextElement(contents, "strong", "", String(score));
+        contents.append(document.createTextNode(scaleLabel));
+        span.appendChild(contents);
+
+        label.append(input, span);
+        scale.appendChild(label);
+      });
+      section.appendChild(scale);
+      container.appendChild(section);
+    });
+  }
+
+  function buildTriggers() {
+    const container = byId("triggers");
+    container.className = "trigger-list";
+    logic.TRIGGERS.forEach((trigger) => {
+      const label = document.createElement("label");
+      label.className = "trigger";
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.value = trigger.id;
+      input.dataset.trigger = trigger.id;
+      const text = document.createElement("span");
+      text.textContent = trigger.text;
+      label.append(input, text);
+      container.appendChild(label);
+    });
+  }
+
+  function buildImpacts() {
+    const container = byId("impacts");
+    logic.IMPACT_DIMENSIONS.forEach((impact) => {
+      const label = document.createElement("label");
+      label.className = "field impact-field";
+      appendTextElement(label, "span", "", impact.name);
+      appendTextElement(label, "small", "", impact.hint);
+      const select = document.createElement("select");
+      select.id = `impact-${impact.id}`;
+      select.dataset.impact = impact.id;
+      for (let score = 1; score <= 5; score += 1) {
+        const option = document.createElement("option");
+        option.value = String(score);
+        option.textContent = `${score} · ${logic.SCALE_LABELS[score - 1]}`;
+        option.selected = score === 2;
+        select.appendChild(option);
+      }
+      label.appendChild(select);
+      container.appendChild(label);
+    });
+  }
+
+  function getProfile() {
+    return Object.fromEntries(
+      profileFieldIds.map((id) => [id, byId(id).value.trim()]),
+    );
+  }
+
+  function getForums() {
+    return Object.fromEntries(
+      Object.keys(logic.DEFAULT_FORUMS).map((key) => [
+        key,
+        byId(`forum-${key}`).value.trim() || logic.DEFAULT_FORUMS[key],
+      ]),
+    );
+  }
+
+  function getAgpiScores() {
+    return Object.fromEntries(
+      logic.DIMENSIONS.map((dimension) => {
+        const selected = form.querySelector(
+          `input[name="score-${dimension.id}"]:checked`,
+        );
+        return [dimension.id, Number(selected ? selected.value : 1)];
+      }),
+    );
+  }
+
+  function getImpactScores() {
+    return Object.fromEntries(
+      logic.IMPACT_DIMENSIONS.map((impact) => [
+        impact.id,
+        Number(byId(`impact-${impact.id}`).value),
+      ]),
+    );
+  }
+
+  function getTriggerIds() {
+    return Array.from(form.querySelectorAll("[data-trigger]:checked")).map(
+      (input) => input.dataset.trigger,
+    );
+  }
+
+  function calculateAll() {
+    const profile = getProfile();
+    const forums = getForums();
+    const agpiScores = getAgpiScores();
+    const impactScores = getImpactScores();
+    const triggerIds = getTriggerIds();
+    const agpiScore = logic.calculateAgpi(agpiScores);
+    const priority = logic.priorityFor(agpiScore);
+    const risk = logic.calculateRisk(
+      impactScores,
+      byId("likelihood").value,
+      byId("control").value,
+    );
+    const assuranceIntensity = logic.assuranceIntensity(
+      agpiScore,
+      risk.tier.name,
+      triggerIds,
+    );
+    const results = {
+      agpiScore,
+      priority,
+      risk,
+      triggerIds,
+      assuranceIntensity,
+    };
+    return {
+      profile,
+      forums,
+      agpiScores,
+      impactScores,
+      results,
+      evidence: logic.buildEvidenceList(profile, results),
+      route: logic.buildRoute(profile, results, forums),
+    };
+  }
+
+  function renderRoute(route) {
+    const body = byId("routeRows");
+    body.replaceChildren();
+    route.forEach((gate) => {
+      const row = document.createElement("tr");
+
+      const numberCell = document.createElement("td");
+      appendTextElement(numberCell, "span", "gate-number", String(gate.sequence));
+      appendTextElement(
+        numberCell,
+        "span",
+        "gate-requirement",
+        gate.requirement,
+      );
+
+      const decisionCell = document.createElement("td");
+      appendTextElement(decisionCell, "span", "gate-forum", gate.forum);
+      appendTextElement(decisionCell, "span", "gate-decision", gate.decision);
+
+      const evidenceCell = document.createElement("td");
+      const list = document.createElement("ul");
+      list.className = "gate-evidence";
+      gate.evidence.forEach((item) => {
+        appendTextElement(list, "li", "", item);
+      });
+      evidenceCell.appendChild(list);
+      appendTextElement(
+        evidenceCell,
+        "span",
+        "handoff",
+        `Handoff: ${gate.handoff}`,
+      );
+
+      const statusCell = document.createElement("td");
+      const status = appendTextElement(
+        statusCell,
+        "span",
+        "status-badge",
+        gate.status,
+      );
+      if (gate.status.startsWith("Not required")) {
+        status.classList.add("not-required");
+      }
+
+      row.append(numberCell, decisionCell, evidenceCell, statusCell);
+      body.appendChild(row);
+    });
+  }
+
+  function renderEvidence(evidence) {
+    const list = byId("evidenceList");
+    list.replaceChildren();
+    evidence.forEach((item) => appendTextElement(list, "li", "", item));
+  }
+
+  function update() {
+    const calculation = calculateAll();
+    const { profile, results, route, evidence } = calculation;
+
+    byId("agpiScore").textContent = formatNumber(results.agpiScore);
+    byId("agpiPriority").textContent = results.priority.label;
+    byId("agpiAction").textContent = results.priority.action;
+    byId("needle").style.left = `${results.agpiScore}%`;
+
+    byId("impactScore").textContent = formatNumber(results.risk.impact);
+    byId("inherentRisk").textContent = formatNumber(results.risk.inherent);
+    byId("residualRisk").textContent = formatNumber(results.risk.residual);
+    byId("riskTier").textContent = results.risk.tier.name;
+    byId("tierStat").className =
+      `stat tier-${results.risk.tier.name.toLowerCase()}`;
+
+    const escalationBanner = byId("escalationBanner");
+    if (results.triggerIds.length) {
+      escalationBanner.classList.add("visible");
+      byId("escalationText").textContent =
+        `${results.triggerIds.length} trigger${results.triggerIds.length === 1 ? "" : "s"} selected. ` +
+        "Notify the AI Governance Lead and AI Assurance Board without delay.";
+    } else {
+      escalationBanner.classList.remove("visible");
+      byId("escalationText").textContent = "";
+    }
+
+    byId("summaryPriority").textContent = results.priority.label;
+    byId("summaryTier").textContent =
+      `${results.risk.tier.name} (${formatNumber(results.risk.residual)})`;
+    byId("summaryIntensity").textContent = results.assuranceIntensity;
+    byId("summaryNextGate").textContent = route[0].requirement;
+    byId("summaryCommercial").textContent = logic.commercialRequired(profile)
+      ? "Required"
+      : "Not required — record N/A";
+    byId("summaryEscalation").textContent = results.triggerIds.length
+      ? `${results.triggerIds.length} mandatory trigger${results.triggerIds.length === 1 ? "" : "s"}`
+      : "No mandatory trigger selected";
+
+    renderEvidence(evidence);
+    renderRoute(route);
+    return calculation;
+  }
+
+  function formatNumber(value) {
+    return Number.isInteger(Number(value))
+      ? String(Number(value))
+      : Number(value).toFixed(1);
+  }
+
+  function formatInputDate(value) {
+    if (!value) return "";
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    return match ? `${match[3]}/${match[2]}/${match[1]}` : value;
+  }
+
+  function safeSlug(value) {
+    const slug = String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    return slug || "ai-system";
+  }
+
+  function validateForExport() {
+    const required = [byId("systemName"), byId("purpose")];
+    const invalid = required.find((field) => !field.value.trim());
+    if (!invalid) {
+      byId("validationMessage").textContent = "";
+      return true;
+    }
+    byId("validationMessage").textContent =
+      "Add the system or model name and purpose before exporting.";
+    invalid.reportValidity();
+    invalid.focus();
+    return false;
+  }
+
+  function download(filename, contents, type) {
+    const blob = new Blob([contents], { type });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
+
+  function triggerLabels(ids) {
+    const selected = new Set(ids);
+    return logic.TRIGGERS.filter((trigger) => selected.has(trigger.id)).map(
+      (trigger) => trigger.text,
+    );
+  }
+
+  function buildSummary(calculation) {
+    const {
+      profile,
+      agpiScores,
+      impactScores,
+      results,
+      evidence,
+      route,
+    } = calculation;
+    const lines = [
+      "WESTMINSTER AI MULTI-BOARD TRIAGE SUMMARY",
+      "==========================================",
+      "",
+      `Generated: ${logic.formatDate(new Date())}`,
+      `Register ID: ${profile.registerId || "Not assigned"}`,
+      `System / model: ${profile.systemName || "Not entered"}`,
+      `Purpose: ${profile.purpose || "Not entered"}`,
+      `Service area: ${profile.serviceArea || "Not entered"}`,
+      `Service owner: ${profile.serviceOwner || "Not entered"}`,
+      `Supplier / developer: ${profile.supplierDeveloper || "Not entered"}`,
+      `Source: ${profile.source}`,
+      `AI capability: ${profile.capability}`,
+      `Automated action authority: ${profile.actionAuthority}`,
+      `Systems / tools accessed: ${profile.systemsAccessed || "Not entered"}`,
+      `Lifecycle: ${profile.lifecycle}`,
+      `Data type: ${profile.dataType}`,
+      `Commercial approval needed: ${logic.commercialRequired(profile) ? "Yes" : "No"}`,
+      "",
+      "AGPI PRIORITY",
+      "-------------",
+      ...logic.DIMENSIONS.map(
+        (dimension) =>
+          `${dimension.name} (${dimension.weight}%): ${agpiScores[dimension.id]} / 5`,
+      ),
+      `Weighted AGPI score: ${formatNumber(results.agpiScore)} / 100`,
+      `Governance priority: ${results.priority.label}`,
+      `Action: ${results.priority.action}`,
+      "",
+      "RISK AND ESCALATION",
+      "-------------------",
+      ...logic.IMPACT_DIMENSIONS.map(
+        (impact) => `${impact.name}: ${impactScores[impact.id]} / 5`,
+      ),
+      `Highest impact: ${results.risk.impact}`,
+      `Likelihood: ${results.risk.likelihood}`,
+      `Inherent risk: ${results.risk.inherent}`,
+      `Control effectiveness: ${results.risk.control}`,
+      `Residual risk: ${formatNumber(results.risk.residual)}`,
+      `Risk tier: ${results.risk.tier.name}`,
+      `Assurance intensity: ${results.assuranceIntensity}`,
+      "Mandatory triggers:",
+      ...(results.triggerIds.length
+        ? triggerLabels(results.triggerIds).map((label) => `- ${label}`)
+        : ["- None selected"]),
+      "",
+      "REQUIRED EVIDENCE PACKAGE",
+      "-------------------------",
+      ...evidence.map((item) => `- ${item}`),
+      "",
+      "PLANNED MULTI-BOARD ROUTE",
+      "-------------------------",
+    ];
+
+    route.forEach((gate) => {
+      lines.push(
+        "",
+        `${gate.sequence}. ${gate.requirement}`,
+        `Forum / authority: ${gate.forum}`,
+        `Status: ${gate.status}`,
+        `Decision: ${gate.decision}`,
+        "Evidence:",
+        ...gate.evidence.map((item) => `- ${item}`),
+        `Handoff: ${gate.handoff}`,
+      );
+    });
+
+    lines.push(
+      "",
+      "IMPORTANT",
+      "---------",
+      "This is a planned route, not evidence that any gate has been passed.",
+      "Record each formal decision and its conditions in the Gate Log and Evidence Index.",
+      "Decision support only: validate forum names, delegated authorities and assessment requirements locally.",
+    );
+    return `${lines.join("\n")}\n`;
+  }
+
+  function registerExport() {
+    if (!validateForExport()) return;
+    const calculation = update();
+    const profile = {
+      ...calculation.profile,
+      dateFirstUsed: formatInputDate(calculation.profile.dateFirstUsed),
+    };
+    const row = logic.buildRegisterRow(profile, calculation.results, new Date());
+    download(
+      `${safeSlug(profile.systemName)}-register-row.csv`,
+      logic.toCsv(row.headers, [row.values]),
+      "text/csv;charset=utf-8",
+    );
+  }
+
+  function gateExport() {
+    if (!validateForExport()) return;
+    const calculation = update();
+    download(
+      `${safeSlug(calculation.profile.systemName)}-gate-plan.csv`,
+      logic.buildGatePlanCsv(calculation.profile, calculation.route),
+      "text/csv;charset=utf-8",
+    );
+  }
+
+  function summaryExport() {
+    if (!validateForExport()) return;
+    const calculation = update();
+    download(
+      `${safeSlug(calculation.profile.systemName)}-triage-summary.txt`,
+      buildSummary(calculation),
+      "text/plain;charset=utf-8",
+    );
+  }
+
+  async function copySummary() {
+    if (!validateForExport()) return;
+    const summary = buildSummary(update());
+    const status = byId("copyStatus");
+    try {
+      await navigator.clipboard.writeText(summary);
+      status.textContent = "Summary copied to the clipboard.";
+    } catch (_error) {
+      status.textContent =
+        "The browser blocked clipboard access. Use Download full summary instead.";
+    }
+  }
+
+  buildForumFields();
+  buildDimensions();
+  buildTriggers();
+  buildImpacts();
+  update();
+
+  form.addEventListener("input", update);
+  form.addEventListener("change", update);
+  byId("downloadRegister").addEventListener("click", registerExport);
+  byId("downloadGates").addEventListener("click", gateExport);
+  byId("downloadSummary").addEventListener("click", summaryExport);
+  byId("copySummary").addEventListener("click", copySummary);
+  byId("printResult").addEventListener("click", () => window.print());
+})();
+    </script>
   </body>
 </html>
