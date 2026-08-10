@@ -976,9 +976,10 @@ footer p {
         <p class="crest">City Council</p>
         <h1>AI Multi-Board Triage &amp; Governance Router</h1>
         <p class="header-lede">
-          Classify an AI system once, map the decisions onto existing governance
-          forums, and export a row in the exact input order used by the
-          AI Register.
+          Classify an AI system once, then carry that one classification across the
+          governance forums that already exist. This is the cross-forum visibility
+          layer: one register ID, one triage, one assurance opinion, and a gate
+          record that threads the forums together.
         </p>
         <div class="header-badges" aria-label="Calculator characteristics">
           <span>Third calculator</span>
@@ -996,16 +997,18 @@ footer p {
           <h2 id="intro-title">Governance travels with the system</h2>
           <p>
             The original AGPI and risk calculations are retained. This version adds
-            a six-gate governance relay, configurable forum names, a decision-ready
-            evidence plan, an Excel-ready Register row and a separate planned-gate
-            export.
+            a governance relay across the existing forums, configurable forum names,
+            a decision-ready evidence plan, an Excel-ready Register row and a separate
+            planned-gate export — the end-to-end visibility that an integrated
+            governance pathway needs.
           </p>
         </div>
         <div class="principle">
           <strong>Authority stays with each forum.</strong>
           <span>
-            The AI Assurance Board carries continuity and issues one assurance
-            opinion; it does not replace strategic, technical, commercial or release
+            The assurance board carries continuity and issues one assurance opinion;
+            it does not replace strategic, technical, commercial or release authority.
+            Final accountability stays with the Service Owner, SRO or delegated
             authority.
           </span>
         </div>
@@ -1347,7 +1350,7 @@ footer p {
       </p>
       <p>
         Aligned to AI Governance Playbook v19 and the Multi-Board AI
-        Register v0.2 · Kim Abercromby
+        Register v0.3
       </p>
     </footer>
 
@@ -1472,7 +1475,7 @@ footer p {
     },
     {
       id: "agentic",
-      text: "Agentic AI that takes autonomous actions without per-action human review",
+      text: "AI systems capable of executing actions autonomously — including initiating transactions, modifying records, sending communications or invoking other systems — without human review of each individual action",
     },
   ];
 
@@ -1836,6 +1839,14 @@ footer p {
     }).format(date || new Date());
   }
 
+  function indicated(value) {
+    // Triage INDICATES whether an assessment is needed; the DPO and specialist
+    // leads CONFIRM it. The exported row must not assert a decided "Yes".
+    if (value === "Yes") return "Indicated — pending confirmation";
+    if (value === "No") return "Not indicated";
+    return value;
+  }
+
   function buildRegisterRow(profile, results, now) {
     const requirements = assessmentRequirements(profile, results);
     const date = formatDate(now || new Date());
@@ -1881,12 +1892,12 @@ footer p {
       results.risk.control,
       "",
       "",
-      requirements.dpia,
+      indicated(requirements.dpia),
       "",
-      requirements.eia,
+      indicated(requirements.eia),
       "",
-      requirements.atrs,
-      "No",
+      indicated(requirements.atrs),
+      "",
       approvalStatus,
       "",
       "",
