@@ -966,7 +966,15 @@ footer p {
     padding: 0.8rem 0;
   }
 }
-    </style>
+      .handoff-panel { margin-top: 1.5rem; }
+    .handoff-item { border-left: 3px solid #C8AB36; padding: 0.4rem 0 0.4rem 0.85rem; margin: 0.75rem 0; }
+    .handoff-item h4 { margin: 0 0 0.15rem; color: #122C47; font-size: 0.95rem; }
+    .handoff-section { margin: 0 0 0.4rem; color: #5B6470; font-size: 0.85rem; }
+    .handoff-item dl { display: grid; grid-template-columns: minmax(12rem, max-content) 1fr; gap: 0.15rem 1rem; margin: 0; }
+    .handoff-item dt { font-weight: 600; color: #333; }
+    .handoff-item dd { margin: 0; color: #333; }
+    .handoff-note { margin: 0.4rem 0 0; font-size: 0.85rem; color: #5B6470; font-style: italic; }
+  </style>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to the calculator</a>
@@ -1304,14 +1312,25 @@ footer p {
             </table>
           </div>
 
+          <div class="handoff-panel">
+            <h3>Artefact handoff</h3>
+            <p>
+              Fields the streamlined register no longer holds are routed to the
+              artefact whose form owns them. Record each value in the artefact shown.
+              The triage pre-fills what it knows; approval is left to the gate.
+            </p>
+            <div id="handoffRows"></div>
+          </div>
+
           <div class="export-panel">
             <div>
               <h3>Export the result</h3>
               <p>
-                The Register CSV contains the 40 input columns in their exact order,
-                from Register ID through to Public / Resident Facing. Residual Risk and
-                Risk Tier are left empty because the workbook calculates them, and the
-                nine formula-managed summary columns are excluded entirely.
+                The Register CSV contains the 32 register columns in their exact order,
+                from Register ID through to Status. Residual Risk and Risk Tier are left
+                empty because the workbook calculates them. Fields the streamlined
+                register no longer holds appear in the artefact handoff above and in its
+                separate download.
               </p>
               <p class="validation-message" id="validationMessage" role="alert"></p>
             </div>
@@ -1321,6 +1340,9 @@ footer p {
               </button>
               <button type="button" id="downloadGates" class="secondary">
                 Download gate plan
+              </button>
+              <button type="button" id="downloadHandoff" class="secondary">
+                Download artefact handoff
               </button>
               <button type="button" id="downloadSummary" class="secondary">
                 Download full summary
@@ -1536,10 +1558,11 @@ footer p {
     "Systems / Tools Accessed",
     "Lifecycle Stage",
     "Date Registered",
+    "Date First Used",
     "Personal / Special Category Data",
     "Triage Date",
     "AGPI Score (0-100)",
-    "Governance Priority",
+    "Effective Governance Priority",
     "Inherent Risk (1-25)",
     "Control Effectiveness (1-5)",
     "Residual Risk",
@@ -1551,24 +1574,15 @@ footer p {
     "ATRS Record Required",
     "Model Card Complete",
     "Governance Approval Status",
-    "Approved By",
-    "Approval Date",
     "Monitoring in Place",
     "Last Review Date",
     "Next Review Date",
     "Status",
-    "Notes",
-    "Date First Used",
-    "Escalation Triggered?",
-    "Escalation Trigger(s)",
-    "Procurement Approval Needed?",
-    "Materially Affects Individuals?",
-    "Public / Resident Facing?",
   ];
 
-  // Columns S and T (Residual Risk, Risk Tier) are calculated in the workbook.
+  // Columns T and U (Residual Risk, Risk Tier) are calculated in the workbook.
   // The exporter must leave them empty so a paste cannot destroy their formulas.
-  const CALCULATED_INDEXES = [18, 19];
+  const CALCULATED_INDEXES = [19, 20];
 
   function clampScore(value) {
     const number = Number(value);
@@ -1884,6 +1898,7 @@ footer p {
       profile.systemsAccessed || "",
       profile.lifecycle || "",
       date,
+      profile.dateFirstUsed || "",
       profile.dataType || "",
       date,
       results.agpiScore,
@@ -1902,16 +1917,7 @@ footer p {
       "",
       "",
       "",
-      "",
-      "",
       status,
-      notes,
-      profile.dateFirstUsed || "",
-      results.triggerIds.length ? "Yes" : "No",
-      triggerTextFor(results.triggerIds).join("; "),
-      commercialRequired(profile) ? "Yes" : "No",
-      profile.affectsIndividuals || "",
-      profile.publicFacing || "",
     ];
     return { headers: REGISTER_HEADERS.slice(), values, calculatedIndexes: CALCULATED_INDEXES.slice() };
   }
@@ -1963,6 +1969,125 @@ footer p {
     return toCsv(headers, rows);
   }
 
+  // Fields the streamlined 32-column register no longer holds are routed to the
+  // artefact whose form owns them. Returns, per triaged system, what to record
+  // and where. The triage pre-fills what it knows; approval is left to the gate.
+  function buildArtefactHandoff(profile, results) {
+    const requirements = assessmentRequirements(profile, results);
+    const yn = (v) => (v === "Yes" ? "Yes" : v === "No" ? "No" : "Not stated");
+    const items = [];
+
+    const triggered = results.triggerIds.length > 0;
+    items.push({
+      artefact: "WCC-AIG-07 AI Risk Assessment Worksheet",
+      section: "Step 4 \u2014 Mandatory escalation triggers",
+      fields: [
+        { label: "Escalation triggered?", value: triggered ? "Yes" : "No" },
+        {
+          label: "Triggers present",
+          value: triggered
+            ? triggerTextFor(results.triggerIds).join("; ")
+            : "None",
+        },
+      ],
+      note: "Answer each trigger in Step 4; a Yes sets the minimum High or Critical pathway.",
+    });
+
+    items.push({
+      artefact: "WCC-AIG-10 Data Protection Impact Assessment",
+      section: "Section 2 \u2014 Screening (is a DPIA required?)",
+      fields: [
+        { label: "Materially affects individuals?", value: yn(profile.affectsIndividuals) },
+        { label: "Public / resident facing?", value: yn(profile.publicFacing) },
+      ],
+      note:
+        requirements.dpia === "Yes"
+          ? "DPIA indicated \u2014 complete the full assessment."
+          : requirements.dpiaScreening
+            ? "Personal data present \u2014 record the screening outcome before approval."
+            : "Record the screening decision.",
+    });
+
+    if (
+      profile.publicFacing === "Yes" ||
+      profile.affectsIndividuals === "Yes" ||
+      requirements.eia === "Yes"
+    ) {
+      items.push({
+        artefact: "WCC-AIG-11 Equality Impact Assessment",
+        section: "Section 2 \u2014 Purpose and Affected Groups",
+        fields: [
+          { label: "Public / resident facing?", value: yn(profile.publicFacing) },
+          { label: "Materially affects individuals?", value: yn(profile.affectsIndividuals) },
+        ],
+        note: "Record affected groups (residents, staff, service users) and any protected-characteristic impact.",
+      });
+    }
+
+    if (requirements.humanRights || profile.affectsIndividuals === "Yes") {
+      items.push({
+        artefact: "WCC-AIG-12 Human Rights Assessment",
+        section: "Convention rights engaged",
+        fields: [
+          { label: "Materially affects individuals?", value: yn(profile.affectsIndividuals) },
+        ],
+        note: "Identify each Convention right potentially engaged and record the legal basis.",
+      });
+    }
+
+    const procurement = commercialRequired(profile);
+    items.push({
+      artefact: "WCC-AIG-13 Supplier AI Due Diligence Questionnaire",
+      section: "Procurement / contracting",
+      fields: [
+        { label: "Procurement approval needed?", value: procurement ? "Yes" : "No" },
+      ],
+      note: procurement
+        ? "Issue the DDQ to the supplier and record the procurement gate in the Gate Log (36)."
+        : "No procurement route indicated \u2014 record N/A.",
+    });
+
+    items.push({
+      artefact: "WCC-AIG-36 Gate Log / WCC-AIG-16 Governance Decision Record",
+      section: "Approval event",
+      fields: [
+        { label: "Approved by", value: "Pending \u2014 record at gate" },
+        { label: "Approval date", value: "Pending \u2014 record at gate" },
+      ],
+      note: "The triage cannot decide approval. Record the forum, decision-maker and date when the gate is passed.",
+    });
+
+    return items;
+  }
+
+  function buildHandoffCsv(profile, results) {
+    const items = buildArtefactHandoff(profile, results);
+    const headers = [
+      "Register ID",
+      "System / Model Name",
+      "Artefact",
+      "Section",
+      "Field",
+      "Value",
+      "Note",
+    ];
+    const rows = [];
+    items.forEach((item) => {
+      item.fields.forEach((f) => {
+        rows.push([
+          profile.registerId || "",
+          profile.systemName || "",
+          item.artefact,
+          item.section,
+          f.label,
+          f.value,
+          item.note,
+        ]);
+      });
+    });
+    return toCsv(headers, rows);
+  }
+
   return {
     DIMENSIONS,
     SCALE_LABELS,
@@ -1983,6 +2108,8 @@ footer p {
     buildRoute,
     buildRegisterRow,
     buildGatePlanCsv,
+    buildArtefactHandoff,
+    buildHandoffCsv,
     triggerTextFor,
     toCsv,
     formatDate,
@@ -2287,6 +2414,41 @@ footer p {
     evidence.forEach((item) => appendTextElement(list, "li", "", item));
   }
 
+  function renderHandoff(profile, results) {
+    const container = byId("handoffRows");
+    if (!container) return;
+    container.replaceChildren();
+    const items = logic.buildArtefactHandoff(profile, results);
+    items.forEach((item) => {
+      const block = document.createElement("div");
+      block.className = "handoff-item";
+      const h = document.createElement("h4");
+      h.textContent = item.artefact;
+      block.appendChild(h);
+      const sec = document.createElement("p");
+      sec.className = "handoff-section";
+      sec.textContent = item.section;
+      block.appendChild(sec);
+      const dl = document.createElement("dl");
+      item.fields.forEach((f) => {
+        const dt = document.createElement("dt");
+        dt.textContent = f.label;
+        const dd = document.createElement("dd");
+        dd.textContent = f.value;
+        dl.appendChild(dt);
+        dl.appendChild(dd);
+      });
+      block.appendChild(dl);
+      if (item.note) {
+        const note = document.createElement("p");
+        note.className = "handoff-note";
+        note.textContent = item.note;
+        block.appendChild(note);
+      }
+      container.appendChild(block);
+    });
+  }
+
   function update() {
     const calculation = calculateAll();
     const { profile, results, route, evidence } = calculation;
@@ -2328,6 +2490,7 @@ footer p {
 
     renderEvidence(evidence);
     renderRoute(route);
+    renderHandoff(profile, results);
     return calculation;
   }
 
@@ -2497,6 +2660,20 @@ footer p {
     );
   }
 
+  function handoffExport() {
+    if (!validateForExport()) return;
+    const calculation = update();
+    const profile = {
+      ...calculation.profile,
+      dateFirstUsed: formatInputDate(calculation.profile.dateFirstUsed),
+    };
+    download(
+      `${safeSlug(profile.systemName)}-artefact-handoff.csv`,
+      logic.buildHandoffCsv(profile, calculation.results),
+      "text/csv;charset=utf-8",
+    );
+  }
+
   function summaryExport() {
     if (!validateForExport()) return;
     const calculation = update();
@@ -2530,6 +2707,7 @@ footer p {
   form.addEventListener("change", update);
   byId("downloadRegister").addEventListener("click", registerExport);
   byId("downloadGates").addEventListener("click", gateExport);
+  byId("downloadHandoff").addEventListener("click", handoffExport);
   byId("downloadSummary").addEventListener("click", summaryExport);
   byId("copySummary").addEventListener("click", copySummary);
   byId("printResult").addEventListener("click", () => window.print());
