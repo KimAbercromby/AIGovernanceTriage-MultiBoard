@@ -1332,6 +1332,13 @@ footer p {
                 register no longer holds appear in the artefact handoff above and in its
                 separate download.
               </p>
+              <p>
+                Adding the row to the live register: the workbook already carries the
+                Residual Risk and Risk Tier formulas down every row, so paste the row in
+                with Paste Special, Values, and tick Skip blanks. That keeps the two empty
+                columns from writing over those formulas, and they recalculate from the
+                Inherent Risk and Control Effectiveness values you have just pasted.
+              </p>
               <p class="validation-message" id="validationMessage" role="alert"></p>
             </div>
             <div class="button-row">
@@ -2027,7 +2034,7 @@ footer p {
     if (requirements.humanRights || profile.affectsIndividuals === "Yes") {
       items.push({
         artefact: "WCC-AIG-12 Human Rights Assessment",
-        section: "Convention rights engaged",
+        section: "Section 3 \u2014 Convention and Protocol Rights Screening",
         fields: [
           { label: "Materially affects individuals?", value: yn(profile.affectsIndividuals) },
         ],
