@@ -1326,18 +1326,10 @@ footer p {
             <div>
               <h3>Export the result</h3>
               <p>
-                The Register CSV contains the 32 register columns in their exact order,
-                from Register ID through to Status. Residual Risk and Risk Tier are left
-                empty because the workbook calculates them. Fields the streamlined
-                register no longer holds appear in the artefact handoff above and in its
-                separate download.
-              </p>
-              <p>
-                Adding the row to the live register: the workbook already carries the
-                Residual Risk and Risk Tier formulas down every row, so paste the row in
-                with Paste Special, Values, and tick Skip blanks. That keeps the two empty
-                columns from writing over those formulas, and they recalculate from the
-                Inherent Risk and Control Effectiveness values you have just pasted.
+                Each button downloads the result in a different form: the Register row,
+                the gate plan, the artefact handoff, or a full summary. The Register CSV
+                lists the 32 register columns in order, with Residual Risk and Risk Tier
+                left blank for the workbook to calculate.
               </p>
               <p class="validation-message" id="validationMessage" role="alert"></p>
             </div>
