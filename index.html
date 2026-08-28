@@ -2344,28 +2344,37 @@ footer p {
       byId("likelihood").value,
       byId("control").value,
     );
-    const assuranceIntensity = logic.assuranceIntensity(
-      agpiScore,
-      risk.tier.name,
-      triggerIds,
-    );
     // --- Risk-tier safeguards (QA fix) ------------------------------------
-    // Existing residual math is unchanged. Added: (a) the inherent tier, so a
-    // strong control rating cannot hide a severe inherent score; and (b) a
-    // trigger floor, so any mandatory escalation trigger lifts the displayed
-    // tier to at least High, matching the documented methodology.
+    // Residual math is unchanged. Added: (a) the inherent tier, so a strong
+    // control rating cannot hide a severe inherent score; and (b) a floor to
+    // at least High when a mandatory escalation trigger is selected OR the
+    // data type is special category, so a serious system cannot sit below
+    // High. The effective tier is what users see and what assurance uses.
     const TIER_ORDER = ["Low", "Medium", "High", "Critical"];
     const tierNameForScore = (s) =>
       s <= 5 ? "Low" : s <= 10 ? "Medium" : s <= 15 ? "High" : "Critical";
     const residualTierName = risk.tier.name;
     const inherentTierName = tierNameForScore(risk.inherent);
+    const specialCategoryData =
+      profile.dataType === "Special category data";
+    const floorApplies = triggerIds.length > 0 || specialCategoryData;
     const effectiveTierName =
-      triggerIds.length &&
+      floorApplies &&
       TIER_ORDER.indexOf(residualTierName) < TIER_ORDER.indexOf("High")
         ? "High"
         : residualTierName;
     const tierFloored = effectiveTierName !== residualTierName;
+    const floorReason = tierFloored
+      ? triggerIds.length
+        ? "mandatory trigger"
+        : "special category data"
+      : "";
     // ---------------------------------------------------------------------
+    const assuranceIntensity = logic.assuranceIntensity(
+      agpiScore,
+      effectiveTierName,
+      triggerIds,
+    );
     const results = {
       agpiScore,
       priority,
@@ -2376,6 +2385,7 @@ footer p {
       inherentTierName,
       effectiveTierName,
       tierFloored,
+      floorReason,
     };
     return {
       profile,
@@ -2497,14 +2507,25 @@ footer p {
       `stat tier-${results.effectiveTierName.toLowerCase()}`;
 
     const escalationBanner = byId("escalationBanner");
-    if (results.triggerIds.length) {
+    if (results.triggerIds.length || results.tierFloored) {
       escalationBanner.classList.add("visible");
-      byId("escalationText").textContent =
-        `${results.triggerIds.length} trigger${results.triggerIds.length === 1 ? "" : "s"} selected. ` +
-        (results.tierFloored
-          ? `Risk tier raised to at least High (residual was ${results.residualTierName}). `
-          : "") +
-        "Notify the AI Governance Lead and AI Assurance Board without delay.";
+      const parts = [];
+      if (results.triggerIds.length) {
+        parts.push(
+          `${results.triggerIds.length} mandatory trigger${results.triggerIds.length === 1 ? "" : "s"} selected.`,
+        );
+      }
+      if (results.tierFloored) {
+        parts.push(
+          `Risk tier raised to at least High (${results.floorReason}; residual was ${results.residualTierName}).`,
+        );
+      }
+      if (results.triggerIds.length) {
+        parts.push(
+          "Notify the AI Governance Lead and AI Assurance Board without delay.",
+        );
+      }
+      byId("escalationText").textContent = parts.join(" ");
     } else {
       escalationBanner.classList.remove("visible");
       byId("escalationText").textContent = "";
@@ -2513,7 +2534,7 @@ footer p {
     byId("summaryPriority").textContent = results.priority.label;
     byId("summaryTier").textContent =
       `${results.effectiveTierName}` +
-      (results.tierFloored ? " (raised by trigger)" : "") +
+      (results.tierFloored ? ` (raised: ${results.floorReason})` : "") +
       ` · inherent ${results.inherentTierName} · residual ${formatNumber(results.risk.residual)}`;
     byId("summaryIntensity").textContent = results.assuranceIntensity;
     byId("summaryNextGate").textContent = route[0].requirement;
@@ -2632,7 +2653,8 @@ footer p {
       `Inherent risk: ${results.risk.inherent}`,
       `Control effectiveness: ${results.risk.control}`,
       `Residual risk: ${formatNumber(results.risk.residual)}`,
-      `Risk tier: ${results.risk.tier.name}`,
+      `Risk tier: ${results.effectiveTierName}${results.tierFloored ? ` (raised to at least High — ${results.floorReason})` : ""}`,
+      `Inherent risk tier: ${results.inherentTierName}`,
       `Assurance intensity: ${results.assuranceIntensity}`,
       "Mandatory triggers:",
       ...(results.triggerIds.length
