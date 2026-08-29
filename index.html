@@ -1299,6 +1299,10 @@ footer p {
               <span>Escalation</span>
               <strong id="summaryEscalation"></strong>
             </div>
+            <div>
+              <span>Governance status</span>
+              <strong id="summaryGovernanceStatus"></strong>
+            </div>
           </div>
 
           <h3>Required evidence package</h3>
@@ -1307,7 +1311,7 @@ footer p {
           <div class="table-wrap">
             <table class="route-table">
               <caption>
-                Planned governance route — forum names are configurable
+                Planned governance route — no gate is passed by this triage; forum names are configurable
               </caption>
               <thead>
                 <tr>
@@ -1335,10 +1339,13 @@ footer p {
             <div>
               <h3>Export the result</h3>
               <p>
-                Each button downloads the result in a different form: the Register row,
-                the gate plan, the artefact handoff, or a full summary. The Register CSV
-                lists the 32 register columns in order, with Residual Risk and Risk Tier
-                left blank for the workbook to calculate.
+                Each button downloads the triage result in a different form: the Register row,
+                the planned gate route, the artefact handoff, or a full summary. These exports
+                document triage and planned governance routing; they do not record that a gate
+                has passed or that the system is governance-approved. Formal decisions, conditions
+                and evidence must be recorded at the relevant gate. The Register CSV lists the
+                32 register columns in order, with Residual Risk and Risk Tier left blank for the
+                workbook to calculate.
               </p>
               <p class="validation-message" id="validationMessage" role="alert"></p>
             </div>
@@ -1658,9 +1665,11 @@ footer p {
     const specialData =
       profile.dataType === "Special category data" ||
       triggerSet.has("specialData");
+    // The effective governance tier is the authoritative tier for downstream
+    // routing. Residual risk remains visible as the calculated post-control score.
     const highImpact =
-      results.risk.tier.name === "High" ||
-      results.risk.tier.name === "Critical" ||
+      results.effectiveTierName === "High" ||
+      results.effectiveTierName === "Critical" ||
       results.risk.impact >= 4;
     const affectsPeople = profile.affectsIndividuals === "Yes";
 
@@ -1675,7 +1684,7 @@ footer p {
 
     const eia = highImpact || affectsPeople ? "Yes" : "";
     const humanRights =
-      results.risk.tier.name === "Critical" ||
+      results.effectiveTierName === "Critical" ||
       triggerSet.has("vulnerable") ||
       triggerSet.has("housingCare") ||
       triggerSet.has("statutory");
@@ -1722,8 +1731,8 @@ footer p {
     }
     if (requirements.atrs === "Yes") evidence.push("ATRS Record");
     if (
-      results.risk.tier.name === "High" ||
-      results.risk.tier.name === "Critical" ||
+      results.effectiveTierName === "High" ||
+      results.effectiveTierName === "Critical" ||
       results.triggerIds.length
     ) {
       evidence.push("Independent or enhanced assurance evidence");
@@ -2344,12 +2353,11 @@ footer p {
       byId("likelihood").value,
       byId("control").value,
     );
-    // --- Risk-tier safeguards (QA fix) ------------------------------------
-    // Residual math is unchanged. Added: (a) the inherent tier, so a strong
-    // control rating cannot hide a severe inherent score; and (b) a floor to
-    // at least High when a mandatory escalation trigger is selected OR the
-    // data type is special category, so a serious system cannot sit below
-    // High. The effective tier is what users see and what assurance uses.
+    // --- Governance-tier safeguards (QA priorities 1–3) --------------------
+    // Residual math is unchanged. The governance tier is now explicit:
+    // effective tier = highest of inherent tier, residual tier, and any
+    // mandatory governance floor. This prevents strong controls from making
+    // a severe inherent risk appear Low/Medium for governance routing.
     const TIER_ORDER = ["Low", "Medium", "High", "Critical"];
     const tierNameForScore = (s) =>
       s <= 5 ? "Low" : s <= 10 ? "Medium" : s <= 15 ? "High" : "Critical";
@@ -2357,18 +2365,28 @@ footer p {
     const inherentTierName = tierNameForScore(risk.inherent);
     const specialCategoryData =
       profile.dataType === "Special category data";
-    const floorApplies = triggerIds.length > 0 || specialCategoryData;
-    const effectiveTierName =
-      floorApplies &&
-      TIER_ORDER.indexOf(residualTierName) < TIER_ORDER.indexOf("High")
-        ? "High"
-        : residualTierName;
+    const mandatoryFloorApplies = triggerIds.length > 0 || specialCategoryData;
+    const mandatoryFloorTier = mandatoryFloorApplies ? "High" : "Low";
+    const effectiveTierName = [
+      inherentTierName,
+      residualTierName,
+      mandatoryFloorTier,
+    ].sort((a, b) => TIER_ORDER.indexOf(b) - TIER_ORDER.indexOf(a))[0];
+    const inherentFloorApplied =
+      TIER_ORDER.indexOf(inherentTierName) > TIER_ORDER.indexOf(residualTierName);
+    const mandatoryFloorApplied =
+      mandatoryFloorApplies &&
+      TIER_ORDER.indexOf(effectiveTierName) === TIER_ORDER.indexOf("High") &&
+      TIER_ORDER.indexOf(residualTierName) < TIER_ORDER.indexOf("High");
     const tierFloored = effectiveTierName !== residualTierName;
-    const floorReason = tierFloored
-      ? triggerIds.length
-        ? "mandatory trigger"
-        : "special category data"
-      : "";
+    const floorReasons = [];
+    if (inherentFloorApplied) floorReasons.push("inherent risk tier");
+    if (mandatoryFloorApplied) {
+      floorReasons.push(
+        triggerIds.length ? "mandatory trigger" : "special category data",
+      );
+    }
+    const floorReason = floorReasons.join(" + ");
     // ---------------------------------------------------------------------
     const assuranceIntensity = logic.assuranceIntensity(
       agpiScore,
@@ -2386,6 +2404,7 @@ footer p {
       effectiveTierName,
       tierFloored,
       floorReason,
+      governanceStatus: "Triage complete — formal governance approvals pending",
     };
     return {
       profile,
@@ -2507,7 +2526,10 @@ footer p {
       `stat tier-${results.effectiveTierName.toLowerCase()}`;
 
     const escalationBanner = byId("escalationBanner");
-    if (results.triggerIds.length || results.tierFloored) {
+    const tierIsHighOrCritical =
+      results.effectiveTierName === "High" ||
+      results.effectiveTierName === "Critical";
+    if (results.triggerIds.length || tierIsHighOrCritical) {
       escalationBanner.classList.add("visible");
       const parts = [];
       if (results.triggerIds.length) {
@@ -2515,11 +2537,12 @@ footer p {
           `${results.triggerIds.length} mandatory trigger${results.triggerIds.length === 1 ? "" : "s"} selected.`,
         );
       }
-      if (results.tierFloored) {
-        parts.push(
-          `Risk tier raised to at least High (${results.floorReason}; residual was ${results.residualTierName}).`,
-        );
-      }
+      parts.push(
+        `Effective governance tier: ${results.effectiveTierName}` +
+          (results.tierFloored
+            ? ` (raised by ${results.floorReason}; residual was ${results.residualTierName}).`
+            : "."),
+      );
       if (results.triggerIds.length) {
         parts.push(
           "Notify the AI Governance Lead and AI Assurance Board without delay.",
@@ -2534,8 +2557,8 @@ footer p {
     byId("summaryPriority").textContent = results.priority.label;
     byId("summaryTier").textContent =
       `${results.effectiveTierName}` +
-      (results.tierFloored ? ` (raised: ${results.floorReason})` : "") +
-      ` · inherent ${results.inherentTierName} · residual ${formatNumber(results.risk.residual)}`;
+      (results.tierFloored ? ` (governance floor: ${results.floorReason})` : "") +
+      ` · inherent ${results.inherentTierName} · residual ${formatNumber(results.risk.residual)} (${results.residualTierName})`;
     byId("summaryIntensity").textContent = results.assuranceIntensity;
     byId("summaryNextGate").textContent = route[0].requirement;
     byId("summaryCommercial").textContent = logic.commercialRequired(profile)
@@ -2544,6 +2567,7 @@ footer p {
     byId("summaryEscalation").textContent = results.triggerIds.length
       ? `${results.triggerIds.length} mandatory trigger${results.triggerIds.length === 1 ? "" : "s"}`
       : "No mandatory trigger selected";
+    byId("summaryGovernanceStatus").textContent = results.governanceStatus;
 
     renderEvidence(evidence);
     renderRoute(route);
@@ -2653,9 +2677,11 @@ footer p {
       `Inherent risk: ${results.risk.inherent}`,
       `Control effectiveness: ${results.risk.control}`,
       `Residual risk: ${formatNumber(results.risk.residual)}`,
-      `Risk tier: ${results.effectiveTierName}${results.tierFloored ? ` (raised to at least High — ${results.floorReason})` : ""}`,
+      `Effective governance tier: ${results.effectiveTierName}${results.tierFloored ? ` (governance floor: ${results.floorReason})` : ""}`,
       `Inherent risk tier: ${results.inherentTierName}`,
+      `Residual risk tier: ${results.residualTierName}`,
       `Assurance intensity: ${results.assuranceIntensity}`,
+      `Governance status: ${results.governanceStatus}`,
       "Mandatory triggers:",
       ...(results.triggerIds.length
         ? triggerLabels(results.triggerIds).map((label) => `- ${label}`)
