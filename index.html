@@ -1013,14 +1013,14 @@ footer p {
     <main id="main">
       <section class="intro-panel" aria-labelledby="intro-title">
         <div>
-          <p class="eyebrow">How this version is different</p>
+          <p class="eyebrow">How it works</p>
           <h2 id="intro-title">Governance travels with the system</h2>
           <p>
-            The original AGPI and risk calculations are retained. This version adds
-            a governance relay across the existing forums, configurable forum names,
-            a decision-ready evidence plan, an Excel-ready Register row and a separate
-            planned-gate export — the end-to-end visibility that an integrated
-            governance pathway needs.
+            The AGPI and risk engines classify a system once. A governance relay
+            then carries that classification across the existing forums, with
+            configurable forum names, a decision-ready evidence plan, an Excel-ready
+            Register row and a separate planned-gate export — the end-to-end
+            visibility that an integrated governance pathway needs.
           </p>
         </div>
         <div class="principle">
@@ -1331,7 +1331,7 @@ footer p {
           <div class="handoff-panel">
             <h3>Artefact handoff</h3>
             <p>
-              Fields the streamlined register no longer holds are routed to the
+              Fields the Register row does not hold are routed to the
               artefact whose form owns them. Record each value in the artefact shown.
               The triage pre-fills what it knows; approval is left to the gate.
             </p>
@@ -1989,7 +1989,7 @@ footer p {
     return toCsv(headers, rows);
   }
 
-  // Fields the streamlined 32-column register no longer holds are routed to the
+  // Fields the 32-column Register row does not hold are routed to the
   // artefact whose form owns them. Returns, per triaged system, what to record
   // and where. The triage pre-fills what it knows; approval is left to the gate.
   function buildArtefactHandoff(profile, results) {
