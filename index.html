@@ -974,6 +974,28 @@ footer p {
     .handoff-item dt { font-weight: 600; color: #333; }
     .handoff-item dd { margin: 0; color: #333; }
     .handoff-note { margin: 0.4rem 0 0; font-size: 0.85rem; color: #5B6470; font-style: italic; }
+    /* ---- Mode switch + retirement gate ---- */
+    .mode-switch { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1.5rem 0 0.25rem; }
+    .mode-btn { flex: 1 1 260px; padding: 0.85rem 1.1rem; font-size: 1rem; font-weight: 700; color: var(--navy); background: #fff; border: 2px solid var(--navy); border-radius: 8px; cursor: pointer; }
+    .mode-btn.is-active { color: #fff; background: var(--navy); box-shadow: inset 0 -4px 0 var(--gold); }
+    .mode-btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+    #retireMode[hidden] { display: none; }
+    .retire-scale-note { background: var(--gold-soft); border-left: 5px solid var(--gold); padding: 0.85rem 1rem; border-radius: 0 6px 6px 0; margin: 1.1rem 0; color: var(--navy-2); }
+    .retire-group { margin: 1.6rem 0; }
+    .retire-group > h3 { color: var(--navy); border-bottom: 2px solid var(--gold); padding-bottom: 0.3rem; margin-bottom: 0.9rem; }
+    .retire-readiness { border: 2px solid var(--navy); border-radius: 8px; padding: 1rem 1.15rem; margin: 1.6rem 0; }
+    .retire-readiness h3 { margin-top: 0; color: var(--navy); }
+    .retire-readiness.is-complete { border-color: #1c6b3a; background: #eef7f0; }
+    .retire-readiness.is-pending { border-color: var(--gold); background: var(--gold-soft); }
+    .retire-readiness ul { margin: 0.5rem 0 0; padding-left: 1.2rem; }
+    .retire-readiness li { margin: 0.25rem 0; }
+    .retire-status-badge { display: inline-block; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.85rem; }
+    .retire-status-badge.is-complete { color: #fff; background: #1c6b3a; }
+    .retire-status-badge.is-pending { color: var(--navy); background: var(--gold); }
+    .retire-output { margin: 1.6rem 0; }
+    .retire-output h3 { color: var(--navy); }
+    .retire-output pre { white-space: pre-wrap; word-break: break-word; background: #f6f7f9; border: 1px solid #d9dde3; border-radius: 8px; padding: 1rem; font-size: 0.82rem; line-height: 1.5; overflow-x: auto; }
+    @media print { .mode-switch { display: none !important; } #retireMode .export-panel { display: none !important; } }
   </style>
   </head>
   <body>
@@ -1033,6 +1055,11 @@ footer p {
           </span>
         </div>
       </section>
+
+      <div class="mode-switch" role="group" aria-label="Tool mode">
+        <button type="button" id="modeTriage" class="mode-btn is-active" aria-pressed="true">Triage a system</button>
+        <button type="button" id="modeRetire" class="mode-btn" aria-pressed="false">Retire / decommission a system</button>
+      </div>
 
       <nav class="step-nav" aria-label="Calculator steps">
         <a href="#profile">1. System profile</a>
@@ -1374,6 +1401,93 @@ footer p {
           </div>
         </section>
       </form>
+
+      <section id="retireMode" hidden aria-labelledby="retire-title">
+        <div class="step">
+          <p class="eyebrow">Lifecycle end</p>
+          <h2 id="retire-title">Retire or decommission an AI system</h2>
+          <p class="lede">
+            Retirement is a governance gate in its own right, not a triage. This
+            mode does not score AGPI or plan a deployment route. It runs the
+            decommission gate, scaled to the system's current governance priority,
+            and produces a Gate Log event (WCC-AIG-36) and a Decision Record stub
+            (WCC-AIG-16) keyed to the existing Register ID.
+          </p>
+
+          <div class="form-grid">
+            <label class="field">
+              <span>AI Register ID</span>
+              <input id="ret-registerId" autocomplete="off" placeholder="AIR-XXXX">
+            </label>
+            <label class="field">
+              <span>System or model name <b aria-hidden="true">*</b></span>
+              <input id="ret-systemName" autocomplete="off">
+            </label>
+            <label class="field">
+              <span>Service area</span>
+              <input id="ret-serviceArea" autocomplete="off">
+            </label>
+            <label class="field">
+              <span>Service owner</span>
+              <input id="ret-serviceOwner" autocomplete="off">
+            </label>
+            <label class="field">
+              <span>Current governance priority <small>from the Register</small></span>
+              <select id="ret-priority"></select>
+            </label>
+            <label class="field">
+              <span>Current risk tier <small>from the Register</small></span>
+              <select id="ret-tier">
+                <option>Low</option>
+                <option>Medium</option>
+                <option>High</option>
+                <option>Critical</option>
+              </select>
+            </label>
+          </div>
+
+          <p class="retire-scale-note" id="retireScaleNote"></p>
+
+          <div id="retireFields"></div>
+
+          <div class="retire-readiness" id="retireReadiness" role="status" aria-live="polite"></div>
+
+          <div class="retire-output">
+            <h3>Gate Log event (WCC-AIG-36)</h3>
+            <p class="lede">
+              Append this event to the Gate Log, keyed to the Register ID. The
+              Register Status becomes Decommissioned only when the gate is complete;
+              until then it reads "Retirement: pending gate".
+            </p>
+            <pre id="retireGateLog"></pre>
+          </div>
+
+          <div class="retire-output">
+            <h3>Decision Record stub (WCC-AIG-16)</h3>
+            <pre id="retireDecision"></pre>
+          </div>
+
+          <div class="export-panel">
+            <div>
+              <h3>Export the retirement record</h3>
+              <p>
+                The Gate Log event downloads as a single-row CSV for the append-only
+                Gate Log. The Decision Record downloads as text. Neither records that
+                a gate has passed; the forum's decision and conditions are recorded at
+                the gate.
+              </p>
+              <p class="validation-message" id="retireValidation" role="alert"></p>
+            </div>
+            <div class="button-row">
+              <button type="button" id="retireDownloadGateLog">Download Gate Log event</button>
+              <button type="button" id="retireDownloadDecision" class="secondary">Download Decision Record</button>
+              <button type="button" id="retireCopy" class="ghost">Copy both</button>
+              <button type="button" id="retirePrint" class="ghost">Print</button>
+              <span id="retireCopyStatus" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
 
     <footer>
@@ -2120,6 +2234,268 @@ footer p {
     return toCsv(headers, rows);
   }
 
+  // ---- Retirement / decommission gate ---------------------------------
+  // Retirement is a post-deployment gate EVENT, not a triage. It does not use
+  // AGPI or the forward deployment route. The question set is scaled by the
+  // system's CURRENT governance priority (read from the Register), so a routine
+  // tool is a short formality and a critical resident-facing system gets the
+  // full decommission gate. showAtOrAbove is the least-critical priority NUMBER
+  // at which a field first appears: a field shows when priorityLevel <= it.
+  const RETIREMENT_PRIORITIES = [
+    { level: 1, label: "Priority 1 - Critical" },
+    { level: 2, label: "Priority 2 - High" },
+    { level: 3, label: "Priority 3 - Standard" },
+    { level: 4, label: "Priority 4 - Routine" },
+    { level: 5, label: "Priority 5 - Observe" },
+  ];
+
+  const RETIREMENT_REASONS = [
+    "Replaced by a successor system",
+    "No longer needed",
+    "No longer fit for purpose",
+    "Retired on risk or harm grounds",
+    "Supplier withdrawal or end of support",
+    "End of contract",
+    "Other (state in rationale)",
+  ];
+
+  const RETIREMENT_FIELDS = [
+    { id: "reason", group: "Decision", showAtOrAbove: 5, type: "select", label: "Reason for retirement", options: RETIREMENT_REASONS },
+    { id: "rationale", group: "Decision", showAtOrAbove: 5, type: "textarea", label: "Rationale (why retire, options considered)" },
+    { id: "hasSuccessor", group: "Decision", showAtOrAbove: 5, type: "select", label: "Replacement or successor system?", options: ["No", "Yes"] },
+    { id: "successorId", group: "Decision", showAtOrAbove: 5, type: "text", label: "Successor Register ID (if any)", placeholder: "AIR-XXXX" },
+    { id: "decommissionDate", group: "Decision", showAtOrAbove: 5, type: "date", label: "Planned decommission date" },
+
+    { id: "dataDisposition", group: "Data and access", showAtOrAbove: 5, type: "select", label: "Data and logs disposition", options: ["Retain in place", "Archive", "Dispose / delete", "Return to supplier or data subject"] },
+    { id: "dataBasis", group: "Data and access", showAtOrAbove: 5, type: "text", label: "Retention or disposal basis", placeholder: "Statute, policy or contract reference" },
+    { id: "accessTeardown", group: "Data and access", showAtOrAbove: 5, type: "select", label: "Accounts, API keys and agentic action scopes revoked?", options: ["Not yet", "Scheduled", "Confirmed revoked"] },
+
+    { id: "dependencies", group: "Continuity", showAtOrAbove: 3, type: "textarea", label: "Downstream dependencies (what consumes its outputs)" },
+    { id: "fallback", group: "Continuity", showAtOrAbove: 3, type: "select", label: "Fallback or transition arrangement before switch-off?", options: ["Not needed", "Planned", "Confirmed in place"] },
+    { id: "affectedStaff", group: "Continuity", showAtOrAbove: 3, type: "textarea", label: "Affected staff: process change or retraining" },
+
+    { id: "atrsAction", group: "Records and accountability", showAtOrAbove: 2, type: "select", label: "ATRS record action", options: ["No ATRS record exists", "Withdraw", "Update / mark retired"] },
+    { id: "residualOwner", group: "Records and accountability", showAtOrAbove: 2, type: "text", label: "Residual accountability owner (complaints, appeals, subject access, audit)" },
+    { id: "residualDuration", group: "Records and accountability", showAtOrAbove: 2, type: "text", label: "For how long is that owner accountable?", placeholder: "e.g. 6 years" },
+    { id: "recordsRetention", group: "Records and accountability", showAtOrAbove: 2, type: "text", label: "Records retention period for outputs it produced", placeholder: "Statutory / FOI / audit retention" },
+    { id: "supplierExit", group: "Records and accountability", showAtOrAbove: 2, type: "select", label: "Supplier exit (contract closure, data return or destruction)", options: ["Not applicable", "In progress", "Completed"] },
+    { id: "residentNotify", group: "Records and accountability", showAtOrAbove: 2, type: "select", label: "Resident or service-user notification required?", options: ["Not required", "Required: planned", "Required: completed"] },
+    { id: "riskOfRetiring", group: "Records and accountability", showAtOrAbove: 2, type: "textarea", label: "Risk of retiring (gap, fallback)" },
+    { id: "riskOfNotRetiring", group: "Records and accountability", showAtOrAbove: 2, type: "textarea", label: "Risk of not retiring" },
+
+    { id: "boardDecision", group: "Critical assurance", showAtOrAbove: 1, type: "select", label: "Decommission decided at assurance or board forum (not delegated)?", options: ["No", "Yes"] },
+    { id: "conditionsClosed", group: "Critical assurance", showAtOrAbove: 1, type: "select", label: "All open conditions and incidents closed or formally transferred?", options: ["No", "Yes"] },
+    { id: "postReview", group: "Critical assurance", showAtOrAbove: 1, type: "select", label: "Post-retirement / lessons-learned review scheduled?", options: ["No", "Yes: date recorded"] },
+    { id: "notifyLive", group: "Critical assurance", showAtOrAbove: 1, type: "select", label: "Resident notification and appeal handling live before switch-off?", options: ["No", "Yes"] },
+
+    { id: "eventId", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Event ID (next in the Gate Log)", placeholder: "GATE-XXXX" },
+    { id: "forum", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Gate / forum" },
+    { id: "decision", group: "Gate event record", showAtOrAbove: 5, type: "select", label: "Gate decision (Stop = decommission; Progress with condition = approve with conditions)", options: ["Pending: not yet decided", "Progress", "Progress with condition", "Return for evidence", "Pause", "Stop", "Noted", "Priority override", "Escalation raised"] },
+    { id: "eventDate", group: "Gate event record", showAtOrAbove: 5, type: "date", label: "Date of decision (leave blank until decided)" },
+    { id: "decisionMaker", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Decision-maker and role" },
+    { id: "conditionDue", group: "Gate event record", showAtOrAbove: 3, type: "date", label: "Condition due date (if any)" },
+    { id: "assuranceRef", group: "Gate event record", showAtOrAbove: 2, type: "text", label: "Assurance opinion reference" },
+    { id: "evidenceRefs", group: "Gate event record", showAtOrAbove: 3, type: "text", label: "Evidence references (recorded in Notes)", placeholder: "Disposal record, ATRS update log, notification plan" },
+    { id: "recordedBy", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Recorded by (recorded in Notes)" },
+  ];
+
+  const RETIREMENT_GROUP_ORDER = [
+    "Decision",
+    "Data and access",
+    "Continuity",
+    "Records and accountability",
+    "Critical assurance",
+    "Gate event record",
+  ];
+
+  // Matches WCC-AIG-36 exactly: columns A-N, one row per gate event.
+  const RETIREMENT_GATELOG_HEADERS = [
+    "Event ID",
+    "Register ID",
+    "System / Model Name",
+    "Gate / forum",
+    "Lifecycle stage",
+    "Date",
+    "Decision",
+    "Conditions set",
+    "Condition due",
+    "Condition status",
+    "Assurance opinion ref",
+    "Decision-maker / role",
+    "Next gate",
+    "Notes",
+  ];
+
+  function retLevelFor(label) {
+    const found = RETIREMENT_PRIORITIES.find((p) => p.label === label);
+    return found ? found.level : 5;
+  }
+
+  function retirementFieldsFor(level) {
+    const n = Number(level) || 5;
+    return RETIREMENT_FIELDS.filter((f) => n <= f.showAtOrAbove);
+  }
+
+  function retFmtDate(value) {
+    if (!value) return "";
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    return m ? `${m[3]}/${m[2]}/${m[1]}` : value;
+  }
+
+  function retirementConditions(ret) {
+    const c = [];
+    if (ret.decommissionDate) c.push(`Decommission on ${retFmtDate(ret.decommissionDate)}.`);
+    if (ret.dataDisposition) {
+      c.push(
+        `Data and logs: ${ret.dataDisposition.toLowerCase()}` +
+          (ret.dataBasis ? ` (basis: ${ret.dataBasis}).` : "."),
+      );
+    }
+    if (ret.accessTeardown && ret.accessTeardown !== "Confirmed revoked") {
+      c.push("Confirm accounts, API keys and agentic action scopes are revoked at switch-off.");
+    }
+    if (ret.fallback === "Planned") c.push("Confirm the fallback or transition arrangement is in place before switch-off.");
+    if (ret.supplierExit === "In progress") c.push("Complete supplier contract closure and data return or destruction.");
+    if (ret.atrsAction === "Withdraw") c.push("Withdraw the ATRS record.");
+    if (ret.atrsAction === "Update / mark retired") c.push("Update the ATRS record to retired.");
+    if (ret.residentNotify === "Required: planned") c.push("Complete resident or service-user notification before switch-off.");
+    if (ret.residualOwner) {
+      c.push(
+        `Residual accountability (complaints, appeals, subject access, audit): ${ret.residualOwner}` +
+          (ret.residualDuration ? ` for ${ret.residualDuration}.` : "."),
+      );
+    }
+    if (ret.recordsRetention) c.push(`Retain records the system produced: ${ret.recordsRetention}.`);
+    if (ret.postReview === "Yes: date recorded") c.push("Hold the scheduled post-retirement / lessons-learned review.");
+    return c;
+  }
+
+  function retirementDecided(ret) {
+    return !!ret.decision && ret.decision !== "Pending: not yet decided";
+  }
+
+  function retirementReadiness(ret) {
+    const level = Number(ret.priorityLevel) || 5;
+    const decided = retirementDecided(ret);
+    const outstanding = [];
+    if (!ret.forum && !ret.decisionMaker) outstanding.push("Deciding forum or decision-maker not recorded.");
+    if (!decided) outstanding.push("Gate decision not yet recorded.");
+    if (decided && !ret.eventDate) outstanding.push("Date of decision not set.");
+    if (!ret.decommissionDate) outstanding.push("Planned decommission date not set.");
+    if (ret.accessTeardown !== "Confirmed revoked") outstanding.push("Access, keys and action scopes not yet confirmed revoked.");
+    if (ret.dataDisposition && !ret.dataBasis) outstanding.push("Data retention or disposal basis not stated.");
+    if (level <= 3 && ret.fallback === "Planned") outstanding.push("Fallback arrangement planned but not confirmed in place.");
+    if (level <= 2) {
+      if (!ret.residualOwner) outstanding.push("Residual accountability owner not named.");
+      if (ret.residentNotify === "Required: planned") outstanding.push("Required resident notification not yet completed.");
+      if (ret.supplierExit === "In progress") outstanding.push("Supplier exit (data return or destruction) not yet completed.");
+    }
+    if (level <= 1) {
+      if (ret.boardDecision !== "Yes") outstanding.push("Board or assurance decommission decision not confirmed.");
+      if (ret.conditionsClosed !== "Yes") outstanding.push("Open conditions or incidents not closed or transferred.");
+      if (ret.notifyLive !== "Yes") outstanding.push("Resident notification and appeal handling not confirmed live before switch-off.");
+    }
+    const complete = outstanding.length === 0;
+    return { complete, outstanding, status: complete ? "Decommissioned" : "Retirement: pending gate" };
+  }
+
+  function retirementNextGate(ret) {
+    if (ret.hasSuccessor === "Yes") {
+      const id = ret.successorId ? ret.successorId : "successor (ID not recorded)";
+      return `None for this system - lifecycle end. ${id} requires its own intake triage.`;
+    }
+    return "None - lifecycle end.";
+  }
+
+  function buildRetirementGateLogRow(ret) {
+    const readiness = retirementReadiness(ret);
+    const decided = retirementDecided(ret);
+    const conditions = retirementConditions(ret);
+    const conditionText = conditions.length
+      ? conditions.map((c, i) => `${i + 1}. ${c}`).join(" ")
+      : "";
+    const conditionStatus = conditions.length
+      ? (readiness.complete ? "Met" : "Open")
+      : "Not applicable";
+    // Date and Decision stay blank until the forum has actually decided, so the
+    // log never asserts a decision that has not happened.
+    const notes = [
+      ret.evidenceRefs ? `Evidence: ${ret.evidenceRefs}.` : "",
+      ret.recordedBy ? `Recorded by ${ret.recordedBy} on ${formatDate(new Date())}.` : "",
+      `Register Status on completion: ${readiness.status}.`,
+    ].filter(Boolean).join(" ");
+    const values = [
+      ret.eventId || "",
+      ret.registerId || "",
+      ret.systemName || "",
+      ret.forum || "",
+      "Retirement and Decommissioning",
+      decided ? retFmtDate(ret.eventDate) : "",
+      decided ? ret.decision : "",
+      conditionText,
+      retFmtDate(ret.conditionDue),
+      conditionStatus,
+      ret.assuranceRef || "",
+      ret.decisionMaker || "",
+      retirementNextGate(ret),
+      notes,
+    ];
+    return { headers: RETIREMENT_GATELOG_HEADERS.slice(), values, readiness };
+  }
+
+  function buildRetirementDecisionRecord(ret) {
+    const readiness = retirementReadiness(ret);
+    const line = (label, value) => `${(label + ":").padEnd(24)}${value}`;
+    const rows = [
+      "GOVERNANCE DECISION RECORD (WCC-AIG-16)",
+      "Retirement / decommission",
+      "=========================================",
+      line("System / AIR-ID", `${ret.systemName || "(not entered)"} / ${ret.registerId || "(no ID)"}`),
+    ];
+    if (ret.serviceArea) rows.push(line("Service area", ret.serviceArea));
+    rows.push(
+      line("Current priority", ret.priorityLabel || "(not set)"),
+      line("Current risk tier", ret.tier || "(not set)"),
+      line("Decision", "Retire and decommission"),
+      line("Reason", ret.reason || "(not stated)"),
+    );
+    if (ret.rationale) rows.push(line("Rationale", ret.rationale));
+    if (ret.riskOfRetiring) rows.push(line("Risk of retiring", ret.riskOfRetiring));
+    if (ret.riskOfNotRetiring) rows.push(line("Risk of not retiring", ret.riskOfNotRetiring));
+    rows.push(
+      line(
+        "Data and records",
+        `${ret.dataDisposition || "(not stated)"}` +
+          (ret.dataBasis ? ` (basis: ${ret.dataBasis})` : "") +
+          (ret.recordsRetention ? `; retain outputs: ${ret.recordsRetention}` : ""),
+      ),
+    );
+    if (ret.residualOwner) {
+      rows.push(
+        line(
+          "Legacy decisions",
+          `${ret.residualOwner}` + (ret.residualDuration ? ` for ${ret.residualDuration}` : ""),
+        ),
+      );
+    }
+    const decided = retirementDecided(ret);
+    rows.push(
+      line("Successor", ret.hasSuccessor === "Yes" ? (ret.successorId || "named, ID not recorded") : "None"),
+      line("Gate / forum", ret.forum || "(not recorded)"),
+      line("Decision-maker", ret.decisionMaker || "(not recorded)"),
+      line("Gate decision", decided ? ret.decision : "Pending: not yet decided"),
+      line("Date of decision", decided ? (retFmtDate(ret.eventDate) || "(not set)") : "(pending)"),
+      line("Planned decommission", retFmtDate(ret.decommissionDate) || "(not set)"),
+      line("Conditions", `See Gate Log event ${ret.eventId || "for " + (ret.registerId || "this system")}`),
+    );
+    if (ret.postReview) rows.push(line("Post-retirement review", ret.postReview));
+    rows.push(
+      line("Register Status", readiness.status),
+      line("Recorded by", `${ret.recordedBy || "(not recorded)"} on ${formatDate(new Date())}`),
+    );
+    return `${rows.join("\n")}\n`;
+  }
+
   return {
     DIMENSIONS,
     SCALE_LABELS,
@@ -2145,6 +2521,17 @@ footer p {
     triggerTextFor,
     toCsv,
     formatDate,
+    RETIREMENT_PRIORITIES,
+    RETIREMENT_FIELDS,
+    RETIREMENT_GROUP_ORDER,
+    RETIREMENT_GATELOG_HEADERS,
+    retLevelFor,
+    retirementFieldsFor,
+    retirementConditions,
+    retirementReadiness,
+    retirementNextGate,
+    buildRetirementGateLogRow,
+    buildRetirementDecisionRecord,
   };
 });
     </script>
@@ -2810,6 +3197,266 @@ footer p {
   byId("downloadSummary").addEventListener("click", summaryExport);
   byId("copySummary").addEventListener("click", copySummary);
   byId("printResult").addEventListener("click", () => window.print());
+})();
+    </script>
+    <script id="retire-app">
+(function () {
+  "use strict";
+  const logic = window.TriageLogic;
+  const byId = (id) => document.getElementById(id);
+  if (!logic || !byId("retireMode")) return;
+
+  const retState = {};
+  const identityIds = ["registerId", "systemName", "serviceArea", "serviceOwner"];
+
+  function buildPriorityOptions() {
+    const sel = byId("ret-priority");
+    sel.replaceChildren();
+    logic.RETIREMENT_PRIORITIES.forEach((p) => {
+      const o = document.createElement("option");
+      o.value = p.label;
+      o.textContent = p.label;
+      sel.appendChild(o);
+    });
+    sel.value = "Priority 2 - High";
+  }
+
+  function currentLevel() {
+    return logic.retLevelFor(byId("ret-priority").value);
+  }
+
+  function makeInput(field) {
+    let el;
+    if (field.type === "select") {
+      el = document.createElement("select");
+      field.options.forEach((opt) => {
+        const o = document.createElement("option");
+        o.value = opt;
+        o.textContent = opt;
+        el.appendChild(o);
+      });
+    } else if (field.type === "textarea") {
+      el = document.createElement("textarea");
+      el.rows = 2;
+    } else {
+      el = document.createElement("input");
+      el.type = field.type === "date" ? "date" : "text";
+      el.autocomplete = "off";
+      if (field.placeholder) el.placeholder = field.placeholder;
+    }
+    el.id = "ret-f-" + field.id;
+    el.dataset.ret = field.id;
+    if (Object.prototype.hasOwnProperty.call(retState, field.id)) {
+      el.value = retState[field.id];
+    } else if (field.type === "select") {
+      retState[field.id] = el.value; // record default so outputs are consistent
+    }
+    return el;
+  }
+
+  function renderFields() {
+    const host = byId("retireFields");
+    host.replaceChildren();
+    const level = currentLevel();
+    const fields = logic.retirementFieldsFor(level);
+    logic.RETIREMENT_GROUP_ORDER.forEach((group) => {
+      const inGroup = fields.filter((f) => f.group === group);
+      if (!inGroup.length) return;
+      const wrap = document.createElement("div");
+      wrap.className = "retire-group";
+      const h = document.createElement("h3");
+      h.textContent = group;
+      wrap.appendChild(h);
+      const grid = document.createElement("div");
+      grid.className = "form-grid";
+      inGroup.forEach((field) => {
+        const label = document.createElement("label");
+        label.className = "field" + (field.type === "textarea" ? " span-2" : "");
+        const span = document.createElement("span");
+        span.textContent = field.label;
+        label.appendChild(span);
+        label.appendChild(makeInput(field));
+        grid.appendChild(label);
+      });
+      wrap.appendChild(grid);
+      host.appendChild(wrap);
+    });
+  }
+
+  function collect() {
+    const level = currentLevel();
+    const ret = {
+      priorityLabel: byId("ret-priority").value,
+      priorityLevel: level,
+      tier: byId("ret-tier").value,
+    };
+    identityIds.forEach((id) => {
+      ret[id] = byId("ret-" + id).value.trim();
+    });
+    // Only emit fields in scope for the current priority. Higher-priority
+    // answers stay in retState (so they return if the priority is raised
+    // again) but must not leak into the record of a system classified lower.
+    logic.RETIREMENT_FIELDS.forEach((f) => {
+      ret[f.id] = level <= f.showAtOrAbove ? retState[f.id] || "" : "";
+    });
+    return ret;
+  }
+
+  function renderScaleNote() {
+    const level = currentLevel();
+    const label = byId("ret-priority").value;
+    const n = logic.retirementFieldsFor(level).length;
+    let extra = "the base decommission set";
+    if (level <= 1) extra = "the full decommission gate, including board-level assurance";
+    else if (level <= 2) extra = "records, accountability and notification checks on top of the base set";
+    else if (level <= 3) extra = "continuity and dependency checks on top of the base set";
+    byId("retireScaleNote").textContent =
+      `${label}: the gate asks ${extra} (${n} fields). Set the priority to the system's current Register value so the depth matches its governance weight.`;
+  }
+
+  function renderOutputs() {
+    const ret = collect();
+    const gate = logic.buildRetirementGateLogRow(ret);
+    const readiness = gate.readiness;
+
+    const panel = byId("retireReadiness");
+    panel.className = "retire-readiness " + (readiness.complete ? "is-complete" : "is-pending");
+    panel.replaceChildren();
+    const h = document.createElement("h3");
+    h.textContent = "Gate readiness ";
+    const badge = document.createElement("span");
+    badge.className = "retire-status-badge " + (readiness.complete ? "is-complete" : "is-pending");
+    badge.textContent = readiness.status;
+    h.appendChild(badge);
+    panel.appendChild(h);
+    if (readiness.complete) {
+      const p = document.createElement("p");
+      p.textContent = "All gate conditions for this priority are recorded. Register Status can move to Decommissioned once the forum decision is logged.";
+      p.style.margin = "0.4rem 0 0";
+      panel.appendChild(p);
+    } else {
+      const p = document.createElement("p");
+      p.textContent = "Outstanding before switch-off:";
+      p.style.margin = "0.4rem 0 0";
+      panel.appendChild(p);
+      const ul = document.createElement("ul");
+      readiness.outstanding.forEach((item) => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        ul.appendChild(li);
+      });
+      panel.appendChild(ul);
+    }
+
+    byId("retireGateLog").textContent = gate.headers
+      .map((head, i) => `${head}: ${gate.values[i]}`)
+      .join("\n");
+    byId("retireDecision").textContent = logic.buildRetirementDecisionRecord(ret);
+  }
+
+  function refreshAll() {
+    renderFields();
+    renderScaleNote();
+    renderOutputs();
+  }
+
+  // ---- mode switching ----
+  const stepNav = document.querySelector(".step-nav");
+  const triageForm = byId("triageForm");
+  function setMode(mode) {
+    const retiring = mode === "retire";
+    byId("retireMode").hidden = !retiring;
+    if (stepNav) stepNav.hidden = retiring;
+    if (triageForm) triageForm.hidden = retiring;
+    byId("modeRetire").classList.toggle("is-active", retiring);
+    byId("modeRetire").setAttribute("aria-pressed", String(retiring));
+    byId("modeTriage").classList.toggle("is-active", !retiring);
+    byId("modeTriage").setAttribute("aria-pressed", String(!retiring));
+    if (retiring) refreshAll();
+  }
+  byId("modeTriage").addEventListener("click", () => setMode("triage"));
+  byId("modeRetire").addEventListener("click", () => setMode("retire"));
+
+  // ---- listeners ----
+  byId("retireFields").addEventListener("input", (e) => {
+    const key = e.target && e.target.dataset ? e.target.dataset.ret : null;
+    if (key) {
+      retState[key] = e.target.value;
+      renderOutputs();
+    }
+  });
+  byId("retireFields").addEventListener("change", (e) => {
+    const key = e.target && e.target.dataset ? e.target.dataset.ret : null;
+    if (key) {
+      retState[key] = e.target.value;
+      renderOutputs();
+    }
+  });
+  ["ret-registerId", "ret-systemName", "ret-serviceArea", "ret-serviceOwner", "ret-tier"].forEach((id) => {
+    byId(id).addEventListener("input", renderOutputs);
+    byId(id).addEventListener("change", renderOutputs);
+  });
+  byId("ret-priority").addEventListener("change", refreshAll);
+
+  // ---- exports ----
+  function validate() {
+    const name = byId("ret-systemName");
+    if (!name.value.trim()) {
+      byId("retireValidation").textContent = "Add the system or model name before exporting.";
+      name.reportValidity();
+      name.focus();
+      return false;
+    }
+    byId("retireValidation").textContent = "";
+    return true;
+  }
+  function slug(v) {
+    const s = String(v || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    return s || "ai-system";
+  }
+  function download(filename, contents, type) {
+    const blob = new Blob([contents], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
+  byId("retireDownloadGateLog").addEventListener("click", () => {
+    if (!validate()) return;
+    const gate = logic.buildRetirementGateLogRow(collect());
+    download(slug(byId("ret-systemName").value) + "-retirement-gate-event.csv",
+      logic.toCsv(gate.headers, [gate.values]), "text/csv;charset=utf-8");
+  });
+  byId("retireDownloadDecision").addEventListener("click", () => {
+    if (!validate()) return;
+    download(slug(byId("ret-systemName").value) + "-retirement-decision-record.txt",
+      logic.buildRetirementDecisionRecord(collect()), "text/plain;charset=utf-8");
+  });
+  byId("retireCopy").addEventListener("click", async () => {
+    if (!validate()) return;
+    const ret = collect();
+    const gate = logic.buildRetirementGateLogRow(ret);
+    const text =
+      "GATE LOG EVENT (WCC-AIG-36)\n" +
+      gate.headers.map((h, i) => `${h}: ${gate.values[i]}`).join("\n") +
+      "\n\n" + logic.buildRetirementDecisionRecord(ret);
+    const status = byId("retireCopyStatus");
+    try {
+      await navigator.clipboard.writeText(text);
+      status.textContent = "Copied to the clipboard.";
+    } catch (_e) {
+      status.textContent = "The browser blocked clipboard access. Use the download buttons instead.";
+    }
+  });
+  byId("retirePrint").addEventListener("click", () => window.print());
+
+  // ---- init ----
+  buildPriorityOptions();
+  refreshAll();
 })();
     </script>
   </body>
