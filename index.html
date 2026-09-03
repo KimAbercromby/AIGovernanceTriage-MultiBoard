@@ -2262,6 +2262,7 @@ footer p {
   const RETIREMENT_FIELDS = [
     { id: "reason", group: "Decision", showAtOrAbove: 5, type: "select", label: "Reason for retirement", options: RETIREMENT_REASONS },
     { id: "rationale", group: "Decision", showAtOrAbove: 5, type: "textarea", label: "Rationale (why retire, options considered)" },
+    { id: "monitoringRef", group: "Decision", showAtOrAbove: 5, type: "text", label: "Prompted by a monitoring finding? Ref in the Post-Deployment Monitoring Log (WCC-AIG-39), if any", placeholder: "39 row / review ref" },
     { id: "hasSuccessor", group: "Decision", showAtOrAbove: 5, type: "select", label: "Replacement or successor system?", options: ["No", "Yes"] },
     { id: "successorId", group: "Decision", showAtOrAbove: 5, type: "text", label: "Successor Register ID (if any)", placeholder: "AIR-XXXX" },
     { id: "decommissionDate", group: "Decision", showAtOrAbove: 5, type: "date", label: "Planned decommission date" },
@@ -2273,6 +2274,7 @@ footer p {
     { id: "dependencies", group: "Continuity", showAtOrAbove: 3, type: "textarea", label: "Downstream dependencies (what consumes its outputs)" },
     { id: "fallback", group: "Continuity", showAtOrAbove: 3, type: "select", label: "Fallback or transition arrangement before switch-off?", options: ["Not needed", "Planned", "Confirmed in place"] },
     { id: "affectedStaff", group: "Continuity", showAtOrAbove: 3, type: "textarea", label: "Affected staff: process change or retraining" },
+    { id: "monitoringClosure", group: "Continuity", showAtOrAbove: 3, type: "select", label: "Post-Deployment Monitoring Log (WCC-AIG-39) closure", options: ["Not applicable - no active monitoring", "To be closed", "Closed"] },
 
     { id: "atrsAction", group: "Records and accountability", showAtOrAbove: 2, type: "select", label: "ATRS record action", options: ["No ATRS record exists", "Withdraw", "Update / mark retired"] },
     { id: "residualOwner", group: "Records and accountability", showAtOrAbove: 2, type: "text", label: "Residual accountability owner (complaints, appeals, subject access, audit)" },
@@ -2296,6 +2298,7 @@ footer p {
     { id: "conditionDue", group: "Gate event record", showAtOrAbove: 3, type: "date", label: "Condition due date (if any)" },
     { id: "assuranceRef", group: "Gate event record", showAtOrAbove: 2, type: "text", label: "Assurance opinion reference" },
     { id: "evidenceRefs", group: "Gate event record", showAtOrAbove: 3, type: "text", label: "Evidence references (recorded in Notes)", placeholder: "Disposal record, ATRS update log, notification plan" },
+    { id: "decisionRecordRef", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Decision record / minutes ref", placeholder: "GDR-XXXX or minutes ref" },
     { id: "recordedBy", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Recorded by (recorded in Notes)" },
   ];
 
@@ -2324,6 +2327,7 @@ footer p {
     "Decision-maker / role",
     "Next gate",
     "Notes",
+    "Decision record / minutes ref",
   ];
 
   function retLevelFor(label) {
@@ -2355,6 +2359,7 @@ footer p {
       c.push("Confirm accounts, API keys and agentic action scopes are revoked at switch-off.");
     }
     if (ret.fallback === "Planned") c.push("Confirm the fallback or transition arrangement is in place before switch-off.");
+    if (ret.monitoringClosure === "To be closed") c.push("Close the Post-Deployment Monitoring Log (WCC-AIG-39): set Review Status to closed and cancel any scheduled reviews.");
     if (ret.supplierExit === "In progress") c.push("Complete supplier contract closure and data return or destruction.");
     if (ret.atrsAction === "Withdraw") c.push("Withdraw the ATRS record.");
     if (ret.atrsAction === "Update / mark retired") c.push("Update the ATRS record to retired.");
@@ -2385,6 +2390,7 @@ footer p {
     if (ret.accessTeardown !== "Confirmed revoked") outstanding.push("Access, keys and action scopes not yet confirmed revoked.");
     if (ret.dataDisposition && !ret.dataBasis) outstanding.push("Data retention or disposal basis not stated.");
     if (level <= 3 && ret.fallback === "Planned") outstanding.push("Fallback arrangement planned but not confirmed in place.");
+    if (level <= 3 && ret.monitoringClosure === "To be closed") outstanding.push("Post-Deployment Monitoring Log (WCC-AIG-39) not yet closed.");
     if (level <= 2) {
       if (!ret.residualOwner) outstanding.push("Residual accountability owner not named.");
       if (ret.residentNotify === "Required: planned") outstanding.push("Required resident notification not yet completed.");
@@ -2420,6 +2426,7 @@ footer p {
     // Date and Decision stay blank until the forum has actually decided, so the
     // log never asserts a decision that has not happened.
     const notes = [
+      ret.monitoringRef ? `Prompted by monitoring finding ${ret.monitoringRef} (WCC-AIG-39).` : "",
       ret.evidenceRefs ? `Evidence: ${ret.evidenceRefs}.` : "",
       ret.recordedBy ? `Recorded by ${ret.recordedBy} on ${formatDate(new Date())}.` : "",
       `Register Status on completion: ${readiness.status}.`,
@@ -2439,6 +2446,7 @@ footer p {
       ret.decisionMaker || "",
       retirementNextGate(ret),
       notes,
+      ret.decisionRecordRef || "",
     ];
     return { headers: RETIREMENT_GATELOG_HEADERS.slice(), values, readiness };
   }
@@ -2460,6 +2468,7 @@ footer p {
       line("Reason", ret.reason || "(not stated)"),
     );
     if (ret.rationale) rows.push(line("Rationale", ret.rationale));
+    if (ret.monitoringRef) rows.push(line("Prompted by", `Monitoring finding ${ret.monitoringRef} (WCC-AIG-39)`));
     if (ret.riskOfRetiring) rows.push(line("Risk of retiring", ret.riskOfRetiring));
     if (ret.riskOfNotRetiring) rows.push(line("Risk of not retiring", ret.riskOfNotRetiring));
     rows.push(
