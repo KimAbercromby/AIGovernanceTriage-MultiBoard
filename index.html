@@ -2777,7 +2777,15 @@ footer p {
     const specialCategoryData =
       profile.dataType === "Special category data";
     const mandatoryFloorApplies = triggerIds.length > 0 || specialCategoryData;
-    const mandatoryFloorTier = mandatoryFloorApplies ? "High" : "Low";
+    // §4.4.6 minimum uplift: any trigger floors to at least High; statutory
+    // decisions or unreviewed agentic action floor to Critical.
+    const criticalTrigger =
+      triggerIds.includes("statutory") || triggerIds.includes("agentic");
+    const mandatoryFloorTier = criticalTrigger
+      ? "Critical"
+      : mandatoryFloorApplies
+        ? "High"
+        : "Low";
     const effectiveTierName = [
       inherentTierName,
       residualTierName,
@@ -2787,8 +2795,8 @@ footer p {
       TIER_ORDER.indexOf(inherentTierName) > TIER_ORDER.indexOf(residualTierName);
     const mandatoryFloorApplied =
       mandatoryFloorApplies &&
-      TIER_ORDER.indexOf(effectiveTierName) === TIER_ORDER.indexOf("High") &&
-      TIER_ORDER.indexOf(residualTierName) < TIER_ORDER.indexOf("High");
+      TIER_ORDER.indexOf(effectiveTierName) === TIER_ORDER.indexOf(mandatoryFloorTier) &&
+      TIER_ORDER.indexOf(residualTierName) < TIER_ORDER.indexOf(mandatoryFloorTier);
     const tierFloored = effectiveTierName !== residualTierName;
     const floorReasons = [];
     if (inherentFloorApplied) floorReasons.push("inherent risk tier");
