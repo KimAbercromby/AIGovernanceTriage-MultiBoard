@@ -13,6 +13,7 @@
   --navy: #0a2342;
   --navy-2: #133a63;
   --gold: #c9a442;
+  --gold-ink: #7A6318;
   --gold-soft: #f5edd6;
   --ink: #17202a;
   --muted: #556270;
@@ -104,6 +105,12 @@ footer {
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+/* .crest sits on the navy header (bright gold passes). .eyebrow labels sit on
+   light section backgrounds, so they use the darker gold for AA contrast. */
+.eyebrow {
+  color: var(--gold-ink);
 }
 
 h1,
