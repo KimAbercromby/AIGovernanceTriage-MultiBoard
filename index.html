@@ -2318,7 +2318,7 @@ footer p {
     "Gate event record",
   ];
 
-  // Matches WCC-AIG-36 exactly: columns A-N, one row per gate event.
+  // Matches WCC-AIG-36 exactly: columns A-O (15), one row per gate event.
   const RETIREMENT_GATELOG_HEADERS = [
     "Event ID",
     "Register ID",
@@ -2458,57 +2458,126 @@ footer p {
     return { headers: RETIREMENT_GATELOG_HEADERS.slice(), values, readiness };
   }
 
+  function retFormDecisionValue(ret) {
+    // Map the gate decision onto WCC-AIG-16's controlled set:
+    // Approved / Approved with conditions / Deferred / Rejected.
+    if (!retirementDecided(ret)) return "Deferred — pending decision";
+    if (ret.decision === "Progress with condition") return "Approved with conditions";
+    if (ret.decision === "Progress" || ret.decision === "Stop") return "Approved"; // gate field: Stop = decommission
+    return "Deferred"; // Return for evidence, Pause, Noted, Priority override, Escalation raised
+  }
+
   function buildRetirementDecisionRecord(ret) {
     const readiness = retirementReadiness(ret);
-    const line = (label, value) => `${(label + ":").padEnd(24)}${value}`;
-    const rows = [
-      "GOVERNANCE DECISION RECORD (WCC-AIG-16)",
-      "Retirement / decommission",
-      "=========================================",
-      line("System / AIR-ID", `${ret.systemName || "(not entered)"} / ${ret.registerId || "(no ID)"}`),
-    ];
-    if (ret.serviceArea) rows.push(line("Service area", ret.serviceArea));
-    rows.push(
-      line("Current priority", ret.priorityLabel || "(not set)"),
-      line("Current risk tier", ret.tier || "(not set)"),
-      line("Decision", "Retire and decommission"),
-      line("Reason", ret.reason || "(not stated)"),
-    );
-    if (ret.rationale) rows.push(line("Rationale", ret.rationale));
-    if (ret.monitoringRef) rows.push(line("Prompted by", `Monitoring finding ${ret.monitoringRef} (WCC-AIG-39)`));
-    if (ret.riskOfRetiring) rows.push(line("Risk of retiring", ret.riskOfRetiring));
-    if (ret.riskOfNotRetiring) rows.push(line("Risk of not retiring", ret.riskOfNotRetiring));
-    rows.push(
-      line(
-        "Data and records",
-        `${ret.dataDisposition || "(not stated)"}` +
-          (ret.dataBasis ? ` (basis: ${ret.dataBasis})` : "") +
-          (ret.recordsRetention ? `; retain outputs: ${ret.recordsRetention}` : ""),
-      ),
-    );
-    if (ret.residualOwner) {
-      rows.push(
-        line(
-          "Legacy decisions",
-          `${ret.residualOwner}` + (ret.residualDuration ? ` for ${ret.residualDuration}` : ""),
-        ),
-      );
-    }
     const decided = retirementDecided(ret);
-    rows.push(
-      line("Successor", ret.hasSuccessor === "Yes" ? (ret.successorId || "named, ID not recorded") : "None"),
-      line("Gate / forum", ret.forum || "(not recorded)"),
-      line("Decision-maker", ret.decisionMaker || "(not recorded)"),
-      line("Gate decision", decided ? ret.decision : "Pending: not yet decided"),
-      line("Date of decision", decided ? (retFmtDate(ret.eventDate) || "(not set)") : "(pending)"),
-      line("Planned decommission", retFmtDate(ret.decommissionDate) || "(not set)"),
-      line("Conditions", `See Gate Log event ${ret.eventId || "for " + (ret.registerId || "this system")}`),
+    const na = "(to complete at the meeting)";
+    const line = (label, value) => `${(label + ":").padEnd(34)}${value}`;
+    const tick = "[ ]";
+    const decisionDate = decided ? (retFmtDate(ret.eventDate) || "(not set)") : "(pending)";
+    const conditions = retirementConditions(ret);
+
+    const rows = [];
+    const push = (...xs) => xs.forEach((x) => rows.push(x));
+    const heading = (t) => { rows.push(""); rows.push(t); rows.push("-".repeat(t.length)); };
+
+    push(
+      "GOVERNANCE DECISION RECORD (WCC-AIG-16)",
+      "Westminster City Council · AI Governance Playbook (Level 5, §3.10.4)",
+      "Retirement / decommission",
+      "=====================================================================",
     );
-    if (ret.postReview) rows.push(line("Post-retirement review", ret.postReview));
-    rows.push(
-      line("Register Status", readiness.status),
+
+    heading("1. Decision reference");
+    push(
+      line("Decision record ID", ret.decisionRecordRef || "GDR-XXXX (assign)"),
+      line("System / model name", ret.systemName || "(not entered)"),
+      line("AI Register ID", ret.registerId || "(no ID)"),
+      line("Decision date", decisionDate),
+      line("Decision-making body", ret.forum || "(not recorded)"),
+      line("Risk classification", ret.tier || "(not set)"),
+      line("Decision authority / delegation", ret.boardDecision === "Yes" ? "Board / assurance forum (not delegated)" : na),
+      line("Meeting / written-decision ref", ret.decisionRecordRef || na),
+    );
+
+    heading("2. Decision");
+    push(
+      line("Decision", retFormDecisionValue(ret)),
+      line("Gate decision (WCC-AIG-36)", decided ? ret.decision : "Pending: not yet decided"),
+      "",
+      "Summary of the decision and reasoning:",
+    );
+    const summary = [
+      `Retire and decommission ${ret.systemName || "the system"}${ret.registerId ? " (" + ret.registerId + ")" : ""}.`,
+      ret.reason ? `Reason: ${ret.reason}.` : "",
+      ret.rationale ? `Rationale: ${ret.rationale}` : "",
+      ret.monitoringRef ? `Prompted by monitoring finding ${ret.monitoringRef} (WCC-AIG-39).` : "",
+      ret.hasSuccessor === "Yes"
+        ? `Successor: ${ret.successorId || "named, ID not recorded"} — enters intake as its own system.`
+        : "No successor system.",
+    ].filter(Boolean);
+    push("  " + summary.join(" "));
+
+    heading("3. Assessment findings considered");
+    push(
+      "Assessments reviewed (confirm at the meeting):",
+      `  ${tick} DPIA   ${tick} EIA   ${tick} Human Rights   ${tick} Responsible AI`,
+      `  ${tick} Security review   ${tick} Legal review   ${tick} Model Card   ${tick} Other`,
+      "",
+      "Key findings that informed the decision:",
+    );
+    const findings = [
+      ret.riskOfRetiring ? `Risk of retiring: ${ret.riskOfRetiring}` : "",
+      ret.riskOfNotRetiring ? `Risk of not retiring: ${ret.riskOfNotRetiring}` : "",
+      ret.dependencies ? `Downstream dependencies (what consumes its outputs): ${ret.dependencies}` : "",
+      ret.affectedStaff ? `Affected staff (process change / retraining): ${ret.affectedStaff}` : "",
+    ].filter(Boolean);
+    if (findings.length) findings.forEach((f) => push("  - " + f));
+    else push("  " + na);
+
+    heading("4. Conditions, actions and review");
+    push("Conditions of approval:");
+    if (conditions.length) conditions.forEach((c, i) => push(`  ${i + 1}. ${c}`));
+    else push("  None recorded.");
+    push(
+      "",
+      line("Data and records", `${ret.dataDisposition || "(not stated)"}` +
+        (ret.dataBasis ? ` (basis: ${ret.dataBasis})` : "") +
+        (ret.recordsRetention ? `; retain outputs: ${ret.recordsRetention}` : "")),
+      line("Residual accountability", ret.residualOwner
+        ? `${ret.residualOwner}${ret.residualDuration ? " for " + ret.residualDuration : ""}`
+        : na),
+      line("Effective date / expiry", `Planned decommission ${retFmtDate(ret.decommissionDate) || "(not set)"}`),
+      line("Review requirements", ret.postReview === "Yes: date recorded"
+        ? "Post-retirement / lessons-learned review scheduled"
+        : (ret.postReview || na)),
+      line("Escalation requirements", na),
+      line("Action closure status", readiness.complete ? "All retirement conditions met" : "Open — see outstanding items"),
+      line("Conditions verified by / date", na),
+    );
+
+    heading("5. Authorisation");
+    push(
       line("Recorded by", `${ret.recordedBy || "(not recorded)"} on ${formatDate(new Date())}`),
+      line("Chair / approver", ret.decisionMaker || na),
+      line("Signature", "____________________"),
+      line("Date", decisionDate),
+      line("Authority vs delegated limits", ret.boardDecision === "Yes" ? "Confirmed: board / assurance forum" : na),
+      line("Quorum met", na),
+      line("Attendees / voting members", na),
+      line("Conflicts of interest", na),
+      line("Evidence pack", ret.evidenceRefs || na),
+      line("Dissent / challenge / abstention", na),
     );
+
+    push(
+      "",
+      "---------------------------------------------------------------------",
+      line("Register Status on completion", readiness.status),
+    );
+    if (!readiness.complete && readiness.outstanding.length) {
+      push("Outstanding before decommission:");
+      readiness.outstanding.forEach((o) => push("  - " + o));
+    }
     return `${rows.join("\n")}\n`;
   }
 
