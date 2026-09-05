@@ -1015,6 +1015,8 @@ footer p {
     details.step:not([open]) .lede { display: none; }
     .step-summary:hover h2 { color: var(--navy-2); }
     @media (prefers-reduced-motion: reduce) { .step-summary::after { transition: none; } }
+      .provisional-cue { margin: 0 0 1.1rem; padding: 0.7rem 0.9rem; color: var(--navy-2); background: var(--gold-soft); border-left: 3px solid var(--gold); border-radius: 0 6px 6px 0; font-size: 0.9rem; }
+    .provisional-cue[hidden] { display: none; }
   </style>
   </head>
   <body>
@@ -1327,6 +1329,10 @@ footer p {
             One classification and evidence set travels through the decision relay.
             Each completed decision must be added to the Gate Log; this planned route
             is not itself evidence that a gate has been passed.
+          </p>
+
+          <p class="provisional-cue" id="provisionalCue" role="status">
+            Provisional result. This reflects default scores until you complete steps 2 and 3, priority and risk.
           </p>
 
           <div class="summary-grid" aria-live="polite">
@@ -3341,6 +3347,20 @@ footer p {
 
   form.addEventListener("input", update);
   form.addEventListener("change", update);
+
+  let priorityTouched = false;
+  let riskTouched = false;
+  function updateProvisionalCue() {
+    const cue = byId("provisionalCue");
+    if (cue) cue.hidden = priorityTouched && riskTouched;
+  }
+  form.addEventListener("change", (event) => {
+    const target = event.target;
+    if (target.closest && target.closest("#priority")) priorityTouched = true;
+    if (target.closest && target.closest("#risk")) riskTouched = true;
+    updateProvisionalCue();
+  });
+  updateProvisionalCue();
   byId("downloadRegister").addEventListener("click", registerExport);
   byId("downloadGates").addEventListener("click", gateExport);
   byId("downloadHandoff").addEventListener("click", handoffExport);
