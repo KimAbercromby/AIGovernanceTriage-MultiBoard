@@ -2200,6 +2200,23 @@ footer p {
       });
     }
 
+    if (
+      profile.publicFacing === "Yes" ||
+      profile.affectsIndividuals === "Yes" ||
+      results.triggerIds.includes("statutory")
+    ) {
+      items.push({
+        artefact: "WCC-AIG-41 AI Contestability and Redress Control",
+        section: "Resident challenge route",
+        fields: [
+          { label: "Public / resident facing?", value: yn(profile.publicFacing) },
+          { label: "Materially affects individuals?", value: yn(profile.affectsIndividuals) },
+          { label: "Informs a statutory decision?", value: results.triggerIds.includes("statutory") ? "Yes" : "No" },
+        ],
+        note: "Resident-facing or decision-influencing AI: ensure the WCC-AIG-41 challenge route \u2014 plain-language \u2018ask us to look again\u2019, a fresh independent human review with authority to change the decision, and redress \u2014 is in place, with the LGSCO as the external escalation.",
+      });
+    }
+
     const atrsIndicated = requirements.atrs === "Yes";
     const atrsAgentic = results.triggerIds.includes("agentic");
     const atrsAssessments = [
@@ -2223,7 +2240,7 @@ footer p {
         },
       ],
       note: atrsIndicated
-        ? "ATRS is voluntary for local authorities but indicated here (public or resident facing, materially affects individuals, or informs a statutory decision). Complete the pre-draft aid in plain language, tick the indicated impact assessments in Section 6 and carry the same assessment references used in the register. The pre-draft aid is not the published record \u2014 transfer the content into the current official DSIT/GDS template at publication."
+        ? "ATRS is voluntary for local authorities but indicated here (public or resident facing, materially affects individuals, or informs a statutory decision). Complete the pre-draft aid in plain language, tick the indicated impact assessments in Section 6 and carry the same assessment references used in the register. The pre-draft aid is not the published record \u2014 transfer the content into the current official GDS / gov.uk template at publication."
         : "ATRS is voluntary for local authorities and not indicated by this result. Record N/A with a short rationale so the decision is visible.",
     });
 
