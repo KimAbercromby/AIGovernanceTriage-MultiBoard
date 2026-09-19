@@ -1103,7 +1103,7 @@ footer p {
 
           <div class="form-grid">
             <label class="field">
-              <span>AI Register ID <small>optional</small></span>
+              <span>AIR-ID <small>optional</small></span>
               <input id="registerId" autocomplete="off" placeholder="AIR-XXXX">
             </label>
             <label class="field">
@@ -1442,12 +1442,12 @@ footer p {
             mode does not score AGPI or plan a deployment route. It runs the
             decommission gate, scaled to the system's current governance priority,
             and produces a Gate Log event (WCC-AIG-36) and a Decision Record stub
-            (WCC-AIG-16) keyed to the existing Register ID.
+            (WCC-AIG-16) keyed to the existing AIR-ID.
           </p>
 
           <div class="form-grid">
             <label class="field">
-              <span>AI Register ID</span>
+              <span>AIR-ID</span>
               <input id="ret-registerId" autocomplete="off" placeholder="AIR-XXXX">
             </label>
             <label class="field">
@@ -1486,7 +1486,7 @@ footer p {
           <div class="retire-output">
             <h3>Gate Log event (WCC-AIG-36)</h3>
             <p class="lede">
-              Append this event to the Gate Log, keyed to the Register ID. The
+              Append this event to the Gate Log, keyed to the AIR-ID. The
               Register Status becomes Decommissioned only when the gate is complete;
               until then it reads "Retirement: pending gate".
             </p>
@@ -1709,7 +1709,7 @@ footer p {
   };
 
   const REGISTER_HEADERS = [
-    "Register ID",
+    "AIR-ID",
     "System / Model Name",
     "Purpose / Description",
     "Service Area",
@@ -1905,7 +1905,7 @@ footer p {
           : "Confirm that the proposal is aligned, sufficiently defined and worth progressing.",
         evidence: [
           "AI Intake Form",
-          "AI Register ID",
+          "AIR-ID",
           "Named service owner",
           "Purpose and expected benefits",
           "AGPI triage result",
@@ -2110,7 +2110,7 @@ footer p {
 
   function buildGatePlanCsv(profile, route) {
     const headers = [
-      "Register ID",
+      "AIR-ID",
       "System / Model Name",
       "Gate Sequence",
       "Gate Requirement",
@@ -2284,7 +2284,7 @@ footer p {
   function buildHandoffCsv(profile, results) {
     const items = buildArtefactHandoff(profile, results);
     const headers = [
-      "Register ID",
+      "AIR-ID",
       "System / Model Name",
       "Artefact",
       "Section",
@@ -2339,7 +2339,7 @@ footer p {
     { id: "rationale", group: "Decision", showAtOrAbove: 5, type: "textarea", label: "Rationale (why retire, options considered)" },
     { id: "monitoringRef", group: "Decision", showAtOrAbove: 5, type: "text", label: "Prompted by a monitoring finding? Ref in the Post-Deployment Monitoring Log (WCC-AIG-39), if any", placeholder: "39 row / review ref" },
     { id: "hasSuccessor", group: "Decision", showAtOrAbove: 5, type: "select", label: "Replacement or successor system?", options: ["No", "Yes"] },
-    { id: "successorId", group: "Decision", showAtOrAbove: 5, type: "text", label: "Successor Register ID (if any)", placeholder: "AIR-XXXX" },
+    { id: "successorId", group: "Decision", showAtOrAbove: 5, type: "text", label: "Successor AIR-ID (if any)", placeholder: "AIR-XXXX" },
     { id: "decommissionDate", group: "Decision", showAtOrAbove: 5, type: "date", label: "Planned decommission date" },
 
     { id: "dataDisposition", group: "Data and access", showAtOrAbove: 5, type: "select", label: "Data and logs disposition", options: ["Retain in place", "Archive", "Dispose / delete", "Return to supplier or data subject"] },
@@ -2389,7 +2389,7 @@ footer p {
   // Matches WCC-AIG-36 exactly: columns A-O (15), one row per gate event.
   const RETIREMENT_GATELOG_HEADERS = [
     "Event ID",
-    "Register ID",
+    "AIR-ID",
     "System / Model Name",
     "Gate / forum",
     "Lifecycle stage",
@@ -2559,7 +2559,7 @@ footer p {
     push(
       line("Decision record ID", ret.decisionRecordRef || "GDR-XXXX (assign)"),
       line("System / model name", ret.systemName || "(not entered)"),
-      line("AI Register ID", ret.registerId || "(no ID)"),
+      line("AIR-ID", ret.registerId || "(no ID)"),
       line("Decision date", decisionDate),
       line("Decision-making body", ret.forum || "(not recorded)"),
       line("Risk classification", ret.tier || "(not set)"),
@@ -3206,7 +3206,7 @@ footer p {
       "==========================================",
       "",
       `Generated: ${logic.formatDate(new Date())}`,
-      `Register ID: ${profile.registerId || "Not assigned"}`,
+      `AIR-ID: ${profile.registerId || "Not assigned"}`,
       `System / model: ${profile.systemName || "Not entered"}`,
       `Purpose: ${profile.purpose || "Not entered"}`,
       `Service area: ${profile.serviceArea || "Not entered"}`,
