@@ -1426,6 +1426,11 @@ footer p {
                 36 register columns in order (including the four agentic columns), with Residual
                 Risk and Risk Tier left blank for the workbook to calculate.
               </p>
+              <p>
+                If the system can act, run the agentic assessment (Assess agency) before
+                exporting, so the autonomy level, agency tier and Agent Record reference are
+                carried into the Register row, the artefact handoff and the summary.
+              </p>
               <p class="validation-message" id="validationMessage" role="alert"></p>
             </div>
             <div class="button-row">
@@ -1587,8 +1592,8 @@ footer p {
         entries.
       </p>
       <p>
-        Aligned to AI Governance Playbook v19.3 and the Multi-Board AI
-        Register v0.3
+        Aligned to the AI Governance Suite v19.8 (Lean Agentic Governance) and
+        the 36-column AI Register (WCC-AIG-05)
       </p>
     </footer>
 
@@ -3287,6 +3292,11 @@ footer p {
             ? ` (raised by ${results.floorReason}; residual was ${results.residualTierName}).`
             : "."),
       );
+      if (results.tierFloored) {
+        parts.push(
+          "This effective tier is what governs and should carry to the Dashboard and board reporting; the Register Risk Tier stays residual, and the floor is recorded in the Gate Log (36).",
+        );
+      }
       if (results.triggerIds.length) {
         parts.push(
           "Notify the AI Governance Lead and AI Assurance Board without delay.",
@@ -3422,6 +3432,11 @@ footer p {
       `Control effectiveness: ${results.risk.control}`,
       `Residual risk: ${formatNumber(results.risk.residual)}`,
       `Effective governance tier: ${results.effectiveTierName}${results.tierFloored ? ` (governance floor: ${results.floorReason})` : ""}`,
+      ...(results.tierFloored
+        ? [
+            "  Note: the effective governance tier is what drives oversight and should carry through to the Dashboard (18) and board reporting (17). The AI Register Risk Tier remains the residual tier; record the escalation floor in the Gate Log (36) and the Risk Worksheet (07).",
+          ]
+        : []),
       `Inherent risk tier: ${results.inherentTierName}`,
       `Residual risk tier: ${results.residualTierName}`,
       `Assurance intensity: ${results.assuranceIntensity}`,
