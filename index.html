@@ -2226,6 +2226,18 @@ footer p {
       note: "Answer each trigger in Step 4; a Yes sets the minimum High or Critical pathway.",
     });
 
+    if (isAgentSystem(profile, results)) {
+      items.push({
+        artefact: "WCC-AIG-48 Agentic Triage + WCC-AIG-45 Agent Record (ASBOM)",
+        section: "Can-it-act gate, agency profile and authority envelope",
+        fields: [
+          { label: "Can it act (is an agent)?", value: "Yes" },
+          { label: "Agentic triage required?", value: "Yes — complete before routing" },
+        ],
+        note: "Run the Agentic Triage (48): score the five agency dimensions, set the autonomy level and agency tier, test the authority boundary and kill-switch, and open the Agent Record / ASBOM (45). The register carries Is Agent, autonomy and agency tier; the ASBOM holds the full composition and the Authority Graph (46) derives from it. Consequential actions in service are recorded in the Agentic Action / Decision Record (50).",
+      });
+    }
+
     items.push({
       artefact: "WCC-AIG-10 Data Protection Impact Assessment",
       section: "Section 2 \u2014 Screening (is a DPIA required?)",
@@ -3439,6 +3451,23 @@ footer p {
         `Handoff: ${gate.handoff}`,
       );
     });
+
+    if (latestAgentic) {
+      const a = latestAgentic;
+      lines.push(
+        "",
+        "AGENTIC TRIAGE",
+        "--------------",
+        `Agency tier: ${a.tierLabel}`,
+        `Autonomy: ${a.autonomyLabel}`,
+        `Governance pathway: ${a.pathway}`,
+        `Escalation reasons: ${a.escalations.length ? a.escalations.join("; ") : "None"}`,
+        `Containment flags: ${a.flags.length ? a.flags.join("; ") : "None"}`,
+        `Deployment control: ${a.deploymentControl}`,
+        `Agent Record (ASBOM) reference: ${a.asbomRef || "Not entered"}`,
+        "Written to the register: Is Agent = Yes, autonomy level and agency tier.",
+      );
+    }
 
     const handoffItems = logic.buildArtefactHandoff(profile, results);
     lines.push("", "ARTEFACT HANDOFF", "----------------");
