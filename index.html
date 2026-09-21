@@ -1037,7 +1037,7 @@ footer p {
         <p class="header-lede">
           Classify an AI system once, then carry that one classification across the
           governance forums that already exist. This is the cross-forum visibility
-          layer: one register ID, one triage, one assurance opinion, and a gate
+          layer: one front door, one AIR-ID, one triage, one assurance opinion, and a gate
           record that threads the forums together.
         </p>
         <div class="header-badges" aria-label="Calculator characteristics">
@@ -1057,13 +1057,25 @@ footer p {
       <section class="intro-panel" aria-labelledby="intro-title">
         <div>
           <p class="eyebrow">How it works</p>
-          <h2 id="intro-title">Governance travels with the system</h2>
+          <h2 id="intro-title">One front door, three proportionate routes</h2>
           <p>
-            The AGPI and risk engines classify a system once. A governance relay
-            then carries that classification across the existing forums, with
-            configurable forum names, a decision-ready evidence plan that feeds the Decision-Ready Paper (WCC-AIG-38), an Excel-ready
-            Register row and a separate planned-gate export — the end-to-end
-            visibility that an integrated governance pathway needs.
+            Every system enters the same front door and is captured once under one
+            AIR-ID. The AGPI and risk engines then classify it, and the result places
+            it on one of three proportionate routes: a light-touch route for low-risk
+            systems that cannot act, the standard route for systems that inform
+            decisions or touch residents, and the enhanced / agentic route for anything
+            that can take actions. A governance relay carries that classification across
+            the existing forums, with configurable forum names, a decision-ready evidence
+            plan that feeds the Decision-Ready Paper (WCC-AIG-38), an Excel-ready Register
+            row and a separate planned-gate export.
+          </p>
+          <p>
+            The light-touch route is the quick path: a low-risk system that cannot act,
+            does not use personal or special-category data needing assessment, does not
+            affect residents or decisions about them, is not statutory or enforcement, is
+            not novel or resident-facing, and is not a significant new spend, is registered
+            as Priority 4 with a single light Register row and stops there. Width stays at
+            the door; depth arrives only when the risk earns it.
           </p>
         </div>
         <div class="principle">
@@ -1335,6 +1347,12 @@ footer p {
             Provisional result. This reflects default scores until you complete steps 2 and 3, priority and risk.
           </p>
 
+          <div id="routeBanner" class="route-banner" aria-live="polite">
+            <span class="route-banner-label">Proportionate route</span>
+            <strong id="routeBannerName"></strong>
+            <span id="routeBannerWhy" class="route-banner-why"></span>
+          </div>
+
           <div class="summary-grid" aria-live="polite">
             <div>
               <span>Governance priority</span>
@@ -1405,8 +1423,8 @@ footer p {
                 document triage and planned governance routing; they do not record that a gate
                 has passed or that the system is governance-approved. Formal decisions, conditions
                 and evidence must be recorded at the relevant gate. The Register CSV lists the
-                32 register columns in order, with Residual Risk and Risk Tier left blank for the
-                workbook to calculate.
+                36 register columns in order (including the four agentic columns), with Residual
+                Risk and Risk Tier left blank for the workbook to calculate.
               </p>
               <p class="validation-message" id="validationMessage" role="alert"></p>
             </div>
@@ -1430,6 +1448,41 @@ footer p {
               <span id="copyStatus" role="status" aria-live="polite"></span>
             </div>
           </div>
+        </section>
+        <style>
+          .route-banner{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;margin:0 0 14px;padding:12px 16px;border-radius:8px;border-left:6px solid #C8AB36;background:#f5f7fa}
+          .route-banner-label{font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;color:#5A5A5A;font-weight:700}
+          #routeBannerName{font-size:1.15rem;color:#122C47}
+          .route-banner-why{flex-basis:100%;color:#1A1A1A;font-size:.95rem}
+          .route-banner.route-light{border-left-color:#2E7D52}
+          .route-banner.route-standard{border-left-color:#C8AB36}
+          .route-banner.route-agentic{border-left-color:#9B1C1C;background:#fbf5f5}
+          #agenticStep fieldset{border:1px solid #d9dee6;border-radius:8px;margin:10px 0;padding:8px 12px}
+          #agenticStep legend{font-weight:700;color:#122C47;padding:0 6px}
+          #agenticStep .agency-dim{display:flex;flex-direction:column;margin:6px 0}
+          #agenticStep .agency-chk{display:inline-block;margin:2px 16px 2px 0}
+          #agenticStep select,#agenticStep input[type=text],#agenticStep textarea{width:100%;max-width:540px}
+          #agencyResult{margin-top:12px;padding:12px 14px;border-left:4px solid #C8AB36;background:#f5f7fa;border-radius:6px}
+          #agencyResult .ag-tier{font-size:1.2em;font-weight:700;color:#122C47;margin:0 0 6px}
+          #agencyResult .ag-flag{color:#9B1C1C}
+        </style>
+        <section class="step" id="agenticStep" aria-labelledby="agentic-title">
+          <h2 id="agentic-title">Agentic triage &mdash; for systems that can act</h2>
+          <p class="muted">Complete this where the system can take actions. Score the five agency dimensions, flag the multipliers and capabilities, and confirm containment. The agency tier and routing follow the profile, not a sum, and any high-consequence or low-controllability reading can raise the tier.</p>
+          <div id="agencyDims"></div>
+          <fieldset><legend>Agency multipliers (tick any present)</legend><div id="agencyMult"></div></fieldset>
+          <fieldset><legend>Capability vector (tick any the agent can technically do)</legend><div id="agencyCap"></div></fieldset>
+          <fieldset><legend>Containment</legend>
+            <label class="agency-chk"><input type="checkbox" id="agKill"> Kill-switch demonstrated (not just claimed)</label>
+            <label class="agency-chk"><input type="checkbox" id="agRollback"> Rollback capability exists</label>
+            <label class="agency-chk"><input type="checkbox" id="agBoundaries"> Boundary tests completed</label>
+          </fieldset>
+          <label for="agWorstChain">Worst plausible chain of actions</label>
+          <textarea id="agWorstChain" rows="2" placeholder="From a legitimate task, the most consequential chain this architecture permits."></textarea>
+          <label for="agAsbom">Agent Record (ASBOM) reference</label>
+          <input type="text" id="agAsbom" placeholder="AIR-XXXX">
+          <p><button type="button" id="assessAgency">Assess agency</button></p>
+          <div id="agencyResult" hidden></div>
         </section>
       </form>
 
@@ -1741,6 +1794,10 @@ footer p {
     "Last Review Date",
     "Next Review Date",
     "Status",
+    "Is Agent? (can it act?)",
+    "Autonomy Level (if agent)",
+    "Agency Tier (if agent)",
+    "Agent Record (ASBOM) Ref",
   ];
 
   // Columns T and U (Residual Risk, Risk Tier) are calculated in the workbook.
@@ -2026,7 +2083,10 @@ footer p {
     return value;
   }
 
-  function buildRegisterRow(profile, results, now) {
+  function isAgentSystem(profile, results) {
+    return profile.capability === "Agentic AI" || (results.triggerIds && results.triggerIds.includes("agentic"));
+  }
+  function buildRegisterRow(profile, results, now, agentic) {
     const requirements = assessmentRequirements(profile, results);
     const date = formatDate(now || new Date());
     const retrospective = profile.lifecycle === "Live";
@@ -2046,10 +2106,14 @@ footer p {
       requirements.dpiaScreening
         ? "Personal data indicated: record the DPIA screening outcome before approval."
         : "",
+      isAgentSystem(profile, results)
+        ? "Agent: open an Agent Record (ASBOM), run the Agentic Triage and set autonomy and agency tier."
+        : "",
     ]
       .filter(Boolean)
       .join(" ");
 
+    const isAgent = isAgentSystem(profile, results) ? "Yes" : "No";
     const values = [
       profile.registerId || "",
       profile.systemName || "",
@@ -2083,6 +2147,10 @@ footer p {
       "",
       "",
       status,
+      agentic ? "Yes" : isAgent,
+      agentic ? agentic.autonomyLabel : "",
+      agentic ? agentic.tierLabel : "",
+      agentic ? (agentic.asbomRef || "") : "",
     ];
     return { headers: REGISTER_HEADERS.slice(), values, calculatedIndexes: CALCULATED_INDEXES.slice() };
   }
@@ -2134,7 +2202,7 @@ footer p {
     return toCsv(headers, rows);
   }
 
-  // Fields the 32-column Register row does not hold are routed to the
+  // Fields the 36-column Register row does not hold are routed to the
   // artefact whose form owns them. Returns, per triaged system, what to record
   // and where. The triage pre-fills what it knows; approval is left to the gate.
   function buildArtefactHandoff(profile, results) {
@@ -2649,6 +2717,57 @@ footer p {
     return `${rows.join("\n")}\n`;
   }
 
+  const AGENCY_DIMENSIONS = [
+    { id: "consequence", label: "Consequence", hint: "0 trivial to 5 catastrophic / irreversible" },
+    { id: "autonomy", label: "Autonomy", hint: "0 no action to 5 open-ended / persistent" },
+    { id: "authority", label: "Authority", hint: "0 information only to 5 highly consequential" },
+    { id: "reach", label: "Reach", hint: "0 isolated to 5 broad / public / physical" },
+    { id: "controllability", label: "Controllability (reversed)", hint: "0 instant stop + rollback to 5 effectively irreversible" },
+  ];
+  const AGENCY_MULTIPLIERS = ["Persistence","Memory","Delegation","Tool discovery","Credential access","Self-modification","Replication","Goal adaptation","External communication","Financial authority"];
+  const CAPABILITY_VECTOR = ["Read","Write","Execute","Communicate","Purchase","Delegate","Persuade","Code","Discover","Persist","Replicate","Learn","Escalate"];
+  const AGENCY_TIERS = ["T0 informational","T1 assisted","T2 bounded agent","T3 consequential agent","T4 high-agency","T5 frontier / high-impact"];
+  const AGENCY_PATHWAYS = ["No further agentic review","Standard AI review","Agentic controls review","Agentic controls review (higher gate)","High-agency review","Executive and safety escalation"];
+  const HIGH_IMPACT_MULTIPLIERS = ["Delegation","Tool discovery","Credential access","Self-modification","Replication"];
+  function autonomyLabel(n) {
+    const A = ["A0 advisory","A1 assisted","A2 bounded execution","A3 conditional autonomy","A4 delegated autonomy","A5 open-ended autonomy"];
+    return A[Math.max(0, Math.min(5, n | 0))];
+  }
+  function computeAgentic(input) {
+    const d = (input && input.dimensions) || {};
+    const g = (k) => Math.max(0, Math.min(5, Number(d[k] || 0)));
+    const consequence = g("consequence"), autonomy = g("autonomy"), authority = g("authority"), reach = g("reach"), controllability = g("controllability");
+    const mult = (input && input.multipliers) || [];
+    const killSwitch = !!(input && input.killSwitch), rollback = !!(input && input.rollback), boundariesTested = !!(input && input.boundariesTested);
+    let tier = Math.max(autonomy, authority);
+    const esc = [];
+    const floor = (n, why) => { if (n > tier) tier = n; if (n >= 3 && why) esc.push(why); };
+    if (consequence >= 4 || controllability >= 4) floor(3, "High consequence or low controllability");
+    if (consequence === 5) floor(4, "Potentially catastrophic consequence");
+    if (controllability === 5) floor(4, "Effectively irreversible");
+    if (consequence >= 4 && controllability >= 4) floor(5, "Severe and hard to contain");
+    if (reach === 5) floor(4, "Broad, public or physical reach");
+    if (autonomy === 5) floor(4, "Open-ended autonomy");
+    const bigMult = mult.filter((m) => HIGH_IMPACT_MULTIPLIERS.includes(m));
+    if (bigMult.length) floor(4, "Agency multiplier(s): " + bigMult.join(", "));
+    tier = Math.max(0, Math.min(5, tier));
+    let deploymentControl;
+    if (!killSwitch) deploymentControl = "Do not deploy \u2014 demonstrate stop and rollback first (kill-switch test not confirmed).";
+    else if (tier >= 5) deploymentControl = "Do not deploy without executive and safety escalation.";
+    else if (tier >= 4) deploymentControl = "Do not deploy without high-agency review.";
+    else if (tier >= 2) deploymentControl = "Proceed to agentic controls review.";
+    else deploymentControl = "Proceed; standard oversight.";
+    const flags = [];
+    if (!killSwitch) flags.push("Kill-switch not demonstrated");
+    if (!rollback) flags.push("No rollback capability");
+    if (!boundariesTested) flags.push("Boundaries not tested");
+    return {
+      tierNum: tier, tierLabel: AGENCY_TIERS[tier], pathway: AGENCY_PATHWAYS[tier],
+      autonomyLabel: autonomyLabel(autonomy), autonomy, consequence, authority, reach, controllability,
+      escalations: esc, flags, deploymentControl, asbomRef: (input && input.asbomRef) || "", multipliers: mult,
+    };
+  }
+
   return {
     DIMENSIONS,
     SCALE_LABELS,
@@ -2668,6 +2787,13 @@ footer p {
     buildEvidenceList,
     buildRoute,
     buildRegisterRow,
+    AGENCY_DIMENSIONS,
+    AGENCY_MULTIPLIERS,
+    CAPABILITY_VECTOR,
+    AGENCY_TIERS,
+    AGENCY_PATHWAYS,
+    computeAgentic,
+    autonomyLabel,
     buildGatePlanCsv,
     buildArtefactHandoff,
     buildHandoffCsv,
@@ -2695,6 +2821,7 @@ footer p {
   const logic = window.TriageLogic;
   const byId = (id) => document.getElementById(id);
   const form = byId("triageForm");
+  let latestAgentic = null;
 
   if (!logic || !form) {
     throw new Error("The calculator could not initialise.");
@@ -3070,9 +3197,51 @@ footer p {
     });
   }
 
+  function governanceRoute(profile, results) {
+    const req = logic.assessmentRequirements(profile, results);
+    const agent =
+      profile.capability === "Agentic AI" ||
+      (results.triggerIds && results.triggerIds.includes("agentic"));
+    const anyAssessment =
+      req.dpia === "Yes" || req.eia === "Yes" || req.humanRights ||
+      req.atrs === "Yes" || req.supplierDueDiligence || req.dpiaScreening;
+    const label = results.priority.label || "";
+    const lowPriority =
+      label.indexOf("Priority 4") === 0 || label.indexOf("Priority 5") === 0;
+    const lowTier = results.effectiveTierName === "Low";
+    const noTriggers = results.triggerIds.length === 0;
+    if (agent) {
+      return {
+        key: "agentic",
+        name: "Enhanced / agentic route",
+        why: "This system can act, so it goes through the agentic triage below: open an Agent Record (ASBOM), score the agency profile and set the autonomy and agency tier before it is routed.",
+      };
+    }
+    if (lowPriority && lowTier && noTriggers && !anyAssessment) {
+      return {
+        key: "light",
+        name: "Light-touch route",
+        why: "Low risk and cannot act: register as Priority 4 with a single light Register row and stop. No specialist assessments are triggered.",
+      };
+    }
+    return {
+      key: "standard",
+      name: "Standard route",
+      why: "More than low risk, but cannot act: complete the Intake and only the assessments actually triggered, then follow the board route below.",
+    };
+  }
+
   function update() {
     const calculation = calculateAll();
     const { profile, results, route, evidence } = calculation;
+
+    const gRoute = governanceRoute(profile, results);
+    const routeBanner = byId("routeBanner");
+    if (routeBanner) {
+      routeBanner.className = "route-banner route-" + gRoute.key;
+      byId("routeBannerName").textContent = gRoute.name;
+      byId("routeBannerWhy").textContent = gRoute.why;
+    }
 
     byId("agpiScore").textContent = formatNumber(results.agpiScore);
     byId("agpiPriority").textContent = results.priority.label;
@@ -3301,7 +3470,7 @@ footer p {
       ...calculation.profile,
       dateFirstUsed: formatInputDate(calculation.profile.dateFirstUsed),
     };
-    const row = logic.buildRegisterRow(profile, calculation.results, new Date());
+    const row = logic.buildRegisterRow(profile, calculation.results, new Date(), latestAgentic);
     download(
       `${safeSlug(profile.systemName)}-register-row.csv`,
       logic.toCsv(row.headers, [row.values]),
@@ -3384,6 +3553,56 @@ footer p {
   byId("downloadSummary").addEventListener("click", summaryExport);
   byId("copySummary").addEventListener("click", copySummary);
   byId("printResult").addEventListener("click", () => window.print());
+
+  // ---- Agentic triage UI ----
+  function buildAgenticInputs() {
+    const dimsHost = byId("agencyDims");
+    if (dimsHost && !dimsHost.dataset.built) {
+      logic.AGENCY_DIMENSIONS.forEach((d) => {
+        const wrap = document.createElement("div"); wrap.className = "agency-dim";
+        const lab = document.createElement("label"); lab.setAttribute("for", "ag_" + d.id); lab.textContent = d.label + " \u2014 " + d.hint;
+        const sel = document.createElement("select"); sel.id = "ag_" + d.id;
+        ["", "0", "1", "2", "3", "4", "5"].forEach((v) => { const o = document.createElement("option"); o.value = v; o.textContent = v === "" ? "\u2014" : v; sel.appendChild(o); });
+        wrap.appendChild(lab); wrap.appendChild(sel); dimsHost.appendChild(wrap);
+      });
+      dimsHost.dataset.built = "1";
+    }
+    const mk = (host, list, cls) => {
+      if (host && !host.dataset.built) {
+        list.forEach((m) => { const l = document.createElement("label"); l.className = "agency-chk"; const c = document.createElement("input"); c.type = "checkbox"; c.value = m; c.className = cls; l.appendChild(c); l.appendChild(document.createTextNode(" " + m)); host.appendChild(l); });
+        host.dataset.built = "1";
+      }
+    };
+    mk(byId("agencyMult"), logic.AGENCY_MULTIPLIERS, "ag-mult");
+    mk(byId("agencyCap"), logic.CAPABILITY_VECTOR, "ag-cap");
+  }
+  function readAgentic() {
+    const dims = {};
+    logic.AGENCY_DIMENSIONS.forEach((d) => { const el = byId("ag_" + d.id); dims[d.id] = el && el.value !== "" ? Number(el.value) : 0; });
+    return {
+      dimensions: dims,
+      multipliers: Array.from(document.querySelectorAll(".ag-mult:checked")).map((c) => c.value),
+      capabilities: Array.from(document.querySelectorAll(".ag-cap:checked")).map((c) => c.value),
+      killSwitch: byId("agKill").checked, rollback: byId("agRollback").checked, boundariesTested: byId("agBoundaries").checked,
+      worstChain: byId("agWorstChain").value, asbomRef: byId("agAsbom").value.trim(),
+    };
+  }
+  function esc(t) { const d = document.createElement("div"); d.textContent = t; return d.innerHTML; }
+  function renderAgentic() {
+    latestAgentic = logic.computeAgentic(readAgentic());
+    const r = latestAgentic; const host = byId("agencyResult");
+    let html = '<p class="ag-tier">' + esc(r.tierLabel) + "</p>";
+    html += "<p><strong>Autonomy:</strong> " + esc(r.autonomyLabel) + "</p>";
+    html += "<p><strong>Governance pathway:</strong> " + esc(r.pathway) + "</p>";
+    if (r.escalations.length) html += "<p><strong>Escalation:</strong> " + esc(r.escalations.join("; ")) + "</p>";
+    if (r.flags.length) html += '<p class="ag-flag"><strong>Flags:</strong> ' + esc(r.flags.join("; ")) + "</p>";
+    html += "<p><strong>Deployment control:</strong> " + esc(r.deploymentControl) + "</p>";
+    html += '<p class="muted">Written to the register export: Is Agent = Yes, autonomy and agency tier. Open an Agent Record (ASBOM) for the full composition and the authority graph.</p>';
+    host.innerHTML = html; host.hidden = false;
+  }
+  buildAgenticInputs();
+  const assessBtn = byId("assessAgency");
+  if (assessBtn) assessBtn.addEventListener("click", renderAgentic);
 })();
     </script>
     <script id="retire-app">
