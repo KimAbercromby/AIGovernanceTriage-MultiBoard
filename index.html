@@ -6,588 +6,71 @@
 <title>AI Governance Triage &amp; Routing</title>
 <style>
 body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#f3f5f7;color:#24323f}
-.loading{max-width:720px;margin:12vh auto;padding:28px;background:#fff;border:2px solid #0a2342;border-top:5px solid #c9a442;border-radius:10px}
+.loading{max-width:760px;margin:12vh auto;padding:28px;background:#fff;border:2px solid #0a2342;border-top:5px solid #c9a442;border-radius:10px}
 h1{color:#0a2342}
 .error{color:#9d2c2c;white-space:pre-wrap}
 </style>
 </head>
 <body>
-<div class="loading" id="loader"><h1>AI Governance Triage &amp; Routing</h1><p>Loading governance workflow…</p></div>
+<div class="loading" id="loader">
+  <h1>AI Governance Triage &amp; Routing</h1>
+  <p>Loading corrected governance workflow…</p>
+</div>
 <script>
-const BASE_URL="https://raw.githubusercontent.com/KimAbercromby/AIGovernanceTriage-MultiBoard/52a80e7d821e6740bfea77d64b86a59c1d20b04a/index.html";
-const PROFESSIONAL_CSS="\n:root{\n  --navy:#0a2342;--navy2:#133a63;--gold:#c9a442;--goldsoft:#f5edd6;\n  --ink:#24323f;--muted:#637281;--bg:#f3f5f7;--line:#d7dee5;\n}\nbody{background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5}\n.wrap,main,footer{width:min(100% - 2rem,1040px)}\n.site-header{\n  padding:2rem 0 1.7rem;color:#fff;\n  background:linear-gradient(135deg,var(--navy),var(--navy2));\n  border-bottom:5px solid var(--gold)\n}\n.site-header .crest{color:#efd98a;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase}\n.site-header h1{color:#fff;max-width:820px;font-size:clamp(1.9rem,3.5vw,2.5rem)}\n.header-lede{max-width:810px;color:#eef4f8;font-size:1rem}\n.header-badges{display:flex;flex-wrap:wrap;gap:.45rem}\n.header-badges span{\n  padding:.28rem .58rem;color:#f6e8b7;background:rgba(255,255,255,.06);\n  border:1px solid rgba(201,164,66,.6);border-radius:999px;font-size:.72rem\n}\n.header-methodology a{\n  color:#fff!important;background:rgba(255,255,255,.08)!important;\n  border:1px solid rgba(255,255,255,.3)!important\n}\nmain{padding-block:1.25rem 4rem}\n\n.tool-overview{\n  margin:0 0 1rem;padding:1.1rem 1.2rem;background:#fff;\n  border:2px solid var(--navy);border-top:5px solid var(--gold);\n  border-radius:10px;box-shadow:0 2px 8px rgba(10,35,66,.06)\n}\n.tool-overview h2{margin:0 0 .45rem;color:var(--navy);font-size:1.15rem}\n.tool-overview p{margin:0 0 .7rem;color:#4f6070}\n.tool-overview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin-top:.9rem}\n.tool-overview-grid>div{padding:.7rem;background:#f8fafc;border:1px solid #dce3e9;border-radius:8px}\n.tool-overview-grid strong{display:block;color:var(--navy);font-size:.83rem;margin-bottom:.15rem}\n.tool-overview-grid span{color:var(--muted);font-size:.74rem}\n\n.workflow-details{margin-bottom:1rem}\n.workflow-details>summary,.route-details>summary,.handoff-details>summary,.more-downloads>summary{\n  cursor:pointer;list-style:none\n}\n.workflow-details>summary::-webkit-details-marker,\n.route-details>summary::-webkit-details-marker,\n.handoff-details>summary::-webkit-details-marker,\n.more-downloads>summary::-webkit-details-marker{display:none}\n.workflow-details>summary{\n  display:flex;justify-content:space-between;padding:.75rem .9rem;background:#fff;\n  border:2px solid var(--navy);border-radius:9px;color:var(--navy);font-weight:750\n}\n.workflow-details>summary small{color:var(--muted);font-weight:500}\n.workflow-details[open]>summary{border-radius:9px 9px 0 0}\n.workflow-details>.intro-panel{\n  margin:0;padding:1rem;background:#fff;border:2px solid var(--navy);\n  border-top:0;border-radius:0 0 9px 9px;box-shadow:none\n}\n.principle{background:var(--goldsoft);border-left:4px solid var(--gold)}\n\n.mode-switch{\n  width:max-content;margin:0 0 1rem;padding:3px;background:#e8edf1;\n  border:1px solid #cbd4dc;border-radius:9px\n}\n.mode-btn{min-height:2.35rem;padding:.45rem .8rem;background:transparent;border:0}\n.mode-btn.is-active{background:var(--goldsoft);color:var(--navy);box-shadow:inset 0 -2px 0 var(--gold)}\n\n.step-nav{\n  top:.5rem;margin-bottom:1rem;background:var(--navy);border:1px solid var(--navy);\n  border-radius:9px;box-shadow:0 4px 14px rgba(10,35,66,.14)\n}\n.step-nav a{padding:.66rem .5rem;color:#fff;border-right:1px solid rgba(255,255,255,.17);font-size:.8rem}\n.step-nav a:hover,.step-nav a:focus-visible{color:var(--navy);background:#efd98a}\n\n.step{\n  margin-bottom:.85rem;padding:0;overflow:hidden;background:#fff;\n  border:2px solid var(--navy);border-radius:10px;\n  box-shadow:0 2px 5px rgba(10,35,66,.045)\n}\n.step-summary{\n  display:grid;grid-template-columns:auto 1fr;gap:.25rem .8rem;align-items:center;\n  padding:1rem 1.15rem;cursor:pointer;list-style:none;\n  background:linear-gradient(90deg,#f8fafc,#fff 72%);border-left:5px solid var(--gold)\n}\n.step-summary::-webkit-details-marker{display:none}\n.step-summary::before{\n  content:\"\";width:.48rem;height:.48rem;border-right:2px solid var(--navy);\n  border-bottom:2px solid var(--navy);transform:rotate(-45deg)\n}\n.step[open]>.step-summary::before{transform:rotate(45deg)}\n.step[open]>.step-summary{border-bottom:1px solid rgba(10,35,66,.2)}\n.step-summary .eyebrow{grid-column:2;margin:0;color:#8b742a;font-size:.69rem;font-weight:800}\n.step-summary h2{grid-column:2;margin:0;color:var(--navy);font-size:1.12rem}\n.step[open]{padding-bottom:1.1rem}\n.step>.lede,.step>.sublede,.step>.form-grid,.step>.forum-config,.step>#dimensions,\n.step>.gauge,.step>.result-panel,.step>h3,.step>#triggers,.step>.warning-panel,\n.step>.impact-grid,.step>.pair,.step>.risk-output,.step>.route-banner,.step>.summary-grid,\n.step>.evidence-list,.step>.table-wrap,.step>.handoff-panel,.step>.export-panel,\n.step>#provisionalCue,.step>#agencyDims,.step>fieldset,.step>label,.step>p,\n.step>#agencyResult{margin-left:1.15rem;margin-right:1.15rem}\n.lede,.sublede{color:var(--muted);font-size:.91rem}\n\n.form-grid{gap:.8rem 1rem}\n.field>span{color:#334b5e;font-size:.86rem}\ninput,select,textarea{min-height:2.55rem;padding:.54rem .65rem;border:1px solid #bdc8d1;border-radius:7px}\ninput:focus,select:focus,textarea:focus{border-color:var(--navy2)}\n\n.dimension{grid-template-columns:minmax(210px,1fr) minmax(370px,1.55fr);gap:1rem;padding:.75rem 0}\n.dimension-name{font-size:.91rem}.dimension-question{font-size:.82rem}\n.scale{gap:.25rem}\n.scale>label>span{min-height:3.15rem;padding:.35rem .18rem;background:#fbfcfd;font-size:.66rem}\n.scale input:checked+span{background:var(--navy2);border-color:var(--navy2);box-shadow:inset 0 -3px 0 var(--gold)}\n.gauge-bar{height:8px}.needle{top:-4px;height:16px;width:3px}\n.result-panel{padding:.8rem .9rem;background:#f4f7fa;border:1px solid #dbe2e8;border-left:4px solid var(--gold)}\n.result-panel .result-title{color:var(--navy)}\n\n.trigger-list{gap:.45rem}\n.trigger{padding:.62rem .7rem;background:#fbfcfd;border:1px solid #d6dde3}\n.warning-panel{border-left:4px solid #9d2c2c}\n.risk-output{border:1px solid #bfcbd5;border-radius:8px}\n\n.route-spectrum{display:grid;grid-template-columns:repeat(3,1fr);gap:.65rem;margin:0 1.15rem .9rem}\n.route-choice{\n  padding:.72rem .8rem;background:#fbfcfd;border:1px solid #aebac5;\n  border-top:4px solid var(--navy);border-radius:8px;color:var(--muted)\n}\n.route-choice strong{display:block;color:var(--navy);font-size:.86rem;margin-bottom:.18rem}\n.route-choice small{display:block;font-size:.72rem}\n.route-choice.is-agentic{border-top-color:var(--gold)}\n.route-choice.is-active{background:var(--goldsoft);border-color:var(--navy);border-top-color:var(--gold)}\n.route-choice .state{\n  display:inline-block;margin-top:.38rem;padding:.16rem .38rem;background:#edf1f4;\n  color:var(--muted);border-radius:999px;font-size:.66rem;font-weight:750\n}\n.route-choice.is-active .state{background:#eadcae;color:var(--navy)}\n.route-banner{background:#f8fafc!important;border:1px solid #d6dee5!important;border-left:4px solid var(--gold)!important}\n\n.route-details,.handoff-details{\n  margin:.8rem 1.15rem 0;background:#fff;border:2px solid var(--navy);border-radius:8px\n}\n.route-details>summary,.handoff-details>summary{padding:.72rem .85rem;color:var(--navy);font-weight:750}\n.route-details>.table-wrap,.handoff-details>.handoff-panel{margin:0;border:0;border-top:1px solid rgba(10,35,66,.2)}\n.route-table th{background:var(--navy)}\n.gate-number{background:var(--navy);color:#fff}\n\n.export-panel{\n  grid-template-columns:1fr;gap:.8rem;margin-top:1rem!important;padding:1rem;background:#fff;\n  border:2px solid var(--navy);border-top:5px solid var(--gold);border-radius:10px\n}\n.export-panel h3{color:var(--navy)}\n.export-panel p{color:var(--muted);font-size:.84rem}\n.button-row{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}\nbutton{background:var(--gold);color:var(--navy);border:1px solid #ae8f35;border-radius:7px;font-weight:750}\nbutton.secondary{background:#fff;color:var(--navy);border-color:#aebbc6}\nbutton.ghost{background:transparent;color:#536676;border-color:transparent}\n.more-downloads{grid-column:1/-1;border-top:1px solid var(--line)}\n.more-downloads>summary{padding:.65rem .1rem .35rem;color:var(--navy);font-size:.82rem;font-weight:750}\n.more-downloads .advanced-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;padding:.45rem 0 0}\n\n#agenticStep>.step-summary{border-left:5px solid var(--gold)}\n#agencyResult{background:var(--goldsoft);border-left:4px solid var(--gold)}\n\n@media(max-width:760px){.tool-overview-grid,.route-spectrum{grid-template-columns:1fr}}\n@media(max-width:620px){\n  .wrap,main,footer{width:min(100% - 1rem,1040px)}\n  .step-nav{grid-template-columns:1fr 1fr}\n  .button-row,.more-downloads .advanced-actions{grid-template-columns:1fr}\n  .route-spectrum{margin-left:.9rem;margin-right:.9rem}\n}\n\n#downloadAgenticGovernance{\n  background:var(--navy);\n  color:#fff;\n  border-color:var(--navy);\n}\n#downloadAgenticGovernance:hover{\n  background:var(--navy2);\n}\n";
-const UX_JS="\ndocument.addEventListener(\"DOMContentLoaded\", function () {\n  const main = document.getElementById(\"main\");\n  if (main && !document.querySelector(\".tool-overview\")) {\n    const o = document.createElement(\"section\");\n    o.className = \"tool-overview\";\n    o.innerHTML =\n      '<h2>What this tool does</h2>' +\n      '<p>This is the front door to the AI governance process. It captures the core facts about an AI system once, calculates governance priority and risk, identifies mandatory escalation and specialist assessment needs, and routes the case through the appropriate governance forums using one AIR-ID.</p>' +\n      '<p>It reduces repeated data entry without reducing assurance: formal approvals, specialist conclusions, gate decisions, monitoring evidence and agent authority remain in their authoritative records.</p>' +\n      '<div class=\"tool-overview-grid\">' +\n      '<div><strong>Capture once</strong><span>Core system, owner, supplier, data and risk information is reused downstream.</span></div>' +\n      '<div><strong>Classify proportionately</strong><span>AGPI, risk and mandatory triggers determine the governance depth required.</span></div>' +\n      '<div><strong>Route with oversight</strong><span>Light-touch, Standard and Enhanced / Agentic routes stay visible while authority remains with the right forums.</span></div>' +\n      '</div>';\n    main.insertBefore(o, main.firstElementChild);\n  }\n\n  const intro = document.querySelector(\".intro-panel\");\n  if (intro && !intro.closest(\".workflow-details\")) {\n    const d = document.createElement(\"details\");\n    d.className = \"workflow-details\";\n    const s = document.createElement(\"summary\");\n    s.innerHTML = '<span>Read full workflow and authority notes</span><small>Purpose, routing model and governance boundaries</small>';\n    intro.parentNode.insertBefore(d, intro);\n    d.append(s, intro);\n  }\n\n  const routeSection = document.getElementById(\"route\");\n  let spectrum = null;\n  if (routeSection) {\n    spectrum = document.createElement(\"div\");\n    spectrum.className = \"route-spectrum\";\n    spectrum.innerHTML =\n      '<div class=\"route-choice\" data-route-choice=\"light\"><strong>Light-touch</strong><small>Low-risk systems that cannot act.</small><span class=\"state\">Available route</span></div>' +\n      '<div class=\"route-choice\" data-route-choice=\"standard\"><strong>Standard</strong><small>Normal governance assessment and assurance.</small><span class=\"state\">Available route</span></div>' +\n      '<div class=\"route-choice is-agentic\" data-route-choice=\"agentic\"><strong>Enhanced / Agentic</strong><small>Systems that can act or exercise delegated authority.</small><span class=\"state\">Activates when the system can act</span></div>';\n    const banner = routeSection.querySelector(\".route-banner\");\n    if (banner) banner.parentNode.insertBefore(spectrum, banner);\n  }\n\n  function syncSpectrum() {\n    if (!spectrum) return;\n    const n = document.getElementById(\"routeBannerName\");\n    const txt = n ? n.textContent.toLowerCase() : \"\";\n    let key = txt.includes(\"agentic\") || txt.includes(\"enhanced\") ? \"agentic\" :\n              txt.includes(\"light\") ? \"light\" : txt.includes(\"standard\") ? \"standard\" : \"\";\n    spectrum.querySelectorAll(\".route-choice\").forEach(function(el){\n      const active = el.dataset.routeChoice === key;\n      el.classList.toggle(\"is-active\", active);\n      const st = el.querySelector(\".state\");\n      if (st) st.textContent = active ? \"Current route\" :\n        el.dataset.routeChoice === \"agentic\" ? \"Activates when the system can act\" : \"Available route\";\n    });\n  }\n  const routeName = document.getElementById(\"routeBannerName\");\n  if (routeName) new MutationObserver(syncSpectrum).observe(routeName,{childList:true,subtree:true,characterData:true});\n  syncSpectrum();\n\n  const table = document.querySelector(\"#route .table-wrap\");\n  if (table && !table.closest(\".route-details\")) {\n    const d = document.createElement(\"details\"); d.className=\"route-details\";\n    const s = document.createElement(\"summary\"); s.textContent=\"View detailed governance route\";\n    table.parentNode.insertBefore(d,table); d.append(s,table);\n  }\n  const handoff = document.querySelector(\"#route .handoff-panel\");\n  if (handoff && !handoff.closest(\".handoff-details\")) {\n    const d = document.createElement(\"details\"); d.className=\"handoff-details\";\n    const s = document.createElement(\"summary\"); s.textContent=\"View artefact handoff details\";\n    handoff.parentNode.insertBefore(d,handoff); d.append(s,handoff);\n  }\n\n  const row = document.querySelector(\".export-panel .button-row\");\n  if (row && !row.querySelector(\".more-downloads\")) {\n    const more = document.createElement(\"details\"); more.className=\"more-downloads\";\n    const s = document.createElement(\"summary\"); s.textContent=\"More download and utility options\";\n    const a = document.createElement(\"div\"); a.className=\"advanced-actions\";\n    [\"downloadCanonical\",\"downloadAgpi\",\"downloadGates\",\"downloadHandoff\",\"downloadAgent\",\"copySummary\",\"printResult\"].forEach(function(id){\n      const el=document.getElementById(id); if(el) a.appendChild(el);\n    });\n    more.append(s,a); row.appendChild(more);\n  }\n\n  const exportPanel = document.querySelector(\".export-panel\");\n  if (exportPanel) {\n    const ps=exportPanel.querySelectorAll(\"p\");\n    if(ps[0]) ps[0].textContent=\"Download only the records you need. Pre-fill exports reuse the same triage data; approvals, specialist conclusions and monitoring evidence remain in their authoritative records.\";\n    if(ps[1]) ps[1].textContent=\"Agentic governance export is always visible. For an agentic case, run Assess agency first so agency tier, capabilities, containment and ASBOM handoff data are included.\";\n  }\n\n  const agenticStep=document.getElementById(\"agenticStep\");\n  const capability=document.getElementById(\"capability\");\n  function syncAgentic(){\n    if(!agenticStep) return;\n    const trigger=document.querySelector('[data-trigger=\"agentic\"]');\n    const show=(capability&&capability.value===\"Agentic AI\")||(trigger&&trigger.checked);\n    agenticStep.hidden=!show;\n    syncSpectrum();\n  }\n  if(capability) capability.addEventListener(\"change\",syncAgentic);\n  document.addEventListener(\"change\",function(e){\n    if(e.target&&e.target.matches('[data-trigger=\"agentic\"]')) syncAgentic();\n  });\n  syncAgentic();\n});\n";
-function replaceOnce(state, oldText, newText, label) {
-  const i = state.text.indexOf(oldText);
-  if (i < 0) throw new Error("Pattern not found: " + label);
-  if (state.text.indexOf(oldText, i + oldText.length) >= 0) throw new Error("Pattern not unique: " + label);
-  state.text = state.text.slice(0, i) + newText + state.text.slice(i + oldText.length);
-}
+(function(){
+"use strict";
 
-function patch(content){
-  const state = {text: content};
+const CURRENT_WRAPPER =
+  "https://raw.githubusercontent.com/KimAbercromby/AIGovernanceTriage-MultiBoard/28bdf0f7d18643f5d47c587fdf1db891eb9683ed/index.html";
 
-  replaceOnce(state,
-`                Each button downloads the triage result in a different form: the Register row,
-                the planned gate route, the artefact handoff, or a full summary. These exports
-                document triage and planned governance routing; they do not record that a gate
-                has passed or that the system is governance-approved. Formal decisions, conditions
-                and evidence must be recorded at the relevant gate. The Register CSV lists the
-                36 register columns in order (including the four agentic columns), with Residual
-                Risk and Risk Tier left blank for the workbook to calculate.`,
-`                Capture once, reuse safely. The downloads below use the same triage record to
-                pre-fill the Register, AGPI record, Risk Assessment and agentic records where
-                applicable. They document triage and planned governance routing; they do not record
-                that a gate has passed or that the system is governance-approved. Formal decisions,
-                conditions, specialist conclusions, monitoring results and approval evidence remain
-                owned by their downstream governance records. The Register CSV lists the 36 register
-                columns in order, with Residual Risk and Risk Tier left blank for the workbook to calculate.`,
-"export panel description");
+const CORRECTION_FUNCTIONS = "\nfunction addGovernanceCorrections(html) {\n  html = html.replace(\n    /<h2 id=\"intro-title\">One front door, three proportionate routes<\\/h2>/,\n    '<h2 id=\"intro-title\">One front door, proportionate governance pathways</h2>'\n  );\n\n  html = html.replace(\n    /<p>\\s*Every system enters the same front door[\\s\\S]*?separate planned-gate export\\.\\s*<\\/p>/,\n    '<p>Every system enters the same front door and is captured once under one AIR-ID. The AGPI establishes governance priority, while the risk assessment separately classifies risk as Low, Medium, High or Critical. Governance pathway is a separate decision: genuinely low-risk, non-acting systems may use the light-touch pathway; non-agentic systems use the non-agentic governance pathway; and systems that can take actions or exercise delegated authority use the agentic governance pathway. A non-agentic system may still be High or Critical risk. Where a system can execute actions without human review of each individual action, the mandatory agentic trigger applies and the minimum effective risk tier is Critical. A governance relay carries the case across the existing forums, with configurable forum names, a decision-ready evidence plan feeding the Decision-Ready Paper (WCC-AIG-38), an Excel-ready Register row and a separate planned-gate export.</p>'\n  );\n\n  html = html.replace(\n    /<p>\\s*The light-touch route is the quick path:[\\s\\S]*?Width stays at the door; depth arrives only when the risk earns it\\.\\s*<\\/p>/,\n    '<p>The light-touch pathway is the proportionate path for genuinely low-risk systems that cannot act and have no mandatory escalation or specialist-assessment trigger. Light-touch does not mean governance stops at registration. The system still receives an AIR-ID and AI Register entry, proportionate baseline documentation including the applicable Model Card or system documentation, named ownership, proportionate controls and periodic review. Additional assessment and assurance depth is added only where the risk, impact, data use or other triggers require it.</p>'\n  );\n\n  html = html.replace(\n    'function isAgentSystem(profile, results) {\\n    return profile.capability === \"Agentic AI\" || (results.triggerIds && results.triggerIds.includes(\"agentic\"));\\n  }',\n    'function isAgentSystem(profile, results) {\\n    const canAct = profile.actionAuthority && profile.actionAuthority !== \"None — outputs only\";\\n    return profile.capability === \"Agentic AI\" || canAct || (results.triggerIds && results.triggerIds.includes(\"agentic\"));\\n  }'\n  );\n\n  html = html.replace(\n    /  function getTriggerIds\\(\\) \\{[\\s\\S]*?\\n  \\}\\n\\n  function calculateAll\\(\\) \\{/,\n`  function getTriggerIds() {\n    const agenticTrigger = form.querySelector('[data-trigger=\"agentic\"]');\n    const authorityEl = byId(\"actionAuthority\");\n    const actionAuthority = authorityEl ? authorityEl.value : \"\";\n    const autonomousWithoutPerActionReview =\n      actionAuthority === \"Acts within defined bounds — monitored\" ||\n      actionAuthority === \"Fully autonomous\";\n\n    if (agenticTrigger) {\n      if (autonomousWithoutPerActionReview) {\n        if (!agenticTrigger.checked) agenticTrigger.dataset.autoChecked = \"true\";\n        agenticTrigger.checked = true;\n        agenticTrigger.disabled = true;\n        agenticTrigger.title =\n          \"Automatically selected because the system can execute actions without human review of each individual action.\";\n      } else {\n        agenticTrigger.disabled = false;\n        agenticTrigger.removeAttribute(\"title\");\n        if (agenticTrigger.dataset.autoChecked === \"true\") {\n          agenticTrigger.checked = false;\n          delete agenticTrigger.dataset.autoChecked;\n        }\n      }\n    }\n\n    return Array.from(form.querySelectorAll(\"[data-trigger]:checked\")).map(\n      (input) => input.dataset.trigger,\n    );\n  }\n\n  function calculateAll() {`\n  );\n\n  html = html.replace(\n    /  function governanceRoute\\(profile, results\\) \\{[\\s\\S]*?\\n  \\}\\n\\n  function update\\(\\) \\{/,\n`  function governanceRoute(profile, results) {\n    const req = logic.assessmentRequirements(profile, results);\n    const canAct =\n      profile.capability === \"Agentic AI\" ||\n      (profile.actionAuthority && profile.actionAuthority !== \"None — outputs only\") ||\n      (results.triggerIds && results.triggerIds.includes(\"agentic\"));\n\n    const autonomousWithoutPerActionReview =\n      profile.actionAuthority === \"Acts within defined bounds — monitored\" ||\n      profile.actionAuthority === \"Fully autonomous\" ||\n      (results.triggerIds && results.triggerIds.includes(\"agentic\"));\n\n    const anyAssessment =\n      req.dpia === \"Yes\" || req.eia === \"Yes\" || req.humanRights ||\n      req.atrs === \"Yes\" || req.supplierDueDiligence || req.dpiaScreening;\n    const label = results.priority.label || \"\";\n    const lowPriority =\n      label.indexOf(\"Priority 4\") === 0 || label.indexOf(\"Priority 5\") === 0;\n    const lowTier = results.effectiveTierName === \"Low\";\n    const noTriggers = results.triggerIds.length === 0;\n\n    if (canAct) {\n      return {\n        key: \"agentic\",\n        name: \"Agentic governance pathway\",\n        why: autonomousWithoutPerActionReview\n          ? \"This system can execute actions without human review of each individual action. The mandatory agentic trigger therefore applies and the minimum effective risk tier is Critical. Complete the Agentic Triage, Agent Record (ASBOM), authority controls and the required assurance route.\"\n          : \"This system can act, but each individual action remains human-approved or no unreviewed autonomous action has been identified. Agentic governance controls and the Agent Record (ASBOM) still apply; a Critical risk floor is not imposed solely because the system is agentic.\"\n      };\n    }\n\n    if (lowPriority && lowTier && noTriggers && !anyAssessment) {\n      return {\n        key: \"light\",\n        name: \"Light-touch governance pathway\",\n        why: \"Low risk, low governance priority, unable to act and no mandatory or specialist trigger. Maintain the AIR-ID and Register entry, proportionate baseline documentation including the applicable Model Card or system documentation, named ownership, controls and periodic review.\"\n      };\n    }\n\n    return {\n      key: \"standard\",\n      name: \"Non-agentic governance pathway\",\n      why: \"This system does not exercise autonomous action authority. Its risk remains classified separately as Low, Medium, High or Critical, and the governance depth follows its effective risk tier, AGPI priority and any mandatory or specialist triggers.\"\n    };\n  }\n\n  function update() {`\n  );\n\n  html = html.replace(\n    'rows.push([\"Is Agent\", p.capability === \"Agentic AI\" || triggerSet.has(\"agentic\") ? \"Yes — assessment not yet run\" : \"No\"]);',\n    'rows.push([\"Is Agent\", p.capability === \"Agentic AI\" || (p.actionAuthority && p.actionAuthority !== \"None — outputs only\") || triggerSet.has(\"agentic\") ? \"Yes — assessment not yet run\" : \"No\"]);'\n  );\n\n  if (!html.includes('id=\"downloadGateReady\"')) {\n    const riskButton =\n`              <button type=\"button\" id=\"downloadRisk\" class=\"secondary\">\n                Download Risk Assessment pre-fill\n              </button>`;\n    const gateReadyButton =\n`              <button type=\"button\" id=\"downloadRisk\" class=\"secondary\">\n                Download Risk Assessment pre-fill\n              </button>\n              <button type=\"button\" id=\"downloadGateReady\" class=\"secondary\">\n                Download Gate-Ready / Decision-Ready pre-fill\n              </button>`;\n    if (!html.includes(riskButton)) throw new Error(\"Gate-Ready button insertion point not found.\");\n    html = html.replace(riskButton, gateReadyButton);\n  }\n\n  if (!html.includes(\"function gateReadyPrefillCsv\")) {\n    const marker = '  function canonicalExport() {';\n    const gateReadyFunctions =\n`  function gateReadyPrefillCsv(calculation) {\n    const p = calculation.profile;\n    const r = calculation.results;\n    const requirements = logic.assessmentRequirements(p, r);\n    const rows = [];\n    const add = (section, gate, field, value, treatment) => {\n      rows.push([section, gate || \"\", field, value == null ? \"\" : value, treatment || \"\"]);\n    };\n\n    add(\"Case identity\", \"\", \"AIR-ID\", p.registerId, \"Carry forward\");\n    add(\"Case identity\", \"\", \"System / Model Name\", p.systemName, \"Carry forward\");\n    add(\"Case identity\", \"\", \"Service Area\", p.serviceArea, \"Carry forward\");\n    add(\"Case identity\", \"\", \"Service Owner\", p.serviceOwner, \"Accountable owner — confirm\");\n    add(\"Case identity\", \"\", \"Purpose / Description\", p.purpose, \"Carry forward\");\n    add(\"Case identity\", \"\", \"Automated Action Authority\", p.actionAuthority, \"Can-it-act / authority context\");\n\n    add(\"Governance classification\", \"\", \"AGPI Score\", r.agpiScore, \"Triage-derived\");\n    add(\"Governance classification\", \"\", \"Governance Priority\",\n      r.effectiveGovernancePriority || r.priority.label,\n      \"AGPI governance priority — separate from risk classification\");\n    add(\"Governance classification\", \"\", \"Inherent Risk Tier\", r.inherentTierName, \"Risk classification\");\n    add(\"Governance classification\", \"\", \"Residual Risk Tier\", r.residualTierName, \"Risk classification\");\n    add(\"Governance classification\", \"\", \"Effective Governance Tier\", r.effectiveTierName,\n      \"Highest applicable governance risk tier after mandatory floor\");\n    add(\"Governance classification\", \"\", \"Assurance Intensity\", r.assuranceIntensity, \"Triage-derived\");\n    add(\"Governance classification\", \"\", \"Mandatory escalation triggers\",\n      r.triggerIds.length ? logic.triggerTextFor(r.triggerIds).join(\"; \") : \"None\",\n      \"Carry into gate preparation\");\n\n    calculation.route.forEach((gate) => {\n      const gateLabel = \"Gate \" + gate.sequence;\n      add(\"Planned gate route\", gateLabel, \"Requirement\", gate.requirement, \"Planned route\");\n      add(\"Planned gate route\", gateLabel, \"Decision question\", gate.decision, \"For the named forum to decide\");\n      add(\"Planned gate route\", gateLabel, \"Forum\", gate.forum, \"Configurable forum name\");\n      add(\"Planned gate route\", gateLabel, \"Current planning status\", gate.status, \"Planning only\");\n      add(\"Planned gate route\", gateLabel, \"Required evidence\",\n        (gate.evidence || []).join(\"; \"),\n        \"Verify evidence before the forum decision\");\n      add(\"Planned gate route\", gateLabel, \"Handoff\", gate.handoff, \"Carry continuity forward\");\n      add(\"Planned gate route\", gateLabel, \"Actual decision\", \"\", \"MANUAL — populate only after the forum decides\");\n      add(\"Planned gate route\", gateLabel, \"Decision conditions\", \"\", \"MANUAL — populate only after the forum decides\");\n      add(\"Planned gate route\", gateLabel, \"Decision-maker / authority\", \"\", \"MANUAL — authoritative gate record\");\n      add(\"Planned gate route\", gateLabel, \"Decision date\", \"\", \"MANUAL — authoritative gate record\");\n    });\n\n    (calculation.evidence || []).forEach((item, idx) => {\n      add(\"Decision-ready evidence plan\", \"\", \"Evidence item \" + (idx + 1), item,\n        \"Required or indicated by triage — verify completion\");\n    });\n\n    [\n      [\"DPIA\", requirements.dpia || (requirements.dpiaScreening ? \"Screening required\" : \"Not indicated\")],\n      [\"Equality Impact Assessment\", requirements.eia || \"Not indicated\"],\n      [\"Human Rights Assessment\", requirements.humanRights ? \"Required / indicated\" : \"Not indicated\"],\n      [\"ATRS transparency publication\", requirements.atrs || \"Not indicated\"]\n    ].forEach(([name, value]) => {\n      add(\"Specialist assurance\", \"\", name, value,\n        \"Specialist owner confirms conclusion and evidence\");\n    });\n\n    if (latestAgentic) {\n      const a = latestAgentic;\n      add(\"Agentic assurance\", \"\", \"Agency Tier\", a.tierLabel, \"Derived by agentic triage — confirm\");\n      add(\"Agentic assurance\", \"\", \"Autonomy Level\", a.autonomyLabel, \"Derived by agentic triage — confirm\");\n      add(\"Agentic assurance\", \"\", \"Deployment Control\", a.deploymentControl, \"Must be satisfied before deployment\");\n      add(\"Agentic assurance\", \"\", \"Kill-switch demonstrated\", yesNo(a.killSwitch), \"Evidence required\");\n      add(\"Agentic assurance\", \"\", \"Rollback capability\", yesNo(a.rollback), \"Evidence required\");\n      add(\"Agentic assurance\", \"\", \"Boundaries tested\", yesNo(a.boundariesTested), \"Evidence required\");\n      add(\"Agentic assurance\", \"\", \"Worst plausible chain\", a.worstChain || \"\", \"Review in risk / assurance\");\n      add(\"Agentic assurance\", \"\", \"Agent Record / ASBOM reference\", a.asbomRef || \"\", \"Reference authoritative record\");\n    }\n\n    add(\"Authority boundary\", \"\", \"Gate-ready status\", \"PREPARATION / PRE-FILL ONLY\",\n      \"Feeds WCC-AIG-38 Decision-Ready Paper preparation. It does not verify evidence, record specialist sign-off, pass a gate or approve deployment.\");\n    add(\"Authority boundary\", \"\", \"Authoritative decision record\",\n      \"WCC-AIG-36 Gate Log / relevant forum record\",\n      \"Actual decisions, conditions, authority and dates are recorded only when the gate event occurs.\");\n\n    return logic.toCsv(\n      [\"Record Section\", \"Gate\", \"Field\", \"Value\", \"Status / Treatment\"],\n      rows\n    );\n  }\n\n  function gateReadyExport() {\n    if (!validateForExport()) return;\n    const calculation = update();\n    download(\n      safeSlug(calculation.profile.systemName) + \"-gate-ready-decision-ready-prefill.csv\",\n      gateReadyPrefillCsv(calculation),\n      \"text/csv;charset=utf-8\"\n    );\n  }\n\n`;\n    if (!html.includes(marker)) throw new Error(\"Gate-Ready function insertion point not found.\");\n    html = html.replace(marker, gateReadyFunctions + marker);\n  }\n\n  if (!html.includes('byId(\"downloadGateReady\").addEventListener')) {\n    const listener = '  byId(\"downloadRisk\").addEventListener(\"click\", riskExport);';\n    const replacement =\n      '  byId(\"downloadRisk\").addEventListener(\"click\", riskExport);\\n' +\n      '  byId(\"downloadGateReady\").addEventListener(\"click\", gateReadyExport);';\n    if (!html.includes(listener)) throw new Error(\"Gate-Ready listener insertion point not found.\");\n    html = html.replace(listener, replacement);\n  }\n\n  [\n    'id=\"downloadGateReady\"',\n    'function gateReadyPrefillCsv',\n    'gate-ready-decision-ready-prefill.csv',\n    'name: \"Non-agentic governance pathway\"',\n    'minimum effective risk tier is Critical',\n    'Model Card or system documentation'\n  ].forEach((needle) => {\n    if (!html.includes(needle)) throw new Error(\"Correction validation failed: \" + needle);\n  });\n\n  return html;\n}\n\nfunction addUiCorrections(html) {\n  html = html.replace(\n    '<div class=\"route-choice\" data-route-choice=\"standard\"><strong>Standard</strong><small>Normal governance assessment and assurance.</small><span class=\"state\">Available route</span></div>',\n    '<div class=\"route-choice\" data-route-choice=\"standard\"><strong>Non-agentic</strong><small>Risk may still be Low, Medium, High or Critical.</small><span class=\"state\">Available pathway</span></div>'\n  );\n\n  html = html.replace(\n    '<div class=\"route-choice is-agentic\" data-route-choice=\"agentic\"><strong>Enhanced / Agentic</strong><small>Systems that can act or exercise delegated authority.</small><span class=\"state\">Activates when the system can act</span></div>',\n    '<div class=\"route-choice is-agentic\" data-route-choice=\"agentic\"><strong>Agentic governance</strong><small>Applies when the system can act; unreviewed autonomous action imposes a Critical floor.</small><span class=\"state\">Activates when the system can act</span></div>'\n  );\n\n  html = html.replace(\n    '<div><strong>Route with oversight</strong><span>Light-touch, Standard and Enhanced / Agentic routes stay visible while authority remains with the right forums.</span></div>',\n    '<div><strong>Route with oversight</strong><span>Light-touch, Non-agentic and Agentic governance pathways stay visible while authority remains with the right forums.</span></div>'\n  );\n\n  html = html.replace(\n    'let key = txt.includes(\"agentic\") || txt.includes(\"enhanced\") ? \"agentic\" :\\n              txt.includes(\"light\") ? \"light\" : txt.includes(\"standard\") ? \"standard\" : \"\";',\n    'let key = txt.includes(\"non-agentic\") ? \"standard\" :\\n              txt.includes(\"agentic\") ? \"agentic\" :\\n              txt.includes(\"light\") ? \"light\" : txt.includes(\"standard\") ? \"standard\" : \"\";'\n  );\n\n  html = html.replace(\n    /  const agenticStep=document\\.getElementById\\(\"agenticStep\"\\);[\\s\\S]*?  syncAgentic\\(\\);\\n\\}\\);/,\n`  const agenticStep=document.getElementById(\"agenticStep\");\n  const capability=document.getElementById(\"capability\");\n  const actionAuthority=document.getElementById(\"actionAuthority\");\n  function syncAgentic(){\n    if(!agenticStep) return;\n    const trigger=document.querySelector('[data-trigger=\"agentic\"]');\n    const canAct=actionAuthority&&actionAuthority.value!==\"None — outputs only\";\n    const show=(capability&&capability.value===\"Agentic AI\")||canAct||(trigger&&trigger.checked);\n    agenticStep.hidden=!show;\n    syncSpectrum();\n  }\n  if(capability) capability.addEventListener(\"change\",syncAgentic);\n  if(actionAuthority) actionAuthority.addEventListener(\"change\",syncAgentic);\n  document.addEventListener(\"change\",function(e){\n    if(e.target&&e.target.matches('[data-trigger=\"agentic\"]')) syncAgentic();\n  });\n  syncAgentic();\n});`\n  );\n\n  html = html.replace(\n    'Download only the records you need. Pre-fill exports reuse the same triage data; approvals, specialist conclusions and monitoring evidence remain in their authoritative records.',\n    'Download only the records you need. The Gate-Ready / Decision-Ready pre-fill assembles the planned route and evidence requirements for decision preparation; approvals, specialist conclusions, gate decisions and monitoring evidence remain in their authoritative records.'\n  );\n\n  html = html.replace(\n    '</style></head>',\n    '#downloadGateReady{background:var(--goldsoft)!important;color:var(--navy)!important;border-color:var(--gold)!important;}\\n</style></head>'\n  );\n\n  return html;\n}\n";
 
-  replaceOnce(state,
-`              <button type="button" id="downloadGates" class="secondary">
-                Download gate plan
-              </button>
-              <button type="button" id="downloadHandoff" class="secondary">
-                Download artefact handoff
-              </button>
-              <button type="button" id="downloadSummary" class="secondary">
-                Download full summary
-              </button>`,
-`              <button type="button" id="downloadCanonical" class="secondary">
-                Download canonical record
-              </button>
-              <button type="button" id="downloadAgpi" class="secondary">
-                Download AGPI pre-fill
-              </button>
-              <button type="button" id="downloadRisk" class="secondary">
-                Download Risk Assessment pre-fill
-              </button>
-              <button type="button" id="downloadGates" class="secondary">
-                Download planned governance route
-              </button>
-              <button type="button" id="downloadHandoff" class="secondary">
-                Download artefact handoff
-              </button>
-              <button type="button" id="downloadAgent" class="secondary">
-                Download Agent Record pre-fill
-              </button>
-              <button type="button" id="downloadSummary" class="secondary">
-                Download full summary
-              </button>`,
-"export buttons");
-
-  replaceOnce(state,
-`    return {
-      tierNum: tier, tierLabel: AGENCY_TIERS[tier], pathway: AGENCY_PATHWAYS[tier],
-      autonomyLabel: autonomyLabel(autonomy), autonomy, consequence, authority, reach, controllability,
-      escalations: esc, flags, deploymentControl, asbomRef: (input && input.asbomRef) || "", multipliers: mult,
-    };`,
-`    return {
-      tierNum: tier, tierLabel: AGENCY_TIERS[tier], pathway: AGENCY_PATHWAYS[tier],
-      autonomyLabel: autonomyLabel(autonomy), autonomy, consequence, authority, reach, controllability,
-      escalations: esc, flags, deploymentControl,
-      asbomRef: (input && input.asbomRef) || "",
-      multipliers: mult,
-      capabilities: (input && input.capabilities) || [],
-      killSwitch,
-      rollback,
-      boundariesTested,
-      worstChain: (input && input.worstChain) || "",
-    };`,
-"preserve raw agentic data");
-
-  replaceOnce(state,
-`    const results = {
-      agpiScore,
-      priority,
-      risk,`,
-`    const results = {
-      agpiScore,
-      priority,
-      rawAgpiPriority: priority.label,
-      effectiveGovernancePriority: priority.label,
-      risk,`,
-"AGPI priority semantics");
-
-  replaceOnce(state,
-`      results.priority.label,
-      results.risk.inherent,`,
-`      results.effectiveGovernancePriority || results.priority.label,
-      results.risk.inherent,`,
-"Register effective priority");
-
-  const marker = `  function registerExport() {`;
-  const insert = `
-  function yesNo(value) {
-    return value ? "Yes" : "No";
+function patchCurrentWrapper(src) {
+  const functionMarker = "function applyProfessionalDesign(html){";
+  if (!src.includes(functionMarker)) {
+    throw new Error("Current wrapper structure changed: design marker not found.");
   }
+  src = src.replace(functionMarker, CORRECTION_FUNCTIONS + "\n" + functionMarker);
 
-  function fieldValueCsv(rows) {
-    return logic.toCsv(
-      ["Field", "Value"],
-      rows.map(([field, value]) => [field, value == null ? "" : value]),
-    );
-  }
-
-  function buildCanonicalRecord(calculation) {
-    const profile = {
-      ...calculation.profile,
-      dateFirstUsed: formatInputDate(calculation.profile.dateFirstUsed),
-    };
-    const rawAgentic = readAgentic();
-    return {
-      schemaVersion: "1.0",
-      suiteVersion: "v19.8 Lean Agentic Governance",
-      exportedAt: new Date().toISOString(),
-      profile,
-      agpi: {
-        dimensionScores: { ...calculation.agpiScores },
-        score: calculation.results.agpiScore,
-        rawPriority: calculation.results.rawAgpiPriority || calculation.results.priority.label,
-        effectiveGovernancePriority:
-          calculation.results.effectiveGovernancePriority || calculation.results.priority.label,
-        authorisedPriorityUplift: null,
-      },
-      risk: {
-        impactScores: { ...calculation.impactScores },
-        likelihood: calculation.results.risk.likelihood,
-        controlEffectiveness: calculation.results.risk.control,
-        impact: calculation.results.risk.impact,
-        inherentRisk: calculation.results.risk.inherent,
-        inherentRiskTier: calculation.results.inherentTierName,
-        residualRisk: calculation.results.risk.residual,
-        residualRiskTier: calculation.results.residualTierName,
-        effectiveGovernanceTier: calculation.results.effectiveTierName,
-        tierFloored: calculation.results.tierFloored,
-        floorReason: calculation.results.floorReason || "",
-        assuranceIntensity: calculation.results.assuranceIntensity,
-      },
-      mandatoryTriggers: logic.TRIGGERS.map((trigger) => ({
-        id: trigger.id,
-        text: trigger.text,
-        selected: calculation.results.triggerIds.includes(trigger.id),
-      })),
-      governance: {
-        status: calculation.results.governanceStatus,
-        forums: { ...calculation.forums },
-        plannedRoute: calculation.route.map((gate) => ({ ...gate })),
-        requiredEvidence: calculation.evidence.slice(),
-      },
-      specialistRouting: logic.assessmentRequirements(profile, calculation.results),
-      agentic: {
-        rawInput: {
-          dimensions: { ...rawAgentic.dimensions },
-          multipliers: rawAgentic.multipliers.slice(),
-          capabilities: rawAgentic.capabilities.slice(),
-          killSwitch: rawAgentic.killSwitch,
-          rollback: rawAgentic.rollback,
-          boundariesTested: rawAgentic.boundariesTested,
-          worstChain: rawAgentic.worstChain,
-          asbomRef: rawAgentic.asbomRef,
-        },
-        assessment: latestAgentic ? { ...latestAgentic } : null,
-      },
-      authorityBoundary: {
-        note:
-          "This triage record is decision support. It does not evidence gate approval, specialist sign-off, monitoring results or an approved agent mandate.",
-      },
-    };
-  }
-
-  function agpiPrefillCsv(calculation) {
-    const r = calculation.results;
-    return fieldValueCsv([
-      ["AIR-ID", calculation.profile.registerId],
-      ["System / Model Name", calculation.profile.systemName],
-      ["Service Area", calculation.profile.serviceArea],
-      ["Service Owner", calculation.profile.serviceOwner],
-      ["Assessment Date", logic.formatDate(new Date())],
-      ["Resident Impact", calculation.agpiScores.resident],
-      ["Public Trust and Reputation", calculation.agpiScores.trust],
-      ["Legal and Regulatory Exposure", calculation.agpiScores.legal],
-      ["Governance Visibility and Accountability", calculation.agpiScores.visibility],
-      ["Strategic Value and Organisational Dependency", calculation.agpiScores.strategic],
-      ["Human Oversight and Decision Authority", calculation.agpiScores.oversight],
-      ["AGPI Score (0-100)", r.agpiScore],
-      ["Raw AGPI Priority", r.rawAgpiPriority || r.priority.label],
-      ["Authorised Governance Priority Uplift", ""],
-      ["Effective Governance Priority", r.effectiveGovernancePriority || r.priority.label],
-      ["Priority Uplift / Routing Rationale", ""],
-    ]);
-  }
-
-  function mandatoryFloorLabel(results) {
-    if (!results.tierFloored) return "None";
-    if (results.effectiveTierName === "Critical") return "Critical";
-    if (results.effectiveTierName === "High") return "High";
-    return results.effectiveTierName || "None";
-  }
-
-  function riskPrefillCsv(calculation) {
-    const p = calculation.profile;
-    const r = calculation.results;
-    const triggerSet = new Set(r.triggerIds);
-    const rows = [
-      ["AIR-ID", p.registerId],
-      ["System / Model Name", p.systemName],
-      ["Purpose / Description", p.purpose],
-      ["Service Area", p.serviceArea],
-      ["Service Owner", p.serviceOwner],
-      ["Supplier / Developer", p.supplierDeveloper],
-      ["Source", p.source],
-      ["AI Capability", p.capability],
-      ["Automated Action Authority", p.actionAuthority],
-      ["Systems / Tools Accessed", p.systemsAccessed],
-      ["Lifecycle Stage", p.lifecycle],
-      ["Personal / Special Category Data", p.dataType],
-      ["Triage Date", logic.formatDate(new Date())],
-      ["AGPI Score (0-100)", r.agpiScore],
-      ["Raw AGPI Priority", r.rawAgpiPriority || r.priority.label],
-      ["Effective Governance Priority", r.effectiveGovernancePriority || r.priority.label],
-      ["Resident Impact", calculation.impactScores.residentImpact],
-      ["Legal and Regulatory Impact", calculation.impactScores.legalImpact],
-      ["Reputational Impact", calculation.impactScores.reputationImpact],
-      ["Operational Impact", calculation.impactScores.operationalImpact],
-      ["Financial Impact", calculation.impactScores.financialImpact],
-      ["Likelihood", r.risk.likelihood],
-      ["Control Effectiveness", r.risk.control],
-      ["Impact Score", r.risk.impact],
-      ["Inherent Risk Score", r.risk.inherent],
-      ["Inherent Risk Tier", r.inherentTierName],
-      ["Residual Risk Score", r.risk.residual],
-      ["Residual Risk Tier", r.residualTierName],
-      ["Trigger — Special Category Data", yesNo(triggerSet.has("specialData"))],
-      ["Trigger — Vulnerable Residents", yesNo(triggerSet.has("vulnerable"))],
-      ["Trigger — Housing/Care/Homelessness", yesNo(triggerSet.has("housingCare"))],
-      ["Trigger — Novel Deployment", yesNo(triggerSet.has("novel"))],
-      ["Trigger — Statutory Decisions", yesNo(triggerSet.has("statutory"))],
-      ["Trigger — Material Change", yesNo(triggerSet.has("materialChange"))],
-      ["Trigger — Agentic Autonomous Action", yesNo(triggerSet.has("agentic"))],
-      ["Mandatory Risk Floor", mandatoryFloorLabel(r)],
-      ["Effective Governance Tier", r.effectiveTierName],
-      ["Tier Floor Reason", r.floorReason || ""],
-      ["Assurance Intensity", r.assuranceIntensity],
-      ["Governance Status", r.governanceStatus],
-    ];
-
-    if (latestAgentic) {
-      const a = latestAgentic;
-      rows.push(
-        ["Is Agent", "Yes"],
-        ["Agentic Consequence", a.consequence],
-        ["Agentic Autonomy", a.autonomy],
-        ["Agentic Authority", a.authority],
-        ["Agentic Reach", a.reach],
-        ["Agentic Controllability", a.controllability],
-        ["Autonomy Level", a.autonomyLabel],
-        ["Agency Tier", a.tierLabel],
-        ["Agentic Pathway", a.pathway],
-        ["Kill-switch Demonstrated", yesNo(a.killSwitch)],
-        ["Rollback Capability", yesNo(a.rollback)],
-        ["Boundaries Tested", yesNo(a.boundariesTested)],
-        ["Worst Plausible Chain", a.worstChain || ""],
-        ["Agentic Flags", a.flags.length ? a.flags.join("; ") : "None"],
-        ["Agentic Escalations", a.escalations.length ? a.escalations.join("; ") : "None"],
-        ["Agent Record (ASBOM) Ref", a.asbomRef || ""],
-        ["Agentic Deployment Control", a.deploymentControl],
-      );
-    } else {
-      rows.push(["Is Agent", p.capability === "Agentic AI" || triggerSet.has("agentic") ? "Yes — assessment not yet run" : "No"]);
-    }
-    return fieldValueCsv(rows);
-  }
-
-  function agentRecordPrefillCsv(calculation) {
-    if (!latestAgentic) return "";
-    const a = latestAgentic;
-    const rows = [
-      ["AIR-ID", calculation.profile.registerId],
-      ["Agent Name (proposed — confirm in ASBOM)", calculation.profile.systemName],
-      ["Approved Purpose (mandate)", ""],
-      ["Proposed Purpose from Intake", calculation.profile.purpose],
-      ["Autonomy Level", a.autonomyLabel],
-      ["Agency Tier", a.tierLabel],
-      ["AGPI Priority (from triage — confirm governed Register value)", calculation.results.effectiveGovernancePriority || calculation.results.priority.label],
-      ["Kill-switch tested? — confirm evidence in ASBOM", yesNo(a.killSwitch)],
-      ["Rollback capability? — confirm evidence in ASBOM", yesNo(a.rollback)],
-      ["Boundary tests completed? — confirm evidence", yesNo(a.boundariesTested)],
-      ["Worst Plausible Chain", a.worstChain || ""],
-      ["Agent Record (ASBOM) Ref", a.asbomRef || ""],
-      ["Agency Multipliers", a.multipliers.length ? a.multipliers.join("; ") : "None selected"],
-    ];
-    logic.CAPABILITY_VECTOR.forEach((capability) => {
-      rows.push([
-        "Capability Vector — " + capability,
-        a.capabilities.includes(capability) ? "Yes — confirm / scope in ASBOM" : "",
-      ]);
-    });
-    return fieldValueCsv(rows);
-  }
-
-  function canonicalExport() {
-    if (!validateForExport()) return;
-    const calculation = update();
-    download(
-      \`\${safeSlug(calculation.profile.systemName)}-canonical-triage-record.json\`,
-      JSON.stringify(buildCanonicalRecord(calculation), null, 2) + "\\n",
-      "application/json;charset=utf-8",
-    );
-  }
-
-  function agpiExport() {
-    if (!validateForExport()) return;
-    const calculation = update();
-    download(
-      \`\${safeSlug(calculation.profile.systemName)}-agpi-prefill.csv\`,
-      agpiPrefillCsv(calculation),
-      "text/csv;charset=utf-8",
-    );
-  }
-
-  function riskExport() {
-    if (!validateForExport()) return;
-    const calculation = update();
-    download(
-      \`\${safeSlug(calculation.profile.systemName)}-risk-assessment-prefill.csv\`,
-      riskPrefillCsv(calculation),
-      "text/csv;charset=utf-8",
-    );
-  }
-
-  function agentExport() {
-    if (!validateForExport()) return;
-    const calculation = update();
-    if (!latestAgentic) {
-      byId("validationMessage").textContent =
-        "Run Assess agency before downloading the Agent Record pre-fill.";
-      byId("agenticStep").scrollIntoView({ behavior: "smooth", block: "start" });
-      return;
-    }
-    download(
-      \`\${safeSlug(calculation.profile.systemName)}-agent-record-prefill.csv\`,
-      agentRecordPrefillCsv(calculation),
-      "text/csv;charset=utf-8",
-    );
-  }
-
-`;
-  const mi = state.text.indexOf(marker);
-  if (mi < 0) throw new Error("registerExport marker not found");
-  state.text = state.text.slice(0, mi) + insert + state.text.slice(mi);
-
-  replaceOnce(state,
-`      \`\${safeSlug(calculation.profile.systemName)}-gate-plan.csv\`,`,
-`      \`\${safeSlug(calculation.profile.systemName)}-planned-governance-route.csv\`,`,
-"gate filename");
-
-  replaceOnce(state,
-`  byId("downloadRegister").addEventListener("click", registerExport);
-  byId("downloadGates").addEventListener("click", gateExport);
-  byId("downloadHandoff").addEventListener("click", handoffExport);`,
-`  byId("downloadRegister").addEventListener("click", registerExport);
-  byId("downloadCanonical").addEventListener("click", canonicalExport);
-  byId("downloadAgpi").addEventListener("click", agpiExport);
-  byId("downloadRisk").addEventListener("click", riskExport);
-  byId("downloadGates").addEventListener("click", gateExport);
-  byId("downloadHandoff").addEventListener("click", handoffExport);
-  byId("downloadAgent").addEventListener("click", agentExport);`,
-"event listeners");
-
-  replaceOnce(state,
-`        \`Deployment control: \${a.deploymentControl}\`,
-        \`Agent Record (ASBOM) reference: \${a.asbomRef || "Not entered"}\`,
-        "Written to the register: Is Agent = Yes, autonomy level and agency tier.",`,
-`        \`Deployment control: \${a.deploymentControl}\`,
-        \`Kill-switch demonstrated: \${yesNo(a.killSwitch)}\`,
-        \`Rollback capability: \${yesNo(a.rollback)}\`,
-        \`Boundary tests completed: \${yesNo(a.boundariesTested)}\`,
-        \`Worst plausible chain: \${a.worstChain || "Not entered"}\`,
-        \`Capabilities selected: \${a.capabilities.length ? a.capabilities.join("; ") : "None selected"}\`,
-        \`Agent Record (ASBOM) reference: \${a.asbomRef || "Not entered"}\`,
-        "Written to the register: Is Agent = Yes, autonomy level and agency tier.",`,
-"summary preservation");
-
-  const checks = [
-    'id="downloadCanonical"',
-    'id="downloadAgpi"',
-    'id="downloadRisk"',
-    'id="downloadAgent"',
-    'function buildCanonicalRecord',
-    'risk-assessment-prefill.csv',
-    'planned-governance-route.csv',
-    'capabilities: (input && input.capabilities) || []',
-    'effectiveGovernancePriority: priority.label'
-  ];
-  for (const x of checks) if (!state.text.includes(x)) throw new Error("Validation failed: " + x);
-  return state.text;
-}
-
-function addAgenticGovernanceExport(html) {
-  const buttonNeedle =
-`              <button type="button" id="downloadSummary" class="secondary">
-                Download full summary
-              </button>`;
-  const buttonReplacement =
-`              <button type="button" id="downloadAgenticGovernance" class="secondary">
-                Download Agentic governance handoff
-              </button>
-              <button type="button" id="downloadSummary" class="secondary">
-                Download full summary
-              </button>`;
-  if (!html.includes(buttonNeedle)) {
-    throw new Error("Agentic export button insertion point not found.");
-  }
-  html = html.replace(buttonNeedle, buttonReplacement);
-
-  const fnMarker = `  function canonicalExport() {`;
-  const fnInsert = `
-  function agenticGovernanceHandoffCsv(calculation) {
-    if (!latestAgentic) return "";
-    const p = calculation.profile;
-    const r = calculation.results;
-    const a = latestAgentic;
-    const rows = [];
-    const add = (artefact, field, value, treatment) => {
-      rows.push([artefact, field, value == null ? "" : value, treatment]);
-    };
-
-    add("WCC-AIG-48 Agentic Triage", "AIR-ID", p.registerId, "Carry forward");
-    add("WCC-AIG-48 Agentic Triage", "System / Model Name", p.systemName, "Carry forward");
-    add("WCC-AIG-48 Agentic Triage", "Agentic Consequence", a.consequence, "Derived triage value");
-    add("WCC-AIG-48 Agentic Triage", "Agentic Autonomy", a.autonomy, "Derived triage value");
-    add("WCC-AIG-48 Agentic Triage", "Agentic Authority", a.authority, "Derived triage value");
-    add("WCC-AIG-48 Agentic Triage", "Agentic Reach", a.reach, "Derived triage value");
-    add("WCC-AIG-48 Agentic Triage", "Agentic Controllability", a.controllability, "Derived triage value");
-    add("WCC-AIG-48 Agentic Triage", "Autonomy Level", a.autonomyLabel, "Derived classification");
-    add("WCC-AIG-48 Agentic Triage", "Agency Tier", a.tierLabel, "Derived classification");
-    add("WCC-AIG-48 Agentic Triage", "Agentic Pathway", a.pathway, "Derived route");
-    add("WCC-AIG-48 Agentic Triage", "Agentic Flags", a.flags.length ? a.flags.join("; ") : "None", "Carry forward");
-    add("WCC-AIG-48 Agentic Triage", "Agentic Escalations", a.escalations.length ? a.escalations.join("; ") : "None", "Carry forward");
-    add("WCC-AIG-48 Agentic Triage", "Deployment Control", a.deploymentControl, "Triage output — confirm before deployment");
-
-    add("WCC-AIG-07 Risk Assessment", "Effective Governance Tier", r.effectiveTierName, "Pre-fill; assessor confirms");
-    add("WCC-AIG-07 Risk Assessment", "Assurance Intensity", r.assuranceIntensity, "Pre-fill");
-    add("WCC-AIG-07 Risk Assessment", "Worst Plausible Chain", a.worstChain || "", "Pre-fill; assessor evaluates");
-    add("WCC-AIG-07 Risk Assessment", "Kill-switch Demonstrated", yesNo(a.killSwitch), "Pre-fill; retain evidence reference");
-    add("WCC-AIG-07 Risk Assessment", "Rollback Capability", yesNo(a.rollback), "Pre-fill; retain evidence reference");
-    add("WCC-AIG-07 Risk Assessment", "Boundaries Tested", yesNo(a.boundariesTested), "Pre-fill; retain evidence reference");
-
-    add("WCC-AIG-45 Agent Record / ASBOM", "AIR-ID", p.registerId, "Carry forward");
-    add("WCC-AIG-45 Agent Record / ASBOM", "Agent Name", p.systemName, "Proposed — confirm");
-    add("WCC-AIG-45 Agent Record / ASBOM", "Approved Purpose (mandate)", "", "Manual — only after authorisation");
-    add("WCC-AIG-45 Agent Record / ASBOM", "Proposed Purpose from Intake", p.purpose, "Context only");
-    add("WCC-AIG-45 Agent Record / ASBOM", "Autonomy Level", a.autonomyLabel, "Pre-fill; confirm");
-    add("WCC-AIG-45 Agent Record / ASBOM", "Agency Tier", a.tierLabel, "Pre-fill; confirm");
-    add("WCC-AIG-45 Agent Record / ASBOM", "AGPI Priority", r.effectiveGovernancePriority || r.priority.label, "Confirm governed Register value");
-    add("WCC-AIG-45 Agent Record / ASBOM", "Kill-switch tested?", yesNo(a.killSwitch), "Pre-fill; evidence remains required");
-    add("WCC-AIG-45 Agent Record / ASBOM", "Rollback capability?", yesNo(a.rollback), "Pre-fill; evidence remains required");
-    add("WCC-AIG-45 Agent Record / ASBOM", "Boundary tests completed?", yesNo(a.boundariesTested), "Pre-fill; evidence remains required");
-    add("WCC-AIG-45 Agent Record / ASBOM", "Agent Record reference", a.asbomRef || "", "Reference");
-    a.multipliers.forEach((m) => add("WCC-AIG-45 Agent Record / ASBOM", "Agency Multiplier — " + m, "Present", "Confirm scope / control"));
-    logic.CAPABILITY_VECTOR.forEach((capability) => {
-      add(
-        "WCC-AIG-45 Agent Record / ASBOM",
-        "Capability Vector — " + capability,
-        a.capabilities.includes(capability) ? "Yes" : "",
-        a.capabilities.includes(capability)
-          ? "Pre-fill; confirm whether Yes or Scoped"
-          : "Confirm as No / Yes / Scoped — blank is not an asserted No",
-      );
-    });
-
-    add("WCC-AIG-46 Agent Authority Graph", "AIR-ID", p.registerId, "Carry forward");
-    add("WCC-AIG-46 Agent Authority Graph", "Systems / Tools Accessed", p.systemsAccessed, "Seed only; confirm nodes and edges");
-    add("WCC-AIG-46 Agent Authority Graph", "Automated Action Authority", p.actionAuthority, "Seed only; confirm formal authority");
-    add("WCC-AIG-46 Agent Authority Graph", "Authority / delegation edges", "", "Manual — define permitted edges, limits and delegation");
-    add("WCC-AIG-46 Agent Authority Graph", "Financial / transaction ceilings", "", "Manual — never inferred from multiplier");
-
-    add("WCC-AIG-50 Agentic Action Decision Record", "AIR-ID", p.registerId, "Carry forward");
-    add("WCC-AIG-50 Agentic Action Decision Record", "Agent Record (ASBOM) Ref", a.asbomRef || "", "Carry forward");
-    add("WCC-AIG-50 Agentic Action Decision Record", "Action / event description", "", "Manual — event based");
-    add("WCC-AIG-50 Agentic Action Decision Record", "Authorisation / decision", "", "Manual — actual decision only");
-    add("WCC-AIG-50 Agentic Action Decision Record", "Outcome / evidence", "", "Manual / runtime evidence");
-
-    add("WCC-AIG-39 Post-Deployment Monitoring", "AIR-ID", p.registerId, "Setup seed only");
-    add("WCC-AIG-39 Post-Deployment Monitoring", "AI System / Service", p.systemName, "Setup seed only");
-    add("WCC-AIG-39 Post-Deployment Monitoring", "Proposed Monitoring Owner", p.serviceOwner, "Confirm owner");
-    add("WCC-AIG-39 Post-Deployment Monitoring", "Agentic Deployment Control", a.deploymentControl, "Monitoring-plan context");
-    add("WCC-AIG-39 Post-Deployment Monitoring", "Observed metrics / breaches / post-review risk", "", "Runtime only — do not populate at triage");
-
-    add(
-      "WCC-AIG-36 Gate Log",
-      "Planned Governance Route",
-      calculation.route.map((g) => g.requirement + " — " + g.forum).join(" | "),
-      "Planning only — not a gate decision",
-    );
-    add("WCC-AIG-36 Gate Log", "Actual gate decision / conditions / decision-maker", "", "Manual — write only when the gate event occurs");
-
-    return logic.toCsv(
-      ["Target Artefact", "Field", "Value", "Treatment / Authority Boundary"],
-      rows,
-    );
-  }
-
-  function agenticGovernanceExport() {
-    if (!validateForExport()) return;
-    const calculation = update();
-    if (!latestAgentic) {
-      byId("validationMessage").textContent =
-        "Run Assess agency before downloading the Agentic governance handoff.";
-      byId("agenticStep").scrollIntoView({ behavior: "smooth", block: "start" });
-      return;
-    }
-    download(
-      \`\${safeSlug(calculation.profile.systemName)}-agentic-governance-handoff.csv\`,
-      agenticGovernanceHandoffCsv(calculation),
-      "text/csv;charset=utf-8",
-    );
-  }
-
-`;
-  if (!html.includes(fnMarker)) {
-    throw new Error("Agentic export function insertion point not found.");
-  }
-  html = html.replace(fnMarker, fnInsert + fnMarker);
-
-  const listenerNeedle =
-`  byId("downloadAgent").addEventListener("click", agentExport);`;
-  const listenerReplacement =
-`  byId("downloadAgent").addEventListener("click", agentExport);
-  byId("downloadAgenticGovernance").addEventListener("click", agenticGovernanceExport);`;
-  if (!html.includes(listenerNeedle)) {
-    throw new Error("Agentic export listener insertion point not found.");
-  }
-  html = html.replace(listenerNeedle, listenerReplacement);
-
-  if (!html.includes("agentic-governance-handoff.csv")) {
-    throw new Error("Agentic governance export failed validation.");
-  }
-  return html;
-}
-
-function applyProfessionalDesign(html){
-  html=html.replace(/<p class="header-lede">[\s\S]*?<\/p>/,
-    '<p class="header-lede">A practical AI governance front door: capture the system once, calculate governance priority and risk, identify escalation and assurance needs, and carry one traceable AIR-ID through the governance route.</p>');
-  html=html.replace("</head>",'<style id="professional-ui-v5">'+PROFESSIONAL_CSS+"</style></head>");
-  html=html.replace("</body>","<script>"+UX_JS+"<\/script></body>");
-  return html;
-}
-(async function boot(){
-  const host=document.getElementById("loader");
-  try{
-    const res=await fetch(BASE_URL,{cache:"no-store"});
-    if(!res.ok) throw new Error("Unable to load governance application (HTTP "+res.status+").");
-    const original=await res.text();
-    const functionallyPatched=patch(original);
+  const pipeline =
+`    const functionallyPatched=patch(original);
     const withAgenticGovernance=addAgenticGovernanceExport(functionallyPatched);
     const redesigned=applyProfessionalDesign(withAgenticGovernance);
-    document.open();document.write(redesigned);document.close();
+    document.open();document.write(redesigned);document.close();`;
+
+  const correctedPipeline =
+`    const functionallyPatched=patch(original);
+    const withAgenticGovernance=addAgenticGovernanceExport(functionallyPatched);
+    const correctedGovernance=addGovernanceCorrections(withAgenticGovernance);
+    const redesigned=applyProfessionalDesign(correctedGovernance);
+    const correctedUi=addUiCorrections(redesigned);
+    document.open();document.write(correctedUi);document.close();`;
+
+  if (!src.includes(pipeline)) {
+    throw new Error("Current wrapper structure changed: boot pipeline not found.");
+  }
+  src = src.replace(pipeline, correctedPipeline);
+  return src;
+}
+
+async function boot(){
+  const host=document.getElementById("loader");
+  try{
+    const res=await fetch(CURRENT_WRAPPER,{cache:"no-store"});
+    if(!res.ok) throw new Error("Unable to load pinned governance build (HTTP "+res.status+").");
+    const current=await res.text();
+    const corrected=patchCurrentWrapper(current);
+    document.open();
+    document.write(corrected);
+    document.close();
   }catch(err){
     host.innerHTML="<h1>AI Governance Triage &amp; Routing</h1>"+
-      '<p class="error"><strong>The governance tool could not load.</strong><br>'+String(err.message||err)+
+      '<p class="error"><strong>The corrected governance tool could not load.</strong><br>'+
+      String(err.message||err)+
       "<br><br>No governance data has been submitted or altered.</p>";
   }
+}
+boot();
 })();
 </script>
 </body>
