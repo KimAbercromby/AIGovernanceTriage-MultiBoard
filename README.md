@@ -47,8 +47,24 @@ evidence.
   review; WCC-AIG-45 remains authoritative for permissions and delegations.
 - Download a 05 review handoff, AGPI/risk/agentic pre-fills, prospective gate
   plan, artefact handoff or case summary. Outputs are drafts that must be
-  reconciled with the current controlled workbook and local owners; they are
-  not directly importable rows.
+  reconciled with the current controlled workbook and local owners.
+- Download exact-header draft CSV rows for Register Core, Gate Plan, AGPI scoring,
+  Triage Import and (after Assess agency) the Capability Vector. Column names and
+  order follow the maintained source workbook contract; header alignment alone
+  does not make a row import-ready. Current IDs, source version/state, owners,
+  dates, approvals and evidence remain for authorised owners to verify or record.
+- A locally filled 05 workbook copy contains candidate values in Register Core
+  row 5 only; it is not a controlled Register entry. Purpose, registration dates,
+  approval/operational status and formula-owned fields remain untouched. In a 07
+  Triage Import row export and workbook copy, B20 (authorised priority uplift)
+  and B21 (effective priority derived from that uplift) remain blank.
+- Optionally select a compatible `.xlsx` or `.docx` template to create a filled
+  copy locally in the browser. The selected file is not uploaded or retained.
+  Workbook filling is limited to verified form cells; formula-owned cells and
+  unsupported fields are left alone. Word filling requires explicit `{{key}}`
+  placeholders. The reviewed 04/38 Word documents do not contain supported
+  placeholders, so their original copies are not filled; use the mapped handoffs
+  unless an editable compatible Word template is supplied.
 - Switch to retirement/decommissioning for a user-entered checklist and
   separate draft handoffs for a prospective plan, dated event and event-linked
   conditions. A "complete" checklist means only that answers were entered; it is
@@ -62,7 +78,8 @@ legal scope and evidence quality must be confirmed by the responsible owners.
 
 The source is maintained as readable JavaScript under `src/`; `index.html`
 embeds the browser scripts so the public app is one self-contained static file.
-There are no runtime dependencies or network calls.
+There are no runtime dependencies or network calls. Selected source templates
+are processed only in the current browser tab; refresh clears the selection.
 
 After editing `src/`:
 
@@ -85,4 +102,6 @@ self-contained/static deployment. Node.js is only needed for build and tests.
 
 All calculations happen in the browser. The tool uses no cookies, analytics,
 external services, persistent storage or credentials. Refreshing clears entered
-values. Do not enter sensitive personal or special-category information.
+values and selected files. Do not enter sensitive personal or special-category
+information. A filled copy may preserve the original template's own markings;
+review it before sharing.

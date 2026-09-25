@@ -542,6 +542,7 @@
     renderRoute(route);
     renderHandoff(profile, results);
     updateProvisionalCue();
+    renderExactCompleteness(calculation);
     return calculation;
   }
 
@@ -596,6 +597,330 @@
     link.click();
     link.remove();
     window.setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
+
+  function buildExactExport(calculation) {
+    // The row mapper follows the workbook's legacy "toolsAccessed" key; the
+    // UI contract names the same intake value "systemsAccessed".
+    const exportCalculation = {
+      ...calculation,
+      profile: {
+        ...calculation.profile,
+        toolsAccessed: calculation.profile.systemsAccessed,
+      },
+    };
+    const exact = window.TriageExactRows.buildExactRows(exportCalculation, {
+      agentic: latestAgentic,
+    });
+    const triageImport = exact.rows.find((row) => row.key === "triageImport");
+    for (const field of ["Authorised Governance Priority Uplift", "Effective Governance Priority"]) {
+      const item = triageImport.rows.find((row) => row[0] === field);
+      if (item) {
+        item[1] = "";
+        item[2] = "NOT POPULATED — authorised uplift and its derived priority require controlled review";
+      }
+    }
+    exact.report.missing.push(
+      "WCC-AIG-07 Triage Import B20/B21 remain blank: effective priority depends on an authorised uplift.",
+    );
+    return exact;
+  }
+
+  function readinessSummary(calculation, exact) {
+    const profile = calculation.profile;
+    const results = calculation.results;
+    const lines = [
+      "Triage exact-header export completeness report",
+      "==============================================",
+      "",
+      `System / model: ${profile.systemName || "Not entered"}`,
+      `Provisional risk tier: ${results.effectiveTierName}`,
+      `AGPI priority: ${results.rawAgpiPriority || results.priority.label}`,
+      `Agentic assessment: ${latestAgentic ? `${latestAgentic.tierLabel} — ${latestAgentic.pathway}` : "Not run"}`,
+      "",
+      exact.report.status,
+      ...exact.report.missing.map((item) => `Outstanding: ${item}`),
+      ...exact.report.omittedSheets.map(
+        (item) => `Not emitted as a row — ${item.sheet}: ${item.reason}`,
+      ),
+      ...Object.entries(exact.report.formulaColumnsBlank).map(
+        ([sheet, columns]) => `Formula-owned cells intentionally blank — ${sheet}: ${columns.join(", ")}`,
+      ),
+      "",
+      "Exact-header alignment is not import approval. Verify the current source version, permanent AIR-ID, current assurance, field ownership, authoritative decisions, values and evidence in the controlled workbook. Formula-derived columns are deliberately left blank.",
+      "No register IDs, plan IDs, actual dates, accountable roles, approvals, Gate Events, runtime records or evidence are created by this tool.",
+    ];
+    return `${lines.join("\n")}\n`;
+  }
+
+  function renderExactCompleteness(calculation) {
+    const target = byId("exactCompleteness");
+    if (!target || !window.TriageExactRows) return;
+    const exact = buildExactExport(calculation);
+    const missing = exact.report.missing || [];
+    const tier = calculation.results.effectiveTierName;
+    const agent = latestAgentic
+      ? `Agency assessed: ${latestAgentic.tierLabel}.`
+      : "Agentic assessment not run.";
+    target.textContent =
+      `${exact.report.status} Current pilot result: ${tier} risk; ` +
+      `${calculation.results.rawAgpiPriority || calculation.results.priority.label} AGPI. ` +
+      `${agent} ${missing.length ? `Outstanding: ${missing.join("; ")}. ` : ""}` +
+      "Exact header labels do not make a row import-ready; verify current source version, AIR-ID, current state, owners, evidence and authorised decisions.";
+    const capabilityButton = byId("downloadExactCapabilities");
+    if (capabilityButton) capabilityButton.hidden = !latestAgentic;
+    const agentTemplateOption = byId("templateAgentVectorOption");
+    if (agentTemplateOption) {
+      agentTemplateOption.hidden = !latestAgentic;
+      agentTemplateOption.disabled = !latestAgentic;
+      if (!latestAgentic && byId("templateKind").value === "agentVector") {
+        byId("templateKind").value = "agpi";
+      }
+    }
+  }
+
+  function downloadExactRow(key) {
+    if (!validateForExport()) return;
+    const calculation = update();
+    const exact = buildExactExport(calculation);
+    const item = exact.rows.find((row) => row.key === key);
+    if (!item || !item.rows.length) {
+      byId("validationMessage").textContent =
+        key === "capabilityVector"
+          ? "Run Assess agency before downloading the 45 Capability Vector row."
+          : "No source-aligned rows are available for this target.";
+      return;
+    }
+    const suffixes = {
+      registerCore: "05-register-core",
+      gatePlan: "36-gate-plan",
+      agpiTriage: "06-agpi-triage",
+      triageImport: "07-triage-import",
+      capabilityVector: "45-capability-vector",
+    };
+    download(
+      `${safeSlug(calculation.profile.systemName)}-${suffixes[key]}-exact-header-draft.csv`,
+      window.TriageExactRows.toCsv(item.headers, item.rows),
+      "text/csv;charset=utf-8",
+    );
+    byId("exactCompleteness").textContent =
+      `${item.sheet}: downloaded ${item.rows.length} draft row(s) with ${item.headers.length} source-ordered columns. ` +
+      "This is not import approval; use the completeness report and verify every value against the current controlled source.";
+  }
+
+  function downloadExactReadiness() {
+    if (!validateForExport()) return;
+    const calculation = update();
+    download(
+      `${safeSlug(calculation.profile.systemName)}-exact-row-completeness.txt`,
+      readinessSummary(calculation, buildExactExport(calculation)),
+      "text/plain;charset=utf-8",
+    );
+  }
+
+  function verifiedTemplateAirId(calculation) {
+    if (!byId("confirmTemplateAirId").checked) return "";
+    const airId = String(calculation.profile.registerId || "").trim();
+    if (!airId) {
+      throw new Error("Enter the existing AIR-ID, then confirm it against the current controlled Register.");
+    }
+    return airId;
+  }
+
+  function workbookTemplateCells(kind, calculation) {
+    const profile = calculation.profile;
+    const exact = buildExactExport(calculation);
+    const cells = {};
+    if (kind === "agpi") {
+      cells.B5 = profile.systemName;
+      const airId = verifiedTemplateAirId(calculation);
+      if (airId) cells.B6 = airId;
+      const assessor = byId("templateAssessor").value.trim();
+      const assessmentDate = byId("templateAssessmentDate").value;
+      if (assessor && assessmentDate) {
+        cells.B7 = `${assessor} — ${formatInputDate(assessmentDate)}`;
+      } else if (assessor || assessmentDate) {
+        throw new Error("Enter both the actual assessor and actual assessment date, or leave both blank.");
+      }
+      const scoreRow = exact.rows.find((row) => row.key === "agpiTriage");
+      scoreRow.rows.forEach((row, index) => {
+        cells[`C${10 + index}`] = row[2];
+      });
+      return cells;
+    }
+    if (kind === "riskImport") {
+      const importRows = exact.rows.find((row) => row.key === "triageImport");
+      importRows.rows.forEach((row, index) => {
+        const value = row[1];
+        // B20 is reserved for an authorised uplift; B21 depends on that
+        // controlled decision. Triage cannot write either value.
+        if (![20, 21].includes(5 + index) && value != null && String(value).trim() !== "") {
+          cells[`B${5 + index}`] = value;
+        }
+      });
+      return cells;
+    }
+    if (kind === "gatePlan") {
+      const airId = verifiedTemplateAirId(calculation);
+      if (!airId) {
+        throw new Error("The 36 Gate Plan copy requires an existing AIR-ID verified against the current Register.");
+      }
+      const gatePlan = exact.rows.find((row) => row.key === "gatePlan");
+      const indexes = {
+        "AIR-ID": gatePlan.headers.indexOf("AIR-ID"),
+        "Gate / forum": gatePlan.headers.indexOf("Gate / forum"),
+        "Trigger / lifecycle stage": gatePlan.headers.indexOf("Trigger / lifecycle stage"),
+        Requirement: gatePlan.headers.indexOf("Requirement"),
+      };
+      gatePlan.rows.forEach((row, index) => {
+        const sheetRow = index + 5;
+        Object.entries(indexes).forEach(([header, columnIndex]) => {
+          const letter = { "AIR-ID": "B", "Gate / forum": "C", "Trigger / lifecycle stage": "D", Requirement: "E" }[header];
+          const value = row[columnIndex];
+          if (value != null && String(value).trim() !== "") {
+            cells[`${letter}${sheetRow}`] = value;
+          }
+        });
+      });
+      return cells;
+    }
+    if (kind === "registerCore") {
+      const register = exact.rows.find((row) => row.key === "registerCore");
+      const row = register && register.rows[0];
+      if (!row) throw new Error("No 05 candidate row is available.");
+      const airId = verifiedTemplateAirId(calculation);
+      const byHeader = Object.fromEntries(register.headers.map((header, index) => [header, row[index]]));
+      const safeFields = {
+        "System / Model Name": "B5",
+        "Service Area": "D5",
+        "Service Owner": "E5",
+        "Supplier / Developer": "F5",
+        Source: "G5",
+        "Primary AI Type (summary)": "H5",
+        "Lifecycle Stage": "I5",
+        "Date First Used": "K5",
+        "Action Authority (summary)": "N5",
+        "Is Agent?": "O5",
+      };
+      if (airId) cells.A5 = airId;
+      for (const [header, address] of Object.entries(safeFields)) {
+        const value = header === "Date First Used"
+          ? formatInputDate(byHeader[header])
+          : byHeader[header];
+        if (value != null && String(value).trim() !== "") {
+          cells[address] = value;
+        }
+      }
+      return cells;
+    }
+    if (kind === "agentVector") {
+      if (!latestAgentic) {
+        throw new Error("Run Assess agency before preparing a Capability Vector copy.");
+      }
+      const vector = exact.rows.find((row) => row.key === "capabilityVector");
+      const row = vector && vector.rows[0];
+      if (!row) throw new Error("No assessed Capability Vector values are available.");
+      const columns = "ABCDEFGHIJKLMNOPQRS";
+      vector.headers.slice(0, columns.length).forEach((header, index) => {
+        const value = row[index];
+        if (value != null && String(value).trim() !== "") {
+          cells[`${columns[index]}5`] = value;
+        }
+      });
+      if (!byId("confirmTemplateAirId").checked) delete cells.A5;
+      if (byId("confirmTemplateAirId").checked && !profile.registerId) {
+        throw new Error("Enter the existing AIR-ID, then confirm it against the current controlled Register.");
+      }
+      if (!Object.keys(cells).length) {
+        throw new Error("No confirmed AIR-ID or selected capabilities are available to fill; unselected capabilities stay unknown.");
+      }
+      return cells;
+    }
+    throw new Error("Choose a supported source workbook sheet.");
+  }
+
+  function wordTemplateFields(calculation) {
+    const requested = byId("wordPlaceholderKeys").value
+      .split(",")
+      .map((key) => key.trim())
+      .filter(Boolean);
+    if (!requested.length) {
+      throw new Error("Enter at least one explicit placeholder key, such as systemName or purpose.");
+    }
+    const values = {
+      systemName: calculation.profile.systemName,
+      purpose: calculation.profile.purpose,
+      airId: byId("confirmTemplateAirId").checked
+        ? verifiedTemplateAirId(calculation)
+        : "",
+      riskTier: calculation.results.effectiveTierName,
+      agpiPriority: calculation.results.rawAgpiPriority || calculation.results.priority.label,
+      assuranceIntensity: calculation.results.assuranceIntensity,
+      agenticTier: latestAgentic ? latestAgentic.tierLabel : "",
+      agenticPathway: latestAgentic ? latestAgentic.pathway : "",
+    };
+    const fields = {};
+    for (const key of requested) {
+      if (!Object.prototype.hasOwnProperty.call(values, key)) {
+        throw new Error(`Unsupported Word placeholder key: ${key}`);
+      }
+      if (key === "airId" && !values[key]) {
+        throw new Error("Verify an existing AIR-ID before filling the airId placeholder.");
+      }
+      if (!values[key]) {
+        throw new Error(`No reviewed value is available for the ${key} placeholder.`);
+      }
+      fields[key] = String(values[key]);
+    }
+    return fields;
+  }
+
+  async function createTemplateCopy() {
+    if (!validateForExport()) return;
+    const fileInput = byId("templateFile");
+    const file = fileInput.files && fileInput.files[0];
+    if (!file) {
+      byId("templateStatus").textContent = "Choose a source template file first. No file is uploaded or stored.";
+      return;
+    }
+    const kind = byId("templateKind").value;
+      const expectedExtension = kind === "word" ? ".docx" : ".xlsx";
+    if (!file.name.toLowerCase().endsWith(expectedExtension)) {
+      byId("templateStatus").textContent = `Choose a ${expectedExtension} file for the selected template type.`;
+      return;
+    }
+    byId("templateStatus").textContent = "Validating and filling the selected file locally…";
+    try {
+      const calculation = update();
+      let output;
+      let extension;
+      let mime;
+      if (kind === "word") {
+        output = await window.LocalTemplates.fillWordTemplate(file, {
+          fields: wordTemplateFields(calculation),
+        });
+        extension = ".docx";
+        mime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      } else {
+        const cells = workbookTemplateCells(kind, calculation);
+        output = await window.LocalTemplates.fillWorkbookTemplate(file, { kind, cells });
+        extension = ".xlsx";
+        mime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+      }
+      const base = safeSlug(file.name.replace(/\.[^.]+$/, ""));
+      download(`${base}-filled-review-copy${extension}`, output, mime);
+      const copyNote = kind === "registerCore"
+        ? " Row 5 is a candidate only, not a controlled Register entry; current status and approval fields remain untouched."
+        : kind === "riskImport"
+          ? " B20 (authorised uplift) and B21 (derived effective priority) remain untouched; verify authorised priority decisions in the controlled source."
+          : "";
+      byId("templateStatus").textContent =
+        `Created ${file.name.replace(/\.[^.]+$/, "")}-filled-review-copy${extension} in this browser. ` +
+        `The original file is unchanged; verify the completed copy, formula outputs and source version before use.${copyNote}`;
+    } catch (error) {
+      byId("templateStatus").textContent =
+        `No copy was created: ${error && error.message ? error.message : "The template could not be validated."}`;
+    }
   }
 
   function triggerLabels(ids) {
@@ -1303,6 +1628,19 @@
   byId("downloadSummary").addEventListener("click", summaryExport);
   byId("copySummary").addEventListener("click", copySummary);
   byId("printResult").addEventListener("click", () => window.print());
+  byId("downloadExactRegister").addEventListener("click", () => downloadExactRow("registerCore"));
+  byId("downloadExactGatePlan").addEventListener("click", () => downloadExactRow("gatePlan"));
+  byId("downloadExactAgpi").addEventListener("click", () => downloadExactRow("agpiTriage"));
+  byId("downloadExactRisk").addEventListener("click", () => downloadExactRow("triageImport"));
+  byId("downloadExactCapabilities").addEventListener("click", () => downloadExactRow("capabilityVector"));
+  byId("downloadExactReadiness").addEventListener("click", downloadExactReadiness);
+  byId("createTemplateCopy").addEventListener("click", createTemplateCopy);
+  byId("templateFile").addEventListener("change", () => {
+    const file = byId("templateFile").files && byId("templateFile").files[0];
+    byId("templateStatus").textContent = file
+      ? `${file.name} selected for local validation. It is not uploaded or retained.`
+      : "No file has been selected.";
+  });
 
   // ---- Agentic triage UI ----
   function buildAgenticInputs() {
@@ -1390,6 +1728,7 @@
     html += "<p><strong>Deployment control:</strong> " + esc(r.deploymentControl) + "</p>";
     html += '<p class="muted">Draft handoff only: the triage suggests an agent classification and agency tier. WCC-AIG-45 owns permissions and delegations; verify the current authorised Agent Record and never infer authority from this result.</p>';
     host.innerHTML = html; host.hidden = false;
+    update();
   }
   buildAgenticInputs();
   const invalidateAgency = () => {
@@ -1398,6 +1737,7 @@
     byId("agencyResult").hidden = true;
     byId("validationMessage").textContent =
       "Agency inputs changed. Run Assess agency again before exporting agentic records.";
+    update();
   };
   byId("agenticStep").addEventListener("change", invalidateAgency);
   byId("actionAuthority").addEventListener("change", invalidateAgency);

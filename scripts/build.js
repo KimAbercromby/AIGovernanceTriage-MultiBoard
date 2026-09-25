@@ -9,6 +9,8 @@ const htmlPath = path.join(root, "index.html");
 const html = fs.readFileSync(htmlPath, "utf8");
 const sources = [
   ["triage-logic", "src/triage-logic.js"],
+  ["triage-exact-rows", "src/exact-rows.js"],
+  ["local-templates", "src/local-templates.js"],
   ["triage-app", "src/triage-app.js"],
   ["retire-app", "src/retire-app.js"],
 ];
@@ -20,7 +22,7 @@ for (const [id, sourcePath] of sources) {
   if (!pattern.test(output)) {
     throw new Error(`Expected one embedded script with id "${id}" in index.html.`);
   }
-  output = output.replace(pattern, `$1\n${scriptSource}\n    </script>`);
+  output = output.replace(pattern, (_match, openingTag) => `${openingTag}\n${scriptSource}\n    </script>`);
 }
 
 if (process.argv.includes("--check")) {
