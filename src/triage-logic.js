@@ -169,10 +169,40 @@
   // Exports deliberately use a handoff schema, never an import-ready 05/36 row.
   const DRAFT_HANDOFF_HEADERS = [
     "Target artefact / sheet",
-    "Suggested field",
+    "Field label or prompt",
+    "Field reference type",
     "Triage draft value",
+    "Value status",
     "Review, evidence or authority still required",
   ];
+  const GATE_PLAN_FIELDS = new Set([
+    "Plan ID", "AIR-ID", "Gate/forum", "Trigger/lifecycle", "Requirement",
+    "Basis/triage ref", "Target date", "Responsible role", "Plan state",
+    "waiver rationale+authority", "Source version", "Plan QA",
+  ]);
+  const GATE_EVENT_FIELDS = new Set([
+    "Event ID", "AIR-ID", "Gate/forum", "Lifecycle stage at event",
+    "Decision date", "Decision", "Assurance opinion ref",
+    "Decision-maker/role", "Next gate", "Event notes",
+    "Decision record/minutes ref", "Technical snapshot/as-at ref",
+    "Event record state", "Recorded by/role", "Evidence source/URI",
+    "Event QA", "Plan ID", "priority override fields",
+  ]);
+  const GATE_CONDITION_FIELDS = new Set([
+    "Condition ID", "Event ID", "AIR-ID derived", "Condition/action",
+    "Action owner/role", "Due date", "Condition state", "Resolved/waived on",
+    "Resolution evidence/waiver authority ref", "Overdue derived", "Condition QA",
+  ]);
+  function fieldReferenceType(sheet, field) {
+    const value = String(field || "").trim();
+    const exact =
+      (sheet.includes("Gate Plan") && GATE_PLAN_FIELDS.has(value)) ||
+      (sheet.includes("Gate Events") && GATE_EVENT_FIELDS.has(value)) ||
+      (sheet.includes("Gate Conditions") && GATE_CONDITION_FIELDS.has(value));
+    return exact
+      ? "Exact 36 contract header — handoff only, not import-ready"
+      : "Prompt / candidate label — exact controlled field not verified";
+  }
 
   function clampScore(value) {
     const number = Number(value);
@@ -260,23 +290,27 @@
     const eia = highImpact || affectsPeople
       ? "Potential full assessment — specialist confirmation"
       : "Screening required for every tier";
-    const humanRights =
+    const humanRightsPotential =
       results.effectiveTierName === "Critical" ||
       triggerSet.has("vulnerable") ||
       triggerSet.has("housingCare") ||
       triggerSet.has("statutory");
+    const humanRights = humanRightsPotential
+      ? "Potential engagement — legal owner applicability confirmation pending"
+      : "Screening required — legal owner applicability confirmation pending";
     const atrs =
       profile.publicFacing === "Yes" ||
       affectsPeople ||
       triggerSet.has("statutory")
-        ? "Yes"
-        : "No";
+        ? "Potential applicability — owner confirmation pending"
+        : "Not indicated by intake — owner applicability confirmation pending";
     const supplierDueDiligence = commercialRequired(profile);
 
     return {
       dpia,
       eia,
       humanRights,
+      humanRightsPotential,
       equalityScreening: true,
       humanRightsScreening: true,
       privacyScreening: true,
@@ -300,20 +334,20 @@
       "Human Rights Act 1998 section 6 screening (all tiers; legal-owner confirmation)",
       "Data protection and privacy screening (all tiers; DPO confirmation where relevant)",
     ];
-    evidence.push("Data protection / DPIA screening outcome (all tiers)");
+    evidence.push("Data protection / DPIA applicability screening outcome (all tiers; DPO owner, evidence ref and status pending)");
+    evidence.push("ATRS applicability / publication screening (all tiers; owner confirmation, evidence ref and status pending)");
     if (requirements.dpia.startsWith("Potential DPIA")) {
       evidence.push("Potential DPIA — DPO confirms legal threshold and completion");
     }
     if (requirements.eia.startsWith("Potential full assessment")) {
       evidence.push("Equality impact assessment — indication for specialist confirmation");
     }
-    if (requirements.humanRights) {
+    if (requirements.humanRightsPotential) {
       evidence.push("Human rights assessment — potential engagement to confirm");
     }
     if (requirements.supplierDueDiligence) {
       evidence.push("Supplier AI Due Diligence Questionnaire");
     }
-    if (requirements.atrs === "Yes") evidence.push("ATRS Record");
     if (
       results.effectiveTierName === "High" ||
       results.effectiveTierName === "Critical" ||
@@ -337,8 +371,8 @@
         requirement: "Strategic prioritisation",
         forum: configured.strategic,
         decision: retrospective
-          ? "Confirm the purpose, owner, priority and continued strategic fit through retrospective intake."
-          : "Ask whether the proposal is aligned, sufficiently defined and worth progressing; the authorised forum records its formal decision.",
+          ? "Does the purpose, ownership, priority and continued strategic fit support retaining this live system?"
+          : "Is the proposal aligned, sufficiently defined and worth progressing to the next gate?",
         evidence: [
           "AI Intake Form",
           "AIR-ID",
@@ -357,7 +391,7 @@
         requirement: "Technical endorsement",
         forum: configured.technical,
         decision:
-          "Confirm that the design is feasible, secure, supportable and aligned to architecture and data standards.",
+          "Is the design feasible, secure, supportable and aligned to architecture and data standards?",
         evidence: [
           "Solution design and data flows",
           "Integrations and permissions",
@@ -375,7 +409,7 @@
         requirement: "AI assurance opinion",
         forum: configured.assurance,
         decision:
-          "Determine whether AI-specific risk is sufficiently understood and controlled to issue an assurance opinion.",
+          "Is AI-specific risk sufficiently understood and controlled to issue a versioned assurance opinion?",
         evidence: assuranceEvidence,
         status: `Draft plan — ${results.assuranceIntensity.toLowerCase()} assurance route`,
         handoff:
@@ -387,7 +421,7 @@
         requirement: "Digital portfolio decision",
         forum: configured.digital,
         decision:
-          "Decide whether the digital investment should progress within portfolio, funding, dependency and delivery constraints.",
+          "Should the digital investment progress within portfolio, funding, dependency and delivery constraints?",
         evidence: [
           "Business case or proportionate benefits statement",
           "Technical endorsement",
@@ -405,7 +439,7 @@
         requirement: "Procurement / commercial approval",
         forum: configured.commercial,
         decision:
-          "Confirm that the procurement route, supplier and contract are acceptable under the relevant delegated authority.",
+          "Is the procurement route, supplier and contract acceptable under the relevant delegated authority?",
         evidence: [
           "Supplier AI due diligence",
           "Evaluation and funding approval",
@@ -426,8 +460,8 @@
           : "Deployment / release decision",
         forum: configured.release,
         decision: retrospective
-          ? "Decide whether the live service may continue, continue with conditions, be suspended or return for remediation."
-          : "Confirm that the service is operationally, ethically and evidentially ready to deploy.",
+          ? "Should the live service continue, continue with conditions, be suspended or return for remediation?"
+          : "Is the service operationally, ethically and evidentially ready to deploy?",
         evidence: [
           "Test results and acceptance evidence",
           "Closure or formal acceptance of conditions",
@@ -435,9 +469,7 @@
           "Incident, rollback and suspension arrangements",
           "Training and operational support",
           "Final Model Card and Evidence Index",
-          ...(assessmentRequirements(profile, results).atrs === "Yes"
-            ? ["ATRS applicability / publication owner confirmation (conditional)"]
-            : []),
+          "ATRS applicability / publication owner confirmation and evidence reference (pending; case-specific)",
         ],
         status: retrospective ? "Draft plan — continuation decision proposed" : "Draft plan — proposed",
         handoff:
@@ -461,7 +493,16 @@
   function build05DraftHandoff(profile, results, agentic) {
     const rows = [];
     const add = (sheet, field, value, review) =>
-      rows.push([sheet, field, value || "", review]);
+      rows.push([
+        sheet,
+        field,
+        "Prompt / candidate label — verify against current controlled 05 field",
+        value || "",
+        value == null || String(value).trim() === ""
+          ? "No value asserted — owner verification required"
+          : "Proposal / intake value — owner verification required",
+        review,
+      ]);
     const identityReview = profile.registerId
       ? "Verify this is the existing permanent Council-issued AIR-ID in the current 05 workbook; never replace or mint it."
       : "Obtain the permanent Council-issued AIR-ID from the current 05 workbook; this tool does not create one.";
@@ -483,7 +524,7 @@
     add("05 / Register Core", "Operational Status", "", "Do not infer current operational status; verify the current 05 record.");
     add("05 / Assurance Snapshot", "AGPI / assurance / risk result", `${results.agpiScore} AGPI; ${results.effectiveTierName} effective triage tier`, "Draft prioritisation and risk only; reconcile assurance state against the current 05 workbook. AGPI does not waive Equality Act, HRA, privacy or other case-specific duties.");
     add("05 / Assurance Snapshot", "Assessment screening", "Equality Act 2010 s149, Human Rights Act 1998 s6 and data protection/privacy screening required for every tier.", "Screening is not completion or a legal applicability decision. Specialist and legal owners confirm case-specific duties.");
-    add("05 / Assurance Snapshot", "Assessment indications", `DPIA: ${results.requirements.dpia || "screening required"}; equality: ${results.requirements.eia}; human rights: ${results.requirements.humanRights ? "potential engagement to confirm" : "screening required"}`, "Indications only. DPO, equality and legal owners determine and document case-specific duties and completion.");
+    add("05 / Assurance Snapshot", "Assessment indications", `DPIA: ${results.requirements.dpia || "screening required"}; equality: ${results.requirements.eia}; human rights: ${results.requirements.humanRights}`, "Indications only. DPO, equality and legal owners determine and document case-specific duties and completion.");
     return { headers: DRAFT_HANDOFF_HEADERS.slice(), rows };
   }
 
@@ -510,17 +551,19 @@
 
   function buildGatePlanCsv(profile, route) {
     const headers = [
+      "Handoff target: WCC-AIG-36 Gate Plan / WCC-AIG-40 Gate Map context",
       "Draft plan: AIR-ID reference (verify in 05)",
       "System / Model Name (verify)",
       "Suggested gate order",
       "Prospective requirement",
-      "Decision question for the authorised forum",
+      "Decision question for the authorised forum (not a decision)",
       "Proposed forum (confirm authority)",
       "Evidence / screening prompts",
-      "Plan status (not an event or approval)",
+      "Plan status (proposal only; not an event, condition or approval)",
       "Handoff note",
     ];
     const rows = route.map((gate) => [
+      "WCC-AIG-36 Gate Plan; WCC-AIG-40 Gate Map is routing context only",
       profile.registerId || "",
       profile.systemName || "",
       gate.sequence,
@@ -532,6 +575,131 @@
       gate.handoff,
     ]);
     return toCsv(headers, rows);
+  }
+
+  function buildDecisionReadyHandoff(calculation) {
+    const { profile, results, route } = calculation;
+    const escalation = results.triggerIds.length
+      ? triggerTextFor(results.triggerIds).join("; ")
+      : "none selected";
+    const headers = [
+      "Export status",
+      "WCC-AIG-38 field reference",
+      "AIR-ID (verify existing Council-issued ID in current 05; do not create)",
+      "System",
+      "Forum",
+      "Gate",
+      "Prepared by (owner to complete)",
+      "Preparation / assessment date (actual date; do not use export date)",
+      "Decision question for this forum (not an attained decision)",
+      "AGPI Priority",
+      "Risk tier",
+      "Escalation",
+      "Assurance route",
+      "Recommendation",
+      "Bearing on your decision",
+      "Conditions proposed",
+      "Full evidence references (owner to complete)",
+    ];
+    const rows = route.map((gate) => [
+      "Draft triage prompt — review and complete in WCC-AIG-38; not an import-ready record",
+      "Template field prompt — exact controlled field contract not verified",
+      profile.registerId || "",
+      profile.systemName || "",
+      gate.forum,
+      `${gate.sequence} of ${route.length}`,
+      "",
+      "",
+      gate.decision,
+      results.effectiveGovernancePriority || results.priority.label,
+      results.effectiveTierName,
+      escalation,
+      results.assuranceIntensity,
+      "",
+      "",
+      "",
+      "",
+    ]);
+    return toCsv(headers, rows);
+  }
+
+  function buildCanonicalRecord(calculation, rawAgentic, assessment, exportedAt) {
+    const profile = {
+      ...calculation.profile,
+      dateFirstUsed: (() => {
+        const value = calculation.profile.dateFirstUsed || "";
+        const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+        return match ? `${match[3]}/${match[2]}/${match[1]}` : value;
+      })(),
+    };
+    const raw = rawAgentic || {
+      dimensions: {},
+      multipliers: [],
+      capabilities: [],
+      killSwitch: false,
+      rollback: false,
+      boundariesTested: false,
+      worstChain: "",
+      dimensionNotes: {},
+      asbomRef: "",
+    };
+    return {
+      schemaVersion: "1.0",
+      suiteVersion: "Proposed Westminster integrated suite draft — not approved",
+      exportedAt: exportedAt || new Date().toISOString(),
+      profile,
+      agpi: {
+        dimensionScores: { ...calculation.agpiScores },
+        score: calculation.results.agpiScore,
+        rawPriority: calculation.results.rawAgpiPriority || calculation.results.priority.label,
+        effectiveGovernancePriority:
+          calculation.results.effectiveGovernancePriority || calculation.results.priority.label,
+        authorisedPriorityUplift: null,
+      },
+      risk: {
+        impactScores: { ...calculation.impactScores },
+        likelihood: calculation.results.risk.likelihood,
+        controlEffectiveness: calculation.results.risk.control,
+        impact: calculation.results.risk.impact,
+        inherentRisk: calculation.results.risk.inherent,
+        inherentRiskTier: calculation.results.inherentTierName,
+        residualRisk: calculation.results.risk.residual,
+        residualRiskTier: calculation.results.residualTierName,
+        effectiveGovernanceTier: calculation.results.effectiveTierName,
+        tierFloored: calculation.results.tierFloored,
+        floorReason: calculation.results.floorReason || "",
+        assuranceIntensity: calculation.results.assuranceIntensity,
+      },
+      mandatoryTriggers: TRIGGERS.map((trigger) => ({
+        id: trigger.id,
+        text: trigger.text,
+        selected: calculation.results.triggerIds.includes(trigger.id),
+      })),
+      governance: {
+        status: calculation.results.governanceStatus,
+        forums: { ...calculation.forums },
+        plannedRoute: calculation.route.map((gate) => ({ ...gate })),
+        requiredEvidence: calculation.evidence.slice(),
+      },
+      specialistRouting: assessmentRequirements(profile, calculation.results),
+      agentic: {
+        rawInput: {
+          dimensions: { ...raw.dimensions },
+          multipliers: raw.multipliers.slice(),
+          capabilities: raw.capabilities.slice(),
+          killSwitch: raw.killSwitch,
+          rollback: raw.rollback,
+          boundariesTested: raw.boundariesTested,
+          worstChain: raw.worstChain,
+          dimensionNotes: { ...raw.dimensionNotes },
+          asbomRef: raw.asbomRef,
+        },
+        assessment: assessment ? { ...assessment } : null,
+      },
+      authorityBoundary: {
+        note: "This triage record is decision support. It does not evidence gate approval, specialist sign-off, monitoring results or an approved agent mandate.",
+      },
+    };
   }
 
   // Fields the proposed 05 Register Core does not hold are routed to the
@@ -567,6 +735,34 @@
           { label: "Agentic triage required?", value: "Yes — complete before routing" },
         ],
         note: "Run the Agentic Triage (48): score the five agency dimensions, set the autonomy level and agency tier, test the authority boundary and kill-switch, and open the Agent Record / ASBOM (45). The register carries Is Agent, autonomy and agency tier; the ASBOM holds the full composition and the Authority Graph (46) derives from it. Consequential actions in service are recorded in the Agentic Action / Decision Record (50).",
+      });
+      items.push({
+        artefact: "WCC-AIG-46 Agent Authority Graph",
+        section: "Authority graph derived from WCC-AIG-45 ASBOM",
+        fields: [
+          { label: "Agent / AIR-ID reference", value: profile.registerId || "Pending current 05 AIR-ID and 45 ASBOM reference" },
+          { label: "Authority edge / delegation", value: "Not supplied — authorised owner to verify in ASBOM and delegation record" },
+          { label: "Authority granted by this triage", value: "No" },
+        ],
+        note: "46 is a derived view, not a grant of authority. Verify every edge, constraint and revocation path against the current WCC-AIG-45 ASBOM and formal delegated authority.",
+      });
+      items.push({
+        artefact: "WCC-AIG-39 AI Post-Deployment Monitoring and Review Log",
+        section: "Agentic runtime monitoring prompts",
+        fields: [
+          { label: "AIR-ID / system reference", value: profile.registerId || "Pending current 05 AIR-ID" },
+          { label: "Monitoring status / evidence", value: "Not supplied — owner, approved thresholds and evidence reference pending" },
+        ],
+        note: "Monitoring proposals only; do not create a 39 result, owner, threshold or evidence claim from triage.",
+      });
+      items.push({
+        artefact: "WCC-AIG-50 Agentic Action / Decision Record",
+        section: "Consequential action record prompt",
+        fields: [
+          { label: "Action / decision evidence reference", value: "Not supplied — record consequential actions in controlled 50 when operated" },
+          { label: "Authority granted by this triage", value: "No" },
+        ],
+        note: "No action record, decision or authority is created by this handoff. Link actual action records to verified agent / ASBOM identity and authorised boundaries.",
       });
     }
 
@@ -616,31 +812,31 @@
       });
     }
 
-    const atrsIndicated = requirements.atrs === "Yes";
     const atrsAgentic = results.triggerIds.includes("agentic");
     const atrsAssessments = [
       requirements.dpia.startsWith("Potential DPIA") ? "Potential DPIA — DPO confirmation" : null,
       requirements.eia.startsWith("Potential full assessment") ? "Potential equality impact assessment — specialist confirmation" : null,
-      requirements.humanRights ? "Human Rights Assessment" : null,
+      requirements.humanRightsPotential ? "Human Rights Assessment" : null,
     ].filter(Boolean);
     items.push({
       artefact: "WCC-AIG-15 ATRS Record",
       section: "Tier 1 Summary + Section 6 \u2014 Risks, Mitigations and Impact Assessments",
       fields: [
-        { label: "Transparency record indicated?", value: atrsIndicated ? "Yes" : "No" },
+          { label: "ATRS intake indication (not applicability decision)", value: requirements.atrs },
         { label: "Public / resident facing?", value: yn(profile.publicFacing) },
         {
-          label: "Impact assessments to tick (Section 6)",
-          value: atrsAssessments.length ? atrsAssessments.join(", ") : "None indicated",
+          label: "Potential impact assessment prompts (Section 6; confirm)",
+          value: atrsAssessments.length ? atrsAssessments.join(", ") : "Owner screening pending — no applicability conclusion",
         },
         {
           label: "Human oversight to describe (Section 4)",
           value: atrsAgentic ? "Yes \u2014 agentic trigger fired" : "Standard",
         },
+        { label: "Applicability owner", value: "Case-specific/legal owner — pending" },
+        { label: "Evidence reference", value: "Pending — no evidence reference supplied" },
+        { label: "Screening status", value: "Not completed — owner applicability confirmation pending" },
       ],
-      note: atrsIndicated
-        ? "Potential ATRS candidate only. The case-specific/legal owner confirms whether ATRS applies, any publication duty and publication timing. This draft is not a publication or applicability decision."
-        : "ATRS was not indicated by this intake, which is not a legal applicability decision. The case-specific/legal owner confirms whether it applies before recording N/A or publishing.",
+      note: `${requirements.atrs}. Applicability owner: pending. Evidence reference: pending. Status: screening not completed. The case-specific/legal owner confirms whether ATRS applies, any publication duty and timing; do not record legal N/A from an unselected intake response.`,
     });
 
     const procurement = commercialRequired(profile);
@@ -653,6 +849,22 @@
       note: procurement
         ? "Potential route only; commercial owner confirms whether procurement and a delegated commercial decision are required."
         : "No route indicated by intake; commercial owner confirms case-specific need before N/A is recorded.",
+    });
+
+    const screeningPrompts = [
+      ["WCC-AIG-10 Data Protection Impact Assessment", requirements.dpia, "DPO / privacy owner"],
+      ["WCC-AIG-11 Equality Impact Assessment", requirements.eia, "Equality owner"],
+      ["WCC-AIG-12 Human Rights Assessment", requirements.humanRights, "Legal owner"],
+    ];
+    screeningPrompts.forEach(([artefact, indication, owner]) => {
+      const existing = items.find((item) => item.artefact === artefact);
+      if (!existing) return;
+      existing.fields.push(
+        { label: "Applicability owner", value: `${owner} — pending` },
+        { label: "Evidence reference", value: "Pending — no evidence reference supplied" },
+        { label: "Screening status", value: `Not completed — ${indication}` },
+      );
+      existing.note += " Owner applicability and evidence reference remain pending; an unselected or unanswered intake response is not legal N/A.";
     });
 
     items.push({
@@ -775,6 +987,9 @@
     { id: "evidenceRefs", group: "Gate event record", showAtOrAbove: 3, type: "text", label: "Evidence references (recorded in Notes)", placeholder: "Disposal record, ATRS update log, notification plan" },
     { id: "decisionRecordRef", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Existing WCC-AIG-16 / approved minutes reference (verify)", placeholder: "Existing authorised decision reference" },
     { id: "recordedBy", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Recorded by (recorded in Notes)" },
+    { id: "airIdEvidenceRef", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "AIR-ID evidence reference in current 05", placeholder: "Current 05 record / source URI" },
+    { id: "assuranceEvidenceRef", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Current 05 assurance-state evidence reference", placeholder: "Current 05 snapshot / source URI" },
+    { id: "authorityEvidenceRef", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Decision authority / delegation evidence reference", placeholder: "Delegation record / source URI" },
   ];
 
   const RETIREMENT_GROUP_ORDER = [
@@ -844,6 +1059,9 @@
     if (!ret.priorityLabel) outstanding.push("Current 05 governance priority not verified; full-depth prompts are shown until it is.");
     if (!ret.tier) outstanding.push("Current 05 assurance/risk tier not verified.");
     if (!ret.registerId) outstanding.push("Existing Council-issued AIR-ID not recorded.");
+    if (!ret.airIdEvidenceRef) outstanding.push("AIR-ID evidence from the current 05 record is missing.");
+    if (!ret.assuranceEvidenceRef) outstanding.push("Current 05 assurance-state evidence is missing.");
+    if (!ret.authorityEvidenceRef) outstanding.push("Decision authority / delegation evidence is missing; self-report is not evidence of authority.");
     if (!ret.planId) outstanding.push("Existing Gate Plan ID not recorded or verified.");
     if (!ret.eventId) outstanding.push("Existing Gate Event ID not recorded or verified.");
     if (!ret.forum) outstanding.push("Deciding forum not recorded.");
@@ -866,13 +1084,13 @@
       if (ret.conditionsClosed !== "Yes") outstanding.push("Open conditions or incidents not closed or transferred.");
       if (ret.notifyLive !== "Yes") outstanding.push("Resident notification and appeal handling not confirmed live before switch-off.");
     }
-    const complete = outstanding.length === 0;
+    // Checklist answers and references are self-reported prompts, not verified
+    // evidence or authorised decisions; the application cannot assert readiness.
+    const complete = false;
     return {
       complete,
       outstanding,
-      status: complete
-        ? "Draft checklist complete — user-entered, unverified"
-        : "Draft checklist outstanding — user-entered, unverified",
+      status: "Review outstanding — unverified self-report; authority/evidence review required",
     };
   }
 
@@ -889,37 +1107,80 @@
     const decided = retirementDecided(ret);
     const conditions = retirementConditions(ret);
     const rows = [];
-    const add = (sheet, field, value, review) =>
-      rows.push([`36 / ${sheet}`, field, value || "", review]);
+    const add = (sheet, field, value, review) => {
+      const target = `36 / ${sheet}`;
+      rows.push([
+        target,
+        field,
+        fieldReferenceType(target, field),
+        value || "",
+        value == null || String(value).trim() === ""
+          ? "No value asserted — evidence/owner review pending"
+          : "User-entered proposal — pending verification; never an attained status",
+        review,
+      ]);
+    };
     const identityReview = ret.registerId
       ? "Verify this is the existing Council-issued AIR-ID in current 05; do not create or replace it."
       : "Look up the existing Council-issued AIR-ID in current 05; this tool does not create one.";
 
-    add("Gate Plan (prospective)", "AIR-ID", ret.registerId, identityReview);
-    add("Gate Plan (prospective)", "Plan ID", ret.planId, "Never generated here; verify against the existing 36 Gate Plan.");
-    add("Gate Plan (prospective)", "Gate / forum", ret.forum, "Proposed route only; confirm the authorised forum and delegation.");
-    add("Gate Plan (prospective)", "Requirement", "Retirement / decommission review", "Prospective plan prompt; not evidence of a gate event.");
-    add("Gate Plan (prospective)", "Target date", ret.decommissionDate, "User-entered target only; not a decision date.");
-    add("Gate Events (dated)", "Event ID", ret.eventId, "Never generated here; verify against the current Gate Events sheet before linking.");
-    add("Gate Events (dated)", "Plan ID (optional join)", ret.planId, "Verify that this existing plan belongs to the same AIR-ID and gate.");
-    add("Gate Events (dated)", "Decision date", decided ? retFmtDate(ret.eventDate) : "", "User-entered proposal only; formal decision belongs in WCC-AIG-16 or approved native minutes.");
-    add("Gate Events (dated)", "Decision", decided ? ret.decision : "", "User-entered proposal, not an approved decision or live event.");
-    add("Gate Events (dated)", "Decision-maker / role", ret.decisionMaker, "Verify authority and record the formal decision in WCC-AIG-16 / approved minutes.");
-    add("Gate Events (dated)", "Decision record / minutes ref", ret.decisionRecordRef, "Reference only; verify against the authoritative decision record.");
-    if (conditions.length) {
-      conditions.forEach((condition) => add(
-        "Gate Conditions (event-linked)",
-        "Condition / required action",
-        condition,
-        `Separate condition handoff; verify event ID ${ret.eventId || "(not supplied)"}, owner, due date and evidence. No condition ID or completion state is generated.`,
-      ));
-    } else {
-      add("Gate Conditions (event-linked)", "Condition / required action", "", "No conditions supplied; authorised forum decides whether any are needed.");
-    }
+    const plan = "Gate Plan (prospective)";
+    add(plan, "AIR-ID", ret.registerId, identityReview);
+    add(plan, "Plan ID", ret.planId, "Never generated here; verify against the existing 36 Gate Plan.");
+    add(plan, "Gate/forum", ret.forum, "Proposed route only; confirm the authorised forum and delegation.");
+    add(plan, "Trigger/lifecycle", "Retirement / decommission review", "Prospective plan prompt; not an event.");
+    add(plan, "Requirement", "Review whether retirement should be authorised", "A question for the authorised forum; not an attained decision.");
+    add(plan, "Basis/triage ref", ret.monitoringRef, "Provide verified 39 / triage source reference; user-entered pointer only.");
+    add(plan, "Target date", ret.decommissionDate, "Proposed target only; not an actual decision or decommission date.");
+    add(plan, "Responsible role", ret.serviceOwner, "Verify accountable role; no assignment or delegation is made.");
+    add(plan, "Plan state", "Draft proposal — owner review pending", "Never treated as an actual Gate Event or completed status.");
+    add(plan, "waiver rationale+authority", "", "No waiver proposed or authorised by this handoff.");
+    add(plan, "Source version", "Review against current 05/36 version", "Record actual controlled source version before transfer.");
+    add(plan, "Plan QA", "Pending", "Complete QA in the controlled 36 workbook.");
+
+    const event = "Gate Events (dated; proposed handoff, not an actual event)";
+    add(event, "Event ID", ret.eventId, "Never generated here; verify against the current Gate Events sheet before linking.");
+    add(event, "AIR-ID", ret.registerId, identityReview);
+    add(event, "Gate/forum", ret.forum, "Verify actual forum and delegated authority.");
+    add(event, "Lifecycle stage at event", "Retirement / decommission (proposed)", "Verify actual lifecycle stage when an authorised event occurs.");
+    add(event, "Decision date", decided ? retFmtDate(ret.eventDate) : "", "User-entered proposal only; actual date belongs to the authoritative event.");
+    add(event, "Decision", decided ? ret.decision : "", "User-entered proposal, not an approved decision or live event.");
+    add(event, "Assurance opinion ref", ret.assuranceRef, "Verify actual versioned assurance opinion; blank means evidence pending.");
+    add(event, "Decision-maker/role", ret.decisionMaker, "Verify current authority and record actual decision in WCC-AIG-16 / approved native minutes.");
+    add(event, "Next gate", "Pending authorised forum", "Forum to set; not inferred from triage.");
+    add(event, "Event notes", ret.rationale, "Proposal context only; not a record of an event that occurred.");
+    add(event, "Decision record/minutes ref", ret.decisionRecordRef, "Reference only; verify against authoritative decision record.");
+    add(event, "Technical snapshot/as-at ref", "", "Capture actual system state and as-at evidence at the event.");
+    add(event, "Event record state", "Not recorded — actual event not verified", "Do not mark as actual/complete based on this draft.");
+    add(event, "Recorded by/role", ret.recordedBy, "User-entered prompt only; verify actual recorder/role.");
+    add(event, "Evidence source/URI", ret.evidenceRefs, "Verify each source and URI; blank means event evidence is pending.");
+    add(event, "Event QA", "Pending", "Complete QA in controlled 36 after authoritative record entry.");
+    add(event, "Plan ID", ret.planId, "Optional join; verify this existing plan belongs to this AIR-ID and gate.");
+    add(event, "priority override fields", "", "No override proposed; use controlled override process and authority if applicable.");
+    add("05 / Register Core", "AIR-ID evidence ref", ret.airIdEvidenceRef, "Source pointer only; verify the permanent AIR-ID against current 05.");
+    add("05 / Assurance Snapshot", "Current assurance evidence ref", ret.assuranceEvidenceRef, "Source pointer only; verify current assurance state in 05; not an assessment or approval.");
+    add("WCC-AIG-16 / Decision record", "Authority / delegation evidence ref", ret.authorityEvidenceRef, "Source pointer only; verify the decision-maker's current delegated authority.");
+    const conditionPrompts = conditions.length ? conditions : [""];
+    conditionPrompts.forEach((condition) => {
+        const target = "Gate Conditions (event-linked; proposed action only)";
+        add(target, "Condition ID", "", "Never generated here; controlled owner assigns only after an actual event.");
+        add(target, "Event ID", ret.eventId, "Verify actual event exists before linking a condition.");
+        add(target, "AIR-ID derived", ret.registerId, "Verify derived relationship in the controlled workbook.");
+        add(target, "Condition/action", condition, "Suggested action only; authorised forum determines whether it is a condition.");
+        add(target, "Action owner/role", ret.serviceOwner, "Proposed owner only; confirm with authorised forum.");
+        add(target, "Due date", ret.conditionDue, "Proposed date only; confirm and record after formal decision.");
+        add(target, "Condition state", "Not recorded — pending decision", "Do not infer an open or completed condition.");
+        add(target, "Resolved/waived on", "", "No resolution or waiver asserted.");
+        add(target, "Resolution evidence/waiver authority ref", "", "Evidence/authority pending; no resolution or waiver asserted.");
+        add(target, "Overdue derived", "Derived by controlled workbook", "Do not calculate or manually assert overdue state.");
+        add(target, "Condition QA", "Pending", "Complete QA in controlled 36 after actual event-linked record.");
+    });
     rows.push([
       "05 / Register Core",
       "Operational Status",
+      "Prompt / candidate label — verify against current controlled 05 field",
       "",
+      "No value asserted",
       `Current status is not changed by this checklist (${readiness.status}). Verify and update through the controlled Council process.`,
     ]);
     return { headers: RETIREMENT_HANDOFF_HEADERS.slice(), rows, readiness };
@@ -957,10 +1218,12 @@
       line("Decision record ID", ret.decisionRecordRef || "(not supplied; use existing authorised record ref)"),
       line("System / model name", ret.systemName || "(not entered)"),
       line("AIR-ID", ret.registerId || "(no ID)"),
+      line("AIR-ID evidence in current 05", ret.airIdEvidenceRef || "(missing — verify against current 05)"),
+      line("Current 05 assurance-state evidence", ret.assuranceEvidenceRef || "(missing — verify current 05)"),
       line("Decision date", decisionDate),
       line("Decision-making body", ret.forum || "(not recorded)"),
       line("Risk classification", ret.tier || "(not set)"),
-      line("Decision authority / delegation", ret.boardDecision === "Yes" ? "User-entered Yes — verify delegation and evidence" : na),
+      line("Decision authority / delegation", ret.authorityEvidenceRef || "(missing — verify current delegated authority; self-report is insufficient)"),
       line("Meeting / written-decision ref", ret.decisionRecordRef || na),
     );
 
@@ -1016,17 +1279,19 @@
         ? "Post-retirement / lessons-learned review scheduled"
         : (ret.postReview || na)),
       line("Escalation requirements", na),
-      line("Action closure status", readiness.complete ? "All retirement conditions met" : "Open — see outstanding items"),
+      line("Action closure status", "Not independently verified — no readiness or completion conclusion"),
       line("Conditions verified by / date", na),
     );
 
     heading("5. Authorisation");
     push(
-      line("Recorded by", `${ret.recordedBy || "(not recorded)"} on ${formatDate(new Date())}`),
+      line("Recorded by", ret.recordedBy || "(not recorded; owner to complete with actual record date)"),
       line("Chair / approver", ret.decisionMaker || na),
       line("Signature", "____________________"),
       line("Date", decisionDate),
-      line("Authority vs delegated limits", ret.boardDecision === "Yes" ? "Confirmed: relevant Council delegation" : na),
+      line("Authority vs delegated limits", ret.authorityEvidenceRef
+        ? `User-supplied reference ${ret.authorityEvidenceRef} — verify against current Council delegation`
+        : "(missing — authorised owner to verify; no authority inferred)"),
       line("Quorum met", na),
       line("Attendees / voting members", na),
       line("Conflicts of interest", na),
@@ -1038,6 +1303,7 @@
       "",
       "---------------------------------------------------------------------",
       line("Register Status (not changed)", readiness.status),
+      "This self-reported checklist does not establish retirement readiness, decision completion or switch-off authority.",
     );
     if (!readiness.complete && readiness.outstanding.length) {
       push("Outstanding before decommission:");
@@ -1131,6 +1397,8 @@
     computeAgentic,
     autonomyLabel,
     buildGatePlanCsv,
+    buildDecisionReadyHandoff,
+    buildCanonicalRecord,
     buildArtefactHandoff,
     buildHandoffCsv,
     triggerTextFor,

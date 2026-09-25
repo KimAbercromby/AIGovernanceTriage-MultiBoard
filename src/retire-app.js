@@ -128,7 +128,7 @@
     panel.className = "retire-readiness " + (readiness.complete ? "is-complete" : "is-pending");
     panel.replaceChildren();
     const h = document.createElement("h3");
-    h.textContent = "Gate readiness ";
+    h.textContent = "Retirement review (no readiness determination) ";
     const badge = document.createElement("span");
     badge.className = "retire-status-badge " + (readiness.complete ? "is-complete" : "is-pending");
     badge.textContent = readiness.status;
@@ -136,12 +136,12 @@
     panel.appendChild(h);
     if (readiness.complete) {
       const p = document.createElement("p");
-      p.textContent = "All checklist answers are present. This is user-entered and unverified; it does not create a decision, close conditions or change the current 05 status.";
+      p.textContent = "No verified readiness conclusion is available. Self-reported answers do not establish evidence, decision authority, closure or current 05 status.";
       p.style.margin = "0.4rem 0 0";
       panel.appendChild(p);
     } else {
       const p = document.createElement("p");
-      p.textContent = "Outstanding before switch-off:";
+      p.textContent = "Outstanding evidence and authority review (not a switch-off readiness test):";
       p.style.margin = "0.4rem 0 0";
       panel.appendChild(p);
       const ul = document.createElement("ul");
