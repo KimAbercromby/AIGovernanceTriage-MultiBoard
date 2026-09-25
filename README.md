@@ -10,7 +10,7 @@ workflow. The browser stores no entries and sends no data to a server.
 
 ## Suite alignment and status
 
-This tool is aligned as a review aid to the proposed Westminster AI governance
+This tool is aligned as a review aid to the proposed AI governance
 integration suite. The Council suite is a **proposed, unapproved draft**, not an
 approved or live policy, process or workbook. This public tool does not read or
 write Council records and must not be treated as Council-issued authority.

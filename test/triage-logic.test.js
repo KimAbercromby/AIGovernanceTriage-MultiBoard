@@ -234,7 +234,7 @@ test("canonical JSON labels itself as draft and carries no approval or agent aut
   };
   const json = JSON.stringify(logic.buildCanonicalRecord(calculation, undefined, null, "2026-09-25T00:00:00.000Z"));
   const record = JSON.parse(json);
-  assert.equal(record.suiteVersion, "Proposed Westminster integrated suite draft — not approved");
+  assert.equal(record.suiteVersion, "Proposed integrated AI governance suite draft — not approved");
   assert.equal(record.exportedAt, "2026-09-25T00:00:00.000Z");
   assert.equal(record.agentic.assessment, null);
   assert.match(record.authorityBoundary.note, /does not evidence gate approval/);
