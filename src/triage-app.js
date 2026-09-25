@@ -5,6 +5,10 @@
   const byId = (id) => document.getElementById(id);
   const form = byId("triageForm");
   let latestAgentic = null;
+  const enteredAgpiDimensions = new Set();
+  const enteredImpactDimensions = new Set();
+  let likelihoodEntered = false;
+  let controlEntered = false;
 
   if (!logic || !form) {
     throw new Error("The calculator could not initialise.");
@@ -100,12 +104,15 @@
       logic.SCALE_LABELS.forEach((scaleLabel, index) => {
         const score = index + 1;
         const label = document.createElement("label");
+        label.className = "scale-option";
         const input = document.createElement("input");
         input.type = "radio";
+        input.id = `score-${dimension.id}-${score}`;
         input.name = `score-${dimension.id}`;
         input.value = String(score);
         input.checked = score === 1;
         input.dataset.dimension = dimension.id;
+        label.htmlFor = input.id;
         input.setAttribute(
           "aria-label",
           `${dimension.name}: ${score}, ${scaleLabel}`,
@@ -422,7 +429,7 @@
     const anyAssessment =
       req.dpia.startsWith("Potential DPIA") ||
       req.eia.startsWith("Potential full assessment") ||
-      req.humanRights ||
+      req.humanRightsPotential ||
       req.atrs === "Yes" ||
       req.supplierDueDiligence;
     const label = results.priority.label || "";
@@ -464,12 +471,12 @@
     const routeBanner = byId("routeBanner");
     if (routeBanner) {
       routeBanner.className = "route-banner route-" + gRoute.key;
-      byId("routeBannerName").textContent = gRoute.name;
+      byId("routeBannerName").textContent = `Provisional · ${gRoute.name}`;
       byId("routeBannerWhy").textContent = gRoute.why;
     }
 
     byId("agpiScore").textContent = formatNumber(results.agpiScore);
-    byId("agpiPriority").textContent = results.priority.label;
+    byId("agpiPriority").textContent = `Provisional · ${results.priority.label}`;
     byId("agpiAction").textContent = results.priority.action;
     byId("needle").style.left = `${results.agpiScore}%`;
 
@@ -478,7 +485,7 @@
       `${formatNumber(results.risk.inherent)} · ${results.inherentTierName}`;
     byId("residualRisk").textContent =
       `${formatNumber(results.risk.residual)} · ${results.residualTierName}`;
-    byId("riskTier").textContent = results.effectiveTierName;
+    byId("riskTier").textContent = `Provisional · ${results.effectiveTierName}`;
     byId("tierStat").className =
       `stat tier-${results.effectiveTierName.toLowerCase()}`;
 
@@ -495,7 +502,7 @@
         );
       }
       parts.push(
-        `Effective governance tier: ${results.effectiveTierName}` +
+        `Provisional effective triage tier: ${results.effectiveTierName}` +
           (results.tierFloored
             ? ` (raised by ${results.floorReason}; residual was ${results.residualTierName}).`
             : "."),
@@ -516,13 +523,13 @@
       byId("escalationText").textContent = "";
     }
 
-    byId("summaryPriority").textContent = results.priority.label;
+    byId("summaryPriority").textContent = `Provisional · ${results.priority.label}`;
     byId("summaryTier").textContent =
-      `${results.effectiveTierName}` +
+      `Provisional · ${results.effectiveTierName}` +
       (results.tierFloored ? ` (governance floor: ${results.floorReason})` : "") +
       ` · inherent ${results.inherentTierName} · residual ${formatNumber(results.risk.residual)} (${results.residualTierName})`;
-    byId("summaryIntensity").textContent = results.assuranceIntensity;
-    byId("summaryNextGate").textContent = route[0].requirement;
+    byId("summaryIntensity").textContent = `Provisional · ${results.assuranceIntensity}`;
+    byId("summaryNextGate").textContent = `Proposed · ${route[0].requirement}`;
     byId("summaryCommercial").textContent = logic.commercialRequired(profile)
       ? "Potential route — commercial owner confirms"
       : "Not indicated by intake — confirm case-specific need";
@@ -534,6 +541,7 @@
     renderEvidence(evidence);
     renderRoute(route);
     renderHandoff(profile, results);
+    updateProvisionalCue();
     return calculation;
   }
 
@@ -632,7 +640,7 @@
           `${dimension.name} (${dimension.weight}%): ${agpiScores[dimension.id]} / 5`,
       ),
       `Weighted AGPI score: ${formatNumber(results.agpiScore)} / 100`,
-      `Governance priority: ${results.priority.label}`,
+      `Provisional governance priority: ${results.priority.label}`,
       `Action: ${results.priority.action}`,
       "",
       "RISK AND ESCALATION",
@@ -645,15 +653,15 @@
       `Inherent risk: ${results.risk.inherent}`,
       `Control effectiveness: ${results.risk.control}`,
       `Residual risk: ${formatNumber(results.risk.residual)}`,
-      `Effective governance tier: ${results.effectiveTierName}${results.tierFloored ? ` (governance floor: ${results.floorReason})` : ""}`,
+      `Provisional effective triage tier: ${results.effectiveTierName}${results.tierFloored ? ` (governance floor: ${results.floorReason})` : ""}`,
       ...(results.tierFloored
         ? [
             "  Note: this effective triage tier is a draft routing input, not a current assurance state. If a formal decision is reached, record it in WCC-AIG-16 or approved native minutes and link the separate dated Gate Event in 36.",
           ]
         : []),
-      `Inherent risk tier: ${results.inherentTierName}`,
-      `Residual risk tier: ${results.residualTierName}`,
-      `Assurance intensity: ${results.assuranceIntensity}`,
+      `Provisional inherent risk tier: ${results.inherentTierName}`,
+      `Provisional residual risk tier: ${results.residualTierName}`,
+      `Provisional assurance intensity: ${results.assuranceIntensity}`,
       `Governance status: ${results.governanceStatus}`,
       "Mandatory triggers:",
       ...(results.triggerIds.length
@@ -736,75 +744,29 @@
 
   function fieldValueCsv(rows) {
     return logic.toCsv(
-      ["Field", "Value"],
-      rows.map(([field, value]) => [field, value == null ? "" : value]),
+      [
+        "Field label / prompt",
+        "Field reference type",
+        "Triage draft value",
+        "Value status",
+        "Review, evidence or authority still required",
+      ],
+      rows.map(([field, value]) => [
+        field,
+        "Prompt / candidate label — exact controlled field not verified",
+        value == null ? "" : value,
+        "Triage proposal only — owner verification required",
+        "Review the current artefact and its controlled field list; do not import as a completed assessment.",
+      ]),
     );
   }
 
   function buildCanonicalRecord(calculation) {
-    const profile = {
-      ...calculation.profile,
-      dateFirstUsed: formatInputDate(calculation.profile.dateFirstUsed),
-    };
-    const rawAgentic = readAgentic();
-    return {
-      schemaVersion: "1.0",
-      suiteVersion: "Proposed Westminster integrated suite draft — not approved",
-      exportedAt: new Date().toISOString(),
-      profile,
-      agpi: {
-        dimensionScores: { ...calculation.agpiScores },
-        score: calculation.results.agpiScore,
-        rawPriority: calculation.results.rawAgpiPriority || calculation.results.priority.label,
-        effectiveGovernancePriority:
-          calculation.results.effectiveGovernancePriority || calculation.results.priority.label,
-        authorisedPriorityUplift: null,
-      },
-      risk: {
-        impactScores: { ...calculation.impactScores },
-        likelihood: calculation.results.risk.likelihood,
-        controlEffectiveness: calculation.results.risk.control,
-        impact: calculation.results.risk.impact,
-        inherentRisk: calculation.results.risk.inherent,
-        inherentRiskTier: calculation.results.inherentTierName,
-        residualRisk: calculation.results.risk.residual,
-        residualRiskTier: calculation.results.residualTierName,
-        effectiveGovernanceTier: calculation.results.effectiveTierName,
-        tierFloored: calculation.results.tierFloored,
-        floorReason: calculation.results.floorReason || "",
-        assuranceIntensity: calculation.results.assuranceIntensity,
-      },
-      mandatoryTriggers: logic.TRIGGERS.map((trigger) => ({
-        id: trigger.id,
-        text: trigger.text,
-        selected: calculation.results.triggerIds.includes(trigger.id),
-      })),
-      governance: {
-        status: calculation.results.governanceStatus,
-        forums: { ...calculation.forums },
-        plannedRoute: calculation.route.map((gate) => ({ ...gate })),
-        requiredEvidence: calculation.evidence.slice(),
-      },
-      specialistRouting: logic.assessmentRequirements(profile, calculation.results),
-      agentic: {
-        rawInput: {
-          dimensions: { ...rawAgentic.dimensions },
-          multipliers: rawAgentic.multipliers.slice(),
-          capabilities: rawAgentic.capabilities.slice(),
-          killSwitch: rawAgentic.killSwitch,
-          rollback: rawAgentic.rollback,
-          boundariesTested: rawAgentic.boundariesTested,
-          worstChain: rawAgentic.worstChain,
-          dimensionNotes: { ...rawAgentic.dimensionNotes },
-          asbomRef: rawAgentic.asbomRef,
-        },
-        assessment: latestAgentic ? { ...latestAgentic } : null,
-      },
-      authorityBoundary: {
-        note:
-          "This triage record is decision support. It does not evidence gate approval, specialist sign-off, monitoring results or an approved agent mandate.",
-      },
-    };
+    return logic.buildCanonicalRecord(
+      calculation,
+      readAgentic(),
+      latestAgentic,
+    );
   }
 
   function agpiPrefillCsv(calculation) {
@@ -816,8 +778,8 @@
       ["AIR-ID", p.registerId],
       ["Service area", p.serviceArea],
       ["Service owner", p.serviceOwner],
-      ["Assessed by", ""],
-      ["Assessment date", logic.formatDate(new Date())],
+      ["Assessed by (owner to complete)", ""],
+      ["Assessment date (actual assessment date; owner to complete)", ""],
       ["Resident Impact", s.resident],
       ["Public Trust & Reputation", s.trust],
       ["Legal & Regulatory Exposure", s.legal],
@@ -864,7 +826,7 @@
       ["Systems / Tools Accessed", p.systemsAccessed],
       ["Lifecycle Stage", p.lifecycle],
       ["Personal / Special Category Data", p.dataType],
-      ["Triage Date", logic.formatDate(new Date())],
+      ["Triage export date (not an assessment date)", ""],
       ["AGPI Score (0-100)", r.agpiScore],
       ["Raw AGPI Priority", r.rawAgpiPriority || r.priority.label],
       ["Authorised Governance Priority Uplift", ""],
@@ -971,9 +933,17 @@
       ["Agent Creation Authority", ""],
       ["Self-Modification Authority", ""]
     ];
-    // WCC-AIG-45 is a one-agent-per-row workbook: emit its 50 columns in
-    // controlled order so the CSV row can be reviewed for import into A:AX.
-    return logic.toCsv(rows.map(([field]) => field), [rows.map(([, value]) => value)]);
+    return logic.toCsv(
+      ["Target artefact", "Field label / prompt", "Field reference type", "Triage draft value", "Value status", "Review, evidence or authority still required"],
+      rows.map(([field, value]) => [
+        "WCC-AIG-45 Agent Record / ASBOM",
+        field,
+        "Prompt / candidate label — exact controlled field not verified",
+        value == null ? "" : value,
+        "Proposal only — not a mandate, approval or operational state",
+        "Review the current ASBOM contract and evidence; authorised owners determine mandate, permissions, delegations and status.",
+      ]),
+    );
   }
 
   function agenticGovernanceHandoffCsv(calculation) {
@@ -1043,11 +1013,11 @@
     ));
     add(vector, "Notes", "Triage seed; verify all capabilities and multipliers.", "Context");
 
-    const authority = "WCC-AIG-45 / Authority & Delegations";
-    add(authority, "AIR-ID (agent)", p.registerId, "Identity seed only; no delegation edge created");
-    add(authority, "Authority delegated", "", "Document each authorised edge at the relevant gate");
-    add(authority, "Constraints / ceiling", "", "Do not infer from triage multipliers");
-    add(authority, "Revocable how", "", "Demonstrate before authority is granted");
+    const authority = "WCC-AIG-46 / Agent Authority Graph (derived from 45 ASBOM)";
+    add(authority, "AIR-ID / agent reference", p.registerId, "Identity pointer only; no authority edge created");
+    add(authority, "Authority delegated", "", "Map only an existing authorised edge from WCC-AIG-45; no authority granted here");
+    add(authority, "Constraints / ceiling", "", "Verify against ASBOM and formal delegation; do not infer from triage multipliers");
+    add(authority, "Revocable how", "", "Prompt only; evidence revocation before any authority is granted");
 
     const monitoring = "WCC-AIG-39 / Monitoring Log";
     add(monitoring, "AIR-ID", p.registerId, "Identity seed only; no monitoring result created");
@@ -1057,6 +1027,11 @@
     add(monitoring, "Approved Threshold / Tolerance", "", "Set and approve per metric before live use; blank is outstanding");
     add(monitoring, "Evidence Location", "", "Cite WCC-AIG-50 action IDs and verified logs when operated; no test is presumed");
     ["Denied tool calls","Authority changes","Memory writes","Loops and delegation","External destinations","Human overrides","Time to containment"].forEach(metric => add(monitoring, "Metric / Indicator", metric, "Set Approved Threshold / Tolerance, Monitoring Owner, review window and evidence before live use where applicable"));
+
+    const actions = "WCC-AIG-50 / Agentic Action / Decision Record";
+    add(actions, "AIR-ID / agent reference", p.registerId, "Identity pointer only; no action record or decision created");
+    add(actions, "Action / decision record reference", "", "Record each consequential action in the controlled 50 record when operated; no action authority is granted");
+    add(actions, "Human review / outcome / evidence", "", "Prompt only; verify recorded human review, outcome and source evidence");
 
     return logic.toCsv(
       ["Target Artefact", "Field", "Value", "Treatment / Authority Boundary"],
@@ -1081,57 +1056,14 @@
   }
 
   function gateReadyPrefillCsv(calculation) {
-    const p = calculation.profile;
-    const r = calculation.results;
-    const escalation =
-      r.triggerIds.length ? logic.triggerTextFor(r.triggerIds).join("; ") : "none";
-    const assuranceRoute = r.assuranceIntensity;
-    const gateCount = calculation.route.length;
-
-    const headers = [
-      "AIR-ID",
-      "System",
-      "Forum",
-      "Gate",
-      "Prepared by",
-      "Date",
-      "Decision required",
-      "AGPI Priority",
-      "Risk tier",
-      "Escalation",
-      "Assurance route",
-      "Recommendation",
-      "Bearing on your decision",
-      "Conditions proposed",
-      "Full evidence"
-    ];
-
-    const rows = calculation.route.map((gate) => [
-      p.registerId,
-      p.systemName,
-      gate.forum,
-      gate.sequence + " of " + gateCount,
-      "AI Assurance function",
-      logic.formatDate(new Date()),
-      gate.decision,
-      r.effectiveGovernancePriority || r.priority.label,
-      r.effectiveTierName,
-      escalation,
-      assuranceRoute,
-      "",
-      "",
-      "",
-      ""
-    ]);
-
-    return logic.toCsv(headers, rows);
+    return logic.buildDecisionReadyHandoff(calculation);
   }
 
   function gateReadyExport() {
     if (!validateForExport()) return;
     const calculation = update();
     download(
-      safeSlug(calculation.profile.systemName) + "-gate-ready-decision-ready-prefill.csv",
+      safeSlug(calculation.profile.systemName) + "-decision-ready-paper-review-handoff.csv",
       gateReadyPrefillCsv(calculation),
       "text/csv;charset=utf-8"
     );
@@ -1172,7 +1104,14 @@
       mult.has("External communication") ? "Yes" : "",
       "Triage seed only. Verify selected capabilities and multipliers; unselected fields remain blank pending No / Yes / Scoped confirmation."
     ];
-    return logic.toCsv(headers, [row]);
+    return logic.toCsv(
+      ["Target artefact", ...headers.map((field) => `${field} — prompt / proposed value`), "Field/value status"],
+      [[
+        "WCC-AIG-45 Agent Record / Capability Vector",
+        ...row,
+        "Triage handoff only — unselected capabilities remain unknown, not No; verify exact fields and scope against the current controlled ASBOM.",
+      ]],
+    );
   }
 
   function capabilityVectorExport() {
@@ -1185,7 +1124,7 @@
       return;
     }
     download(
-      safeSlug(calculation.profile.systemName) + "-capability-vector-prefill.csv",
+      safeSlug(calculation.profile.systemName) + "-capability-vector-review-handoff.csv",
       capabilityVectorPrefillCsv(calculation),
       "text/csv;charset=utf-8"
     );
@@ -1231,7 +1170,7 @@
       return;
     }
     download(
-      `${safeSlug(calculation.profile.systemName)}-agent-record-prefill.csv`,
+      `${safeSlug(calculation.profile.systemName)}-agent-record-review-handoff.csv`,
       agentRecordPrefillCsv(calculation),
       "text/csv;charset=utf-8",
     );
@@ -1305,26 +1244,51 @@
   buildImpacts();
   update();
 
-  form.addEventListener("input", update);
-  form.addEventListener("change", update);
-  form.addEventListener("change", (event) => {
-    if (event.target.matches && event.target.matches(
-      '[data-dimension], [data-impact], [data-trigger], #likelihood, #control, #actionAuthority'
-    )) byId("triageReviewed").checked = false;
-  });
-
-  let priorityTouched = false;
-  let riskTouched = false;
-  function updateProvisionalCue() {
-    const cue = byId("provisionalCue");
-    if (cue) cue.hidden = priorityTouched && riskTouched;
+  function markScoreInputEntered(target) {
+    if (!target || !target.matches) return;
+    if (target.matches("[data-dimension]")) {
+      enteredAgpiDimensions.add(target.dataset.dimension);
+    }
+    if (target.matches("[data-impact]")) {
+      enteredImpactDimensions.add(target.dataset.impact);
+    }
+    if (target.matches("#likelihood")) likelihoodEntered = true;
+    if (target.matches("#control")) controlEntered = true;
   }
-  form.addEventListener("change", (event) => {
+
+  function handleFormInput(event) {
     const target = event.target;
-    if (target.closest && target.closest("#priority")) priorityTouched = true;
-    if (target.closest && target.closest("#risk")) riskTouched = true;
-    updateProvisionalCue();
-  });
+    markScoreInputEntered(target);
+    if (target.matches && target.matches(
+      '[data-dimension], [data-impact], [data-trigger], #likelihood, #control, #actionAuthority'
+    )) {
+      byId("triageReviewed").checked = false;
+    }
+    update();
+  }
+  form.addEventListener("input", handleFormInput);
+  form.addEventListener("change", handleFormInput);
+
+  function updateProvisionalCue() {
+    const completeInputs =
+      enteredAgpiDimensions.size === logic.DIMENSIONS.length &&
+      enteredImpactDimensions.size === logic.IMPACT_DIMENSIONS.length &&
+      likelihoodEntered &&
+      controlEntered;
+    const reviewed = byId("triageReviewed").checked;
+    const message = !completeInputs
+      ? "Synthetic / incomplete example: untouched score fields still use built-in defaults. Complete and review every score and trigger. This is not current 05 assurance."
+      : !reviewed
+        ? "All score inputs have been entered, but this triage is not yet confirmed. Review the scores, action authority and triggers. This is not current 05 assurance."
+        : "User-confirmed triage inputs. The calculated priority, risk tier and route remain provisional decision support, not current 05 assurance.";
+    ["priorityProvisionalCue", "riskProvisionalCue", "provisionalCue"].forEach((id) => {
+      const cue = byId(id);
+      if (cue) {
+        cue.textContent = message;
+        cue.hidden = false;
+      }
+    });
+  }
   updateProvisionalCue();
   byId("downloadRegister").addEventListener("click", registerExport);
   byId("downloadCanonical").addEventListener("click", canonicalExport);
