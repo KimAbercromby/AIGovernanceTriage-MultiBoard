@@ -1391,7 +1391,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
         </div>
         <div class="triage-hero-grid">
           <div class="triage-hero-copy">
-            <p class="crest">Multi-board AI triage &amp; governance router</p>
+            <p class="crest">Review aid for the proposed, unapproved Westminster governance draft</p>
             <h1>One intake. <span>Every decision connected.</span></h1>
             <p class="header-lede">Capture a system once, classify governance priority and risk, and carry its AIR-ID through the right assurance and decision route.</p>
             <div class="triage-hero-actions">
@@ -1401,7 +1401,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
           </div>
           <div class="hero-preview" aria-label="One AIR-ID connects intake, priority, risk and governance route">
             <div class="preview-top"><span>Connected governance record</span><span class="preview-chip">One case</span></div>
-            <div class="preview-identity"><span class="preview-id-icon" aria-hidden="true">ID</span><div><small>Permanent identity</small><strong>AIR-XXXX</strong></div></div>
+            <div class="preview-identity"><span class="preview-id-icon" aria-hidden="true">ID</span><div><small>Permanent identity</small><strong>Council-issued AIR-ID</strong></div></div>
             <div class="preview-flow">
               <div><span>1</span><small>Intake</small></div>
               <div><span>2</span><small>Priority</small></div>
@@ -1415,7 +1415,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
           <div><span>01</span><strong>Capture once</strong></div>
           <div><span>02</span><strong>Proportionate assessment</strong></div>
           <div><span>03</span><strong>Connected gate route</strong></div>
-          <div><span>04</span><strong>Controlled exports</strong></div>
+          <div><span>04</span><strong>Draft review handoffs</strong></div>
         </div>
       </div>
     </header>
@@ -1424,14 +1424,11 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
         <div>
           <p class="eyebrow">How it works</p>
           <h2 id="intro-title">One front door, proportionate governance pathways</h2>
-          <p>Every system enters the same front door and is captured once under one AIR-ID. The AGPI establishes governance priority, while the risk assessment separately classifies risk as Low, Medium, High or Critical. Governance pathway is a separate decision: genuinely low-risk, non-acting systems may use the light-touch pathway; non-agentic systems use the non-agentic governance pathway; and systems that can take actions or exercise delegated authority use the agentic governance pathway. A non-agentic system may still be High or Critical risk. Where a system can execute actions without human review of each individual action, the mandatory agentic trigger applies and the minimum effective risk tier is Critical. A governance relay carries the case across the existing forums, with configurable forum names, a decision-ready evidence plan feeding the Decision-Ready Paper (WCC-AIG-38), an Excel-ready Register row and a separate planned-gate export.</p>
+          <p>Use the tool to draft triage and prospective routing prompts for one AI system. AGPI prioritises governance attention; it does not waive Equality Act 2010 section 149, Human Rights Act 1998 section 6, privacy, data-protection or other case-specific duties. Every tier requires rights, equality and privacy screening. A non-agentic system may still be High or Critical risk. Agent authority and permissions belong in WCC-AIG-45; a triage score grants none. Outputs are review handoffs, not live Register rows, current assurance state, Gate Plan / Event / Condition entries or formal decisions.</p>
           <p>
-            The light-touch route is the quick path: a low-risk system that cannot act,
-            does not use personal or special-category data needing assessment, does not
-            affect residents or decisions about them, is not statutory or enforcement, is
-            not novel or resident-facing, and is not a significant new spend, is registered
-            as Priority 4 with a single light Register row and stops there. Width stays at
-            the door; depth arrives only when the risk earns it.
+            A proportionate pathway may reduce review depth, but never skips initial
+            equality, human-rights, privacy and other relevant screening. Specialists and
+            legal owners confirm case-specific duties; no tier is a waiver or approval.
           </p>
         </div>
         <div class="principle">
@@ -1464,14 +1461,14 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
           <h2 id="profile-title">System profile and Register fields</h2>
           </summary>
           <p class="lede">
-            These fields create the input portion of the AI Register row. The nine
-            summary columns added to the Register remain formula-managed and are not
-            overwritten by the export, and neither are the two calculated risk columns.
+            These fields create a triage handoff for review, not an import-ready Register row.
+            AIR-ID is permanent Council-issued identity; use the existing identifier from 05 or
+            leave blank. This tool never creates an identifier or asserts current 05 state.
           </p>
 
           <div class="form-grid">
             <label class="field">
-              <span>AIR-ID <small>optional</small></span>
+              <span>AIR-ID <small>existing Council-issued identifier only; never generated here</small></span>
               <input id="registerId" autocomplete="off" placeholder="AIR-XXXX">
             </label>
             <label class="field">
@@ -1741,7 +1738,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
           </div>
 
           <details class="evidence-details" open>
-            <summary><span>Required evidence package</span><small>Open the full case checklist</small></summary>
+            <summary><span>Screening and evidence prompts</span><small>Open the full case checklist</small></summary>
             <ul class="evidence-list" id="evidenceList"></ul>
           </details>
 
@@ -1766,8 +1763,8 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
             <h3>Artefact handoff</h3>
             <p>
               This is a planning handoff showing triage context for specialist artefacts.
-              Its prompts are not form fields or a direct import. Use the dedicated pre-fill
-              downloads for exact controlled field names; specialists confirm their records.
+              Its prompts are not controlled form fields or a direct import. Review the
+              current workbook/form headers with each responsible specialist before use.
             </p>
             <div id="handoffRows"></div>
           </div>
@@ -1777,24 +1774,21 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
               <h3>Export the result</h3>
               <p>
                 Capture once, reuse safely. The downloads below use the same triage record to
-                pre-fill the Register, AGPI record, Risk Assessment and agentic records where
-                applicable. They document triage and planned governance routing; they do not record
-                that a gate has passed or that the system is governance-approved. Formal decisions,
-                conditions, specialist conclusions, monitoring results and approval evidence remain
-                owned by their downstream governance records. The Register CSV lists the 36 register
-                columns in order. It leaves formula-owned risk cells blank and leaves DPIA, EIA and ATRS
-                decisions blank until the responsible specialist confirms them.
+                prepare draft handoffs for review. They do not create live workbook rows, an AIR-ID,
+                current assurance state, legal determination, gate event, specialist conclusion or
+                approval. Formal decisions, conditions, specialist conclusions, monitoring results and
+                evidence remain owned by their authoritative records.
                <span class="export-ref-note">Small references show the controlled artefact or handoff destination.</span></p>
               <p>
                 If the system can act, run the agentic assessment (Assess agency) before
                 exporting, so the autonomy level, agency tier and Agent Record reference are
-                carried into the Register row, the artefact handoff and the summary.
+                carried into the draft handoff, the artefact handoff and the summary.
               </p>
               <details class="export-guidance">
                 <summary>What each download contains and where it goes</summary>
                 <div class="export-guidance-body">
-                  <p>These downloads use one triage record to pre-fill the Register, AGPI record, Risk Assessment and agentic records where applicable. They document triage and planned routing; they do not record that a gate has passed or that the system is governance-approved.</p>
-                  <p>Formal decisions, conditions, specialist conclusions, monitoring results and approval evidence remain in their authoritative downstream records. The Register CSV lists all 36 Register columns in order, leaves formula-owned risk cells blank and leaves DPIA, EIA and ATRS decisions blank until the responsible specialist confirms them.</p>
+                  <p>These downloads are draft handoffs for review, not live rows. Reconcile them with the applicable current Council-controlled record and authorised local process before any controlled record changes; do not treat the proposed suite as approved. No AIR-ID, assurance state, legal conclusion, FRIA completion, approval, publication or ISO conformity is generated.</p>
+                  <p>The proposed integrated workbook separates 05 identity/current assurance from 36 prospective Gate Plan, dated Gate Events and event-linked Gate Conditions. Authorised decisions remain in WCC-AIG-16 or approved native minutes; WCC-AIG-45 owns agent authority. No export replaces those records.</p>
                   <p>The small references under each button identify its controlled artefact or handoff destination. For action-capable systems, run <strong>Assess agency</strong> before export to carry autonomy level, agency tier and Agent Record reference into the outputs.</p>
                 </div>
               </details>
@@ -1805,7 +1799,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
               <p class="validation-message" id="validationMessage" role="alert"></p>
             </div>
             <div class="button-row">
-              <button type="button" id="downloadRegister"><span class="btn-main">Download Register row</span><span class="btn-ref">WCC-AIG-05 · AI Register</span></button>
+              <button type="button" id="downloadRegister"><span class="btn-main">Download 05 review handoff</span><span class="btn-ref">Draft only · not an import-ready row</span></button>
               <button type="button" id="downloadCanonical" class="secondary"><span class="btn-main">Download canonical record</span><span class="btn-ref">Master triage record · integration</span></button>
               <button type="button" id="downloadAgpi" class="secondary"><span class="btn-main">Download AGPI pre-fill</span><span class="btn-ref">WCC-AIG-06 · AGPI Triage</span></button>
               <button type="button" id="downloadRisk" class="secondary"><span class="btn-main">Download Risk Assessment pre-fill</span><span class="btn-ref">WCC-AIG-07 · Risk Assessment</span></button>
@@ -1873,16 +1867,16 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
           <h2 id="retire-title">Retire or decommission an AI system</h2>
           <p class="lede">
             Retirement is a governance gate in its own right, not a triage. This
-            mode does not score AGPI or plan a deployment route. It runs the
-            decommission gate, scaled to the system's current governance priority,
-            and produces a Gate Log event (WCC-AIG-36) and a Decision Record stub
-            (WCC-AIG-16) keyed to the existing AIR-ID.
+            mode does not score AGPI or plan a deployment route. It drafts retirement
+            handoffs scaled to the priority read from the current Council record.
+            The 36 workbook separates the prospective plan, dated event and linked
+            conditions; formal decisions remain in WCC-AIG-16 or approved minutes.
           </p>
 
           <div class="form-grid">
             <label class="field">
-              <span>AIR-ID</span>
-              <input id="ret-registerId" autocomplete="off" placeholder="AIR-XXXX">
+              <span>AIR-ID <small>existing Council-issued ID from 05</small></span>
+              <input id="ret-registerId" autocomplete="off" placeholder="Existing Council-issued AIR-ID">
             </label>
             <label class="field">
               <span>System or model name <b aria-hidden="true">*</b></span>
@@ -1903,6 +1897,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
             <label class="field">
               <span>Current risk tier <small>from the Register</small></span>
               <select id="ret-tier">
+                <option value="" selected disabled>Select current tier from 05</option>
                 <option>Low</option>
                 <option>Medium</option>
                 <option>High</option>
@@ -1918,17 +1913,17 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
           <div class="retire-readiness" id="retireReadiness" role="status" aria-live="polite"></div>
 
           <div class="retire-output">
-            <h3>Gate Log event (WCC-AIG-36)</h3>
+            <h3>36 plan / event / condition review handoff</h3>
             <p class="lede">
-              Append this event to the Gate Log, keyed to the AIR-ID. The
-              Register Status becomes Decommissioned only when the gate is complete;
-              until then it reads "Retirement: pending gate".
+              Review this event handoff against the current 36 workbook and verify
+              the Council-issued AIR-ID. User-entered readiness answers are not
+              verified evidence and do not change current Register status.
             </p>
             <pre id="retireGateLog"></pre>
           </div>
 
           <div class="retire-output">
-            <h3>Decision Record stub (WCC-AIG-16)</h3>
+            <h3>Decision-paper handoff for WCC-AIG-16 (not a formal record)</h3>
             <pre id="retireDecision"></pre>
           </div>
 
@@ -1936,17 +1931,16 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
             <div>
               <h3>Export the retirement record</h3>
               <p>
-                The Gate Log event downloads as a single-row CSV for the append-only
-                Gate Log. The Decision Record downloads as text. Neither records that
-                a gate has passed; the forum's decision and conditions are recorded at
-                the gate.
+                Downloads are review drafts, not workbook rows. 36 keeps planned gates,
+                dated events and event-linked conditions in separate sheets. The decision
+                prompt is not a decision and readiness uses only user-entered answers.
               </p>
               <p class="validation-message" id="retireValidation" role="alert"></p>
             </div>
             <div class="button-row">
-              <button type="button" id="retireDownloadGateLog">Download Gate Log event</button>
-              <button type="button" id="retireDownloadDecision" class="secondary">Download Decision Record</button>
-              <button type="button" id="retireCopy" class="ghost">Copy both</button>
+              <button type="button" id="retireDownloadGateLog">Download 36 review handoff</button>
+              <button type="button" id="retireDownloadDecision" class="secondary">Download decision-paper handoff</button>
+              <button type="button" id="retireCopy" class="ghost">Copy both drafts</button>
               <button type="button" id="retirePrint" class="ghost">Print</button>
               <span id="retireCopyStatus" role="status" aria-live="polite"></span>
             </div>
@@ -1961,7 +1955,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
         <p><strong>Decision support only.</strong> Numerical results do not replace professional judgement, statutory assessments, delegated authority or local terms of reference. Where uncertainty exists, apply the higher level of scrutiny until formal review is complete.</p>
         <p><strong>Privacy.</strong> This calculator runs entirely in the browser. It uses no cookies, analytics, external services or persistent storage. Refreshing the page clears all entries.</p>
       </div>
-      <p class="footer-version">Aligned to the AI Governance Suite v19.9 (Agentic Security and Monitoring) and the 36-column AI Register (WCC-AIG-05).</p>
+      <p class="footer-version">For review against the proposed, unapproved Westminster AI governance suite. Local static tool; no Council records are read or written.</p>
     </footer>
 
     <script id="triage-logic">
@@ -2133,48 +2127,13 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     release: "Delivery / release authority (including ethics gate)",
   };
 
-  const REGISTER_HEADERS = [
-    "AIR-ID",
-    "System / Model Name",
-    "Purpose / Description",
-    "Service Area",
-    "Service Owner",
-    "Supplier / Developer",
-    "Source",
-    "AI Capability",
-    "Automated Action Authority",
-    "Systems / Tools Accessed",
-    "Lifecycle Stage",
-    "Date Registered",
-    "Date First Used",
-    "Personal / Special Category Data",
-    "Triage Date",
-    "AGPI Score (0-100)",
-    "Effective Governance Priority",
-    "Inherent Risk (1-25)",
-    "Control Effectiveness (1-5)",
-    "Residual Risk",
-    "Risk Tier",
-    "DPIA Required",
-    "DPIA Reference",
-    "EIA Required",
-    "EIA Reference",
-    "ATRS Record Required",
-    "Model Card Complete",
-    "Governance Approval Status",
-    "Monitoring in Place",
-    "Last Review Date",
-    "Next Review Date",
-    "Status",
-    "Is Agent? (can it act?)",
-    "Autonomy Level (if agent)",
-    "Agency Tier (if agent)",
-    "Agent Record (ASBOM) Ref",
+  // Exports deliberately use a handoff schema, never an import-ready 05/36 row.
+  const DRAFT_HANDOFF_HEADERS = [
+    "Target artefact / sheet",
+    "Suggested field",
+    "Triage draft value",
+    "Review, evidence or authority still required",
   ];
-
-  // Columns T and U (Residual Risk, Risk Tier) are calculated in the workbook.
-  // The exporter must leave them empty so a paste cannot destroy their formulas.
-  const CALCULATED_INDEXES = [19, 20];
 
   function clampScore(value) {
     const number = Number(value);
@@ -2250,16 +2209,18 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       results.risk.impact >= 4;
     const affectsPeople = profile.affectsIndividuals === "Yes";
 
-    let dpia = "";
+    let dpia = "Screening required — DPO/privacy owner confirmation";
     if (specialData || triggerSet.has("housingCare") || triggerSet.has("statutory")) {
-      dpia = "Yes";
+      dpia = "Potential DPIA indication — DPO confirmation";
     } else if (profile.dataType === "None") {
-      dpia = "No";
+      dpia = "Screening required — no personal data stated; verify";
     } else if (personalData) {
-      dpia = "";
+      dpia = "Screening required — DPO confirmation";
     }
 
-    const eia = highImpact || affectsPeople ? "Yes" : "";
+    const eia = highImpact || affectsPeople
+      ? "Potential full assessment — specialist confirmation"
+      : "Screening required for every tier";
     const humanRights =
       results.effectiveTierName === "Critical" ||
       triggerSet.has("vulnerable") ||
@@ -2277,9 +2238,12 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       dpia,
       eia,
       humanRights,
+      equalityScreening: true,
+      humanRightsScreening: true,
+      privacyScreening: true,
       atrs,
       supplierDueDiligence,
-      dpiaScreening: personalData && !dpia,
+      dpiaScreening: true,
     };
   }
 
@@ -2293,16 +2257,20 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       "Security Review Checklist",
       "Model Card",
       "Evidence Index",
+      "Equality Act 2010 section 149 screening (all tiers; equality-owner confirmation)",
+      "Human Rights Act 1998 section 6 screening (all tiers; legal-owner confirmation)",
+      "Data protection and privacy screening (all tiers; DPO confirmation where relevant)",
     ];
-    if (requirements.dpia === "Yes" || requirements.dpiaScreening) {
-      evidence.push(
-        requirements.dpia === "Yes"
-          ? "Data Protection Impact Assessment"
-          : "DPIA screening outcome",
-      );
+    evidence.push("Data protection / DPIA screening outcome (all tiers)");
+    if (requirements.dpia.startsWith("Potential DPIA")) {
+      evidence.push("Potential DPIA — DPO confirms legal threshold and completion");
     }
-    if (requirements.eia === "Yes") evidence.push("Equality Impact Assessment");
-    if (requirements.humanRights) evidence.push("Human Rights Assessment");
+    if (requirements.eia.startsWith("Potential full assessment")) {
+      evidence.push("Equality impact assessment — indication for specialist confirmation");
+    }
+    if (requirements.humanRights) {
+      evidence.push("Human rights assessment — potential engagement to confirm");
+    }
     if (requirements.supplierDueDiligence) {
       evidence.push("Supplier AI Due Diligence Questionnaire");
     }
@@ -2331,7 +2299,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
         forum: configured.strategic,
         decision: retrospective
           ? "Confirm the purpose, owner, priority and continued strategic fit through retrospective intake."
-          : "Confirm that the proposal is aligned, sufficiently defined and worth progressing.",
+          : "Ask whether the proposal is aligned, sufficiently defined and worth progressing; the authorised forum records its formal decision.",
         evidence: [
           "AI Intake Form",
           "AIR-ID",
@@ -2340,9 +2308,9 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
           "AGPI triage result",
           "Indicative cost and dependencies",
         ],
-        status: retrospective ? "Required — retrospective baseline" : "Required",
+        status: retrospective ? "Draft plan — retrospective intake" : "Draft plan — proposed",
         handoff:
-          "Record scope, priority, owner and decision; route to technical review with any conditions.",
+          "Draft scope, priority, owner and decision questions in the plan; formal decisions and any conditions belong to the authorised record and linked gate event.",
       },
       {
         sequence: 2,
@@ -2358,9 +2326,9 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
           "Security checklist",
           "Test approach and acceptance criteria",
         ],
-        status: retrospective ? "Required — retrospective technical baseline" : "Required",
+        status: retrospective ? "Draft plan — retrospective baseline" : "Draft plan — proposed",
         handoff:
-          "Append the technical decision and conditions to the Gate Log; file the design baseline in the Evidence Index.",
+          "Propose any prospective gate requirements in 36 Gate Plan. Record a dated decision as a separate Gate Event and create each condition as an event-linked Gate Condition only after the authorised decision.",
       },
       {
         sequence: 3,
@@ -2370,9 +2338,9 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
         decision:
           "Determine whether AI-specific risk is sufficiently understood and controlled to issue an assurance opinion.",
         evidence: assuranceEvidence,
-        status: `Required — ${results.assuranceIntensity.toLowerCase()} assurance`,
+        status: `Draft plan — ${results.assuranceIntensity.toLowerCase()} assurance route`,
         handoff:
-          "Issue a versioned assurance opinion; carry forward open conditions and evidence gaps as a precondition for digital governance.",
+          "The assurance owner may issue a versioned assurance opinion and carry forward conditions; triage itself is not an assurance opinion.",
       },
       {
         sequence: 4,
@@ -2388,9 +2356,9 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
           "Dependencies and resourcing",
           "Material open conditions",
         ],
-        status: "Required",
+        status: "Draft plan — proposed",
         handoff:
-          "Record the portfolio decision and conditions; confirm the delivery and commercial route.",
+          "Prepare the portfolio decision question and evidence; the authorised forum records any decision in its formal record.",
       },
       {
         sequence: 5,
@@ -2406,10 +2374,10 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
           "Audit and change-notification rights",
           "Versioned AI assurance opinion",
         ],
-        status: commercial ? "Required" : "Not required — record N/A and rationale",
+        status: commercial ? "Draft candidate — confirm with commercial owner" : "Not indicated by intake — confirm with commercial owner",
         handoff: commercial
-          ? "Record the commercial decision, contract conditions and supplier obligations."
-          : "Record N/A and the rationale so the audit trail shows why no commercial gate was used.",
+          ? "If procurement applies, confirm the relevant commercial authority and record its decision and conditions."
+          : "Confirm case-specific procurement applicability with the commercial owner before recording N/A.",
       },
       {
         sequence: 6,
@@ -2429,12 +2397,12 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
           "Training and operational support",
           "Final Model Card and Evidence Index",
           ...(assessmentRequirements(profile, results).atrs === "Yes"
-            ? ["ATRS Record"]
+            ? ["ATRS applicability / publication owner confirmation (conditional)"]
             : []),
         ],
-        status: retrospective ? "Required — continuation decision" : "Required",
+        status: retrospective ? "Draft plan — continuation decision proposed" : "Draft plan — proposed",
         handoff:
-          "Record the release decision and approved operating baseline, next review date and re-triage triggers; begin or confirm monitoring.",
+          "If authorised, record the release decision in WCC-AIG-16 or approved native minutes, link the dated 36 Gate Event, and record each condition separately. Triage does not approve deployment.",
       },
     ];
   }
@@ -2447,94 +2415,37 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     }).format(date || new Date());
   }
 
-  function indicated(value) {
-    // Triage INDICATES whether an assessment is needed; the DPO and specialist
-    // leads CONFIRM it. The exported row must not assert a decided "Yes".
-    if (value === "Yes") return "Indicated — pending confirmation";
-    if (value === "No") return "Not indicated";
-    return value;
-  }
-
   function isAgentSystem(profile, results) {
     const canAct = profile.actionAuthority && profile.actionAuthority !== "None — outputs only";
     return profile.capability === "Agentic AI" || canAct || (results.triggerIds && results.triggerIds.includes("agentic"));
   }
-  function buildRegisterRow(profile, results, now, agentic) {
-    const requirements = assessmentRequirements(profile, results);
-    const date = formatDate(now || new Date());
-    const retrospective = profile.lifecycle === "Live";
-    // Governance Approval Status (column AA) carries the retrospective state;
-    // Status (column AG) carries the operational state. They are different columns.
-    const approvalStatus = retrospective
-      ? "Retrospective intake — pending"
-      : "Pending";
-    const status = retrospective
-      ? "Active"
-      : profile.lifecycle === "Retired"
-        ? "Decommissioned"
-        : "";
-    const notes = [
-      "Generated by AI Governance Multi-Board Triage Calculator.",
-      "Validate assessment requirements, forum names and delegated authorities locally.",
-      requirements.dpiaScreening
-        ? "Personal data indicated: record the DPIA screening outcome before approval."
-        : "",
-      isAgentSystem(profile, results)
-        ? "Agent: open an Agent Record (ASBOM), run the Agentic Triage and set autonomy and agency tier."
-        : "",
-    ]
-      .filter(Boolean)
-      .join(" ");
+  function build05DraftHandoff(profile, results, agentic) {
+    const rows = [];
+    const add = (sheet, field, value, review) =>
+      rows.push([sheet, field, value || "", review]);
+    const identityReview = profile.registerId
+      ? "Verify this is the existing permanent Council-issued AIR-ID in the current 05 workbook; never replace or mint it."
+      : "Obtain the permanent Council-issued AIR-ID from the current 05 workbook; this tool does not create one.";
 
-    const isAgent = isAgentSystem(profile, results) ? "Yes" : "No";
-    // The web intake uses short lifecycle labels; WCC-AIG-05 validates against
-    // the seven controlled stage names in its Lists sheet.
-    const registerLifecycle = {
-      Idea: "Idea and Innovation",
-      Pilot: "Deployment and Operation",
-      Testing: "Risk Assessment and Review",
-      Live: "Deployment and Operation",
-      Retired: "Retirement and Decommissioning",
-    }[profile.lifecycle] || "";
-    const values = [
-      profile.registerId || "",
-      profile.systemName || "",
-      profile.purpose || "",
-      profile.serviceArea || "",
-      profile.serviceOwner || "",
-      profile.supplierDeveloper || "",
-      profile.source || "",
-      profile.capability || "",
-      profile.actionAuthority || "",
-      profile.systemsAccessed || "",
-      registerLifecycle,
-      date,
-      profile.dateFirstUsed || "",
-      profile.dataType || "",
-      date,
-      results.agpiScore,
-      results.effectiveGovernancePriority || results.priority.label,
-      results.risk.inherent,
-      results.risk.control,
-      "",
-      "",
-      "", // The DPO confirms the DPIA decision; an indication is not Yes/No.
-      "",
-      "", // Equality assessment ownership remains with the specialist.
-      "",
-      "", // Transparency-record requirement remains unconfirmed at triage.
-      "",
-      approvalStatus,
-      "",
-      "",
-      "",
-      status,
-      agentic ? "Yes" : isAgent,
-      agentic ? agentic.autonomyLabel : "",
-      agentic ? agentic.tierLabel : "",
-      agentic ? (agentic.asbomRef || "") : "",
-    ];
-    return { headers: REGISTER_HEADERS.slice(), values, calculatedIndexes: CALCULATED_INDEXES.slice() };
+    add("05 / Register Core", "AIR-ID", profile.registerId, identityReview);
+    add("05 / Register Core", "System / Model Name", profile.systemName, "Verify against the current Council record.");
+    add("05 / Register Core", "Approved Purpose / Boundary", profile.purpose, "Intake proposal only; it is not approved purpose. The authorised owner confirms the approved purpose and boundary.");
+    add("05 / Register Core", "Service Area", profile.serviceArea, "Verify locally.");
+    add("05 / Register Core", "Service Owner", profile.serviceOwner, "Verify current accountable owner.");
+    add("05 / Register Core", "Supplier / Developer", profile.supplierDeveloper, "Verify locally.");
+    add("05 / Register Core", "Source", profile.source, "Verify against the controlled list in the current workbook.");
+    add("05 / Register Core", "Primary AI Type (summary)", profile.capability, "Triage description only; confirm controlled value.");
+    add("05 / Register Core", "Lifecycle Stage", profile.lifecycle, "Proposed stage; map to the current workbook's controlled list.");
+    add("05 / Register Core", "Date First Used", profile.dateFirstUsed, "User-entered date; verify evidence.");
+    add("05 / Register Core", "Action Authority (summary)", profile.actionAuthority, "Intake description only; does not grant authority. Verify actual permissions and delegations in WCC-AIG-45.");
+    add("05 / Register Core", "Is Agent?", isAgentSystem(profile, results) ? "Triage indicates possible agent" : "Triage did not identify an agent", "Classification prompt only; reconcile with actual capability and WCC-AIG-45. Unknown must not be treated as No.");
+    add("05 / Register Core", "Agent Record (45) Ref", agentic && agentic.asbomRef, "User-entered pointer only; confirm the existing authorised WCC-AIG-45 record.");
+    add("05 / Register Core", "Governance Approval Status", "", "Do not infer approval. Verify current state in 05; formal decisions belong in WCC-AIG-16 or approved native minutes and link to the 36 event.");
+    add("05 / Register Core", "Operational Status", "", "Do not infer current operational status; verify the current 05 record.");
+    add("05 / Assurance Snapshot", "AGPI / assurance / risk result", `${results.agpiScore} AGPI; ${results.effectiveTierName} effective triage tier`, "Draft prioritisation and risk only; reconcile assurance state against the current 05 workbook. AGPI does not waive Equality Act, HRA, privacy or other case-specific duties.");
+    add("05 / Assurance Snapshot", "Assessment screening", "Equality Act 2010 s149, Human Rights Act 1998 s6 and data protection/privacy screening required for every tier.", "Screening is not completion or a legal applicability decision. Specialist and legal owners confirm case-specific duties.");
+    add("05 / Assurance Snapshot", "Assessment indications", `DPIA: ${results.requirements.dpia || "screening required"}; equality: ${results.requirements.eia}; human rights: ${results.requirements.humanRights ? "potential engagement to confirm" : "screening required"}`, "Indications only. DPO, equality and legal owners determine and document case-specific duties and completion.");
+    return { headers: DRAFT_HANDOFF_HEADERS.slice(), rows };
   }
 
   function triggerTextFor(ids) {
@@ -2560,15 +2471,15 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
 
   function buildGatePlanCsv(profile, route) {
     const headers = [
-      "AIR-ID",
-      "System / Model Name",
-      "Gate Sequence",
-      "Gate Requirement",
-      "Decision Needed",
-      "Forum / Decision Authority",
-      "Evidence Required",
-      "Planned Status",
-      "Handoff / Record Update",
+      "Draft plan: AIR-ID reference (verify in 05)",
+      "System / Model Name (verify)",
+      "Suggested gate order",
+      "Prospective requirement",
+      "Decision question for the authorised forum",
+      "Proposed forum (confirm authority)",
+      "Evidence / screening prompts",
+      "Plan status (not an event or approval)",
+      "Handoff note",
     ];
     const rows = route.map((gate) => [
       profile.registerId || "",
@@ -2578,15 +2489,15 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       gate.decision,
       gate.forum,
       gate.evidence.join("; "),
-      gate.status,
+      `Draft only — ${gate.status}`,
       gate.handoff,
     ]);
     return toCsv(headers, rows);
   }
 
-  // Fields the 36-column Register row does not hold are routed to the
-  // artefact whose form owns them. Returns, per triaged system, what to record
-  // and where. The triage pre-fills what it knows; approval is left to the gate.
+  // Fields the proposed 05 Register Core does not hold are routed to the
+  // artefact whose form owns them. Returns prompts, not import-ready records;
+  // approval and any event-linked conditions remain with their formal owners.
   function buildArtefactHandoff(profile, results) {
     const requirements = assessmentRequirements(profile, results);
     const yn = (v) => (v === "Yes" ? "Yes" : v === "No" ? "No" : "Not stated");
@@ -2627,40 +2538,27 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
         { label: "Materially affects individuals?", value: yn(profile.affectsIndividuals) },
         { label: "Public / resident facing?", value: yn(profile.publicFacing) },
       ],
-      note:
-        requirements.dpia === "Yes"
-          ? "DPIA indicated \u2014 complete the full assessment."
-          : requirements.dpiaScreening
-            ? "Personal data present \u2014 record the screening outcome before approval."
-            : "Record the screening decision.",
+      note: `${requirements.dpia}. A DPO/privacy owner determines case-specific legal requirements and records any assessment outcome; this tool does not establish applicability or completion.`,
     });
 
-    if (
-      profile.publicFacing === "Yes" ||
-      profile.affectsIndividuals === "Yes" ||
-      requirements.eia === "Yes"
-    ) {
-      items.push({
+    items.push({
         artefact: "WCC-AIG-11 Equality Impact Assessment",
-        section: "Section 2 \u2014 Purpose and Affected Groups",
+        section: "Section 2 \u2014 Equality Act 2010 section 149 screening (all tiers)",
         fields: [
           { label: "Public / resident facing?", value: yn(profile.publicFacing) },
           { label: "Materially affects individuals?", value: yn(profile.affectsIndividuals) },
         ],
-        note: "Record affected groups (residents, staff, service users) and any protected-characteristic impact.",
+        note: `${requirements.eia}. Screen every system; an equality owner determines whether a fuller assessment is needed. AGPI does not waive the public sector equality duty.`,
       });
-    }
 
-    if (requirements.humanRights || profile.affectsIndividuals === "Yes") {
-      items.push({
+    items.push({
         artefact: "WCC-AIG-12 Human Rights Assessment",
-        section: "Section 3 \u2014 Convention and Protocol Rights Screening",
+        section: "Section 3 \u2014 Human Rights Act 1998 section 6 screening (all tiers)",
         fields: [
           { label: "Materially affects individuals?", value: yn(profile.affectsIndividuals) },
         ],
-        note: "Identify each Convention right potentially engaged and record the legal basis.",
+        note: "Screen every system; the legal owner confirms whether Convention rights are engaged, the lawful basis and any full assessment. Triage is not a legal conclusion and AGPI does not waive section 6 duties.",
       });
-    }
 
     if (
       profile.publicFacing === "Yes" ||
@@ -2682,8 +2580,8 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     const atrsIndicated = requirements.atrs === "Yes";
     const atrsAgentic = results.triggerIds.includes("agentic");
     const atrsAssessments = [
-      requirements.dpia === "Yes" ? "DPIA" : null,
-      requirements.eia === "Yes" ? "EIA" : null,
+      requirements.dpia.startsWith("Potential DPIA") ? "Potential DPIA — DPO confirmation" : null,
+      requirements.eia.startsWith("Potential full assessment") ? "Potential equality impact assessment — specialist confirmation" : null,
       requirements.humanRights ? "Human Rights Assessment" : null,
     ].filter(Boolean);
     items.push({
@@ -2702,8 +2600,8 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
         },
       ],
       note: atrsIndicated
-        ? "ATRS is voluntary for local authorities but indicated here (public or resident facing, materially affects individuals, or informs a statutory decision). Complete the pre-draft aid in plain language, tick the indicated impact assessments in Section 6 and carry the same assessment references used in the register. The pre-draft aid is not the published record \u2014 transfer the content into the current official GDS / gov.uk template at publication."
-        : "ATRS is voluntary for local authorities and not indicated by this result. Record N/A with a short rationale so the decision is visible.",
+        ? "Potential ATRS candidate only. The case-specific/legal owner confirms whether ATRS applies, any publication duty and publication timing. This draft is not a publication or applicability decision."
+        : "ATRS was not indicated by this intake, which is not a legal applicability decision. The case-specific/legal owner confirms whether it applies before recording N/A or publishing.",
     });
 
     const procurement = commercialRequired(profile);
@@ -2711,11 +2609,11 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       artefact: "WCC-AIG-13 Supplier AI Due Diligence Questionnaire",
       section: "Procurement / contracting",
       fields: [
-        { label: "Procurement approval needed?", value: procurement ? "Yes" : "No" },
+        { label: "Procurement route indicated by intake?", value: procurement ? "Potential route — confirm" : "Not indicated — confirm" },
       ],
       note: procurement
-        ? "Issue the DDQ to the supplier and record the procurement gate in the Gate Log (36)."
-        : "No procurement route indicated \u2014 record N/A.",
+        ? "Potential route only; commercial owner confirms whether procurement and a delegated commercial decision are required."
+        : "No route indicated by intake; commercial owner confirms case-specific need before N/A is recorded.",
     });
 
     items.push({
@@ -2731,13 +2629,13 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     });
 
     items.push({
-      artefact: "WCC-AIG-36 Gate Log / WCC-AIG-16 Governance Decision Record",
-      section: "Approval event",
+      artefact: "WCC-AIG-16 Governance Decision Record + 05/36 integrated workbook",
+      section: "Formal decision and linked gate records",
       fields: [
-        { label: "Approved by", value: "Pending \u2014 record at gate" },
-        { label: "Approval date", value: "Pending \u2014 record at gate" },
+        { label: "Decision-maker / date", value: "Not supplied — authorised forum records in WCC-AIG-16 or approved native minutes" },
+        { label: "05 / 36 relationship", value: "05 keeps AIR-ID and current assurance; 36 separates prospective Gate Plan, dated Gate Events and event-linked Gate Conditions." },
       ],
-      note: "The triage cannot decide approval. Record the forum, decision-maker and date when the gate is passed.",
+      note: "Handoff only: this export does not create an AIR-ID, plan/event/condition row, approval, decision record, event ID or evidence. Verify against the applicable current Council-controlled workbook and authorised process; the proposed suite remains a draft.",
     });
 
     return items;
@@ -2827,7 +2725,8 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     { id: "postReview", group: "Critical assurance", showAtOrAbove: 1, type: "select", label: "Post-retirement / lessons-learned review scheduled?", options: ["No", "Yes: date recorded"] },
     { id: "notifyLive", group: "Critical assurance", showAtOrAbove: 1, type: "select", label: "Resident notification and appeal handling live before switch-off?", options: ["No", "Yes"] },
 
-    { id: "eventId", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Event ID (next in the Gate Log)", placeholder: "GATE-XXXX" },
+    { id: "planId", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Existing Gate Plan ID (verify in 36; do not invent)", placeholder: "Existing plan ID only" },
+    { id: "eventId", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Existing Event ID (verify in 36; do not invent)", placeholder: "Existing event ID only" },
     { id: "forum", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Gate / forum" },
     { id: "decision", group: "Gate event record", showAtOrAbove: 5, type: "select", label: "Gate decision (Stop = decommission; Progress with condition = approve with conditions)", options: ["Pending: not yet decided", "Progress", "Progress with condition", "Return for evidence", "Pause", "Stop", "Noted", "Priority override", "Escalation raised"] },
     { id: "eventDate", group: "Gate event record", showAtOrAbove: 5, type: "date", label: "Date of decision (leave blank until decided)" },
@@ -2835,7 +2734,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     { id: "conditionDue", group: "Gate event record", showAtOrAbove: 3, type: "date", label: "Condition due date (if any)" },
     { id: "assuranceRef", group: "Gate event record", showAtOrAbove: 2, type: "text", label: "Assurance opinion reference" },
     { id: "evidenceRefs", group: "Gate event record", showAtOrAbove: 3, type: "text", label: "Evidence references (recorded in Notes)", placeholder: "Disposal record, ATRS update log, notification plan" },
-    { id: "decisionRecordRef", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Decision record / minutes ref", placeholder: "GDR-XXXX or minutes ref" },
+    { id: "decisionRecordRef", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Existing WCC-AIG-16 / approved minutes reference (verify)", placeholder: "Existing authorised decision reference" },
     { id: "recordedBy", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Recorded by (recorded in Notes)" },
   ];
 
@@ -2848,28 +2747,11 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     "Gate event record",
   ];
 
-  // Matches WCC-AIG-36 exactly: columns A-O (15), one row per gate event.
-  const RETIREMENT_GATELOG_HEADERS = [
-    "Event ID",
-    "AIR-ID",
-    "System / Model Name",
-    "Gate / forum",
-    "Lifecycle stage",
-    "Date",
-    "Decision",
-    "Conditions set",
-    "Condition due",
-    "Condition status",
-    "Assurance opinion ref",
-    "Decision-maker / role",
-    "Next gate",
-    "Notes",
-    "Decision record / minutes ref",
-  ];
+  const RETIREMENT_HANDOFF_HEADERS = DRAFT_HANDOFF_HEADERS.slice();
 
   function retLevelFor(label) {
     const found = RETIREMENT_PRIORITIES.find((p) => p.label === label);
-    return found ? found.level : 5;
+    return found ? found.level : 1;
   }
 
   function retirementFieldsFor(level) {
@@ -2917,10 +2799,17 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
   }
 
   function retirementReadiness(ret) {
-    const level = Number(ret.priorityLevel) || 5;
+    const level = Number(ret.priorityLevel) || 1;
     const decided = retirementDecided(ret);
     const outstanding = [];
-    if (!ret.forum && !ret.decisionMaker) outstanding.push("Deciding forum or decision-maker not recorded.");
+    if (!ret.priorityLabel) outstanding.push("Current 05 governance priority not verified; full-depth prompts are shown until it is.");
+    if (!ret.tier) outstanding.push("Current 05 assurance/risk tier not verified.");
+    if (!ret.registerId) outstanding.push("Existing Council-issued AIR-ID not recorded.");
+    if (!ret.planId) outstanding.push("Existing Gate Plan ID not recorded or verified.");
+    if (!ret.eventId) outstanding.push("Existing Gate Event ID not recorded or verified.");
+    if (!ret.forum) outstanding.push("Deciding forum not recorded.");
+    if (!ret.decisionMaker) outstanding.push("Decision-maker / role not recorded.");
+    if (!ret.decisionRecordRef) outstanding.push("WCC-AIG-16 / approved native minutes reference not recorded.");
     if (!decided) outstanding.push("Gate decision not yet recorded.");
     if (decided && !ret.eventDate) outstanding.push("Date of decision not set.");
     if (!ret.decommissionDate) outstanding.push("Planned decommission date not set.");
@@ -2939,7 +2828,13 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       if (ret.notifyLive !== "Yes") outstanding.push("Resident notification and appeal handling not confirmed live before switch-off.");
     }
     const complete = outstanding.length === 0;
-    return { complete, outstanding, status: complete ? "Decommissioned" : "Retirement: pending gate" };
+    return {
+      complete,
+      outstanding,
+      status: complete
+        ? "Draft checklist complete — user-entered, unverified"
+        : "Draft checklist outstanding — user-entered, unverified",
+    };
   }
 
   function retirementNextGate(ret) {
@@ -2954,47 +2849,48 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     const readiness = retirementReadiness(ret);
     const decided = retirementDecided(ret);
     const conditions = retirementConditions(ret);
-    const conditionText = conditions.length
-      ? conditions.map((c, i) => `${i + 1}. ${c}`).join(" ")
-      : "";
-    const conditionStatus = conditions.length
-      ? (readiness.complete ? "Met" : "Open")
-      : "Not applicable";
-    // Date and Decision stay blank until the forum has actually decided, so the
-    // log never asserts a decision that has not happened.
-    const notes = [
-      ret.monitoringRef ? `Prompted by monitoring finding ${ret.monitoringRef} (WCC-AIG-39).` : "",
-      ret.evidenceRefs ? `Evidence: ${ret.evidenceRefs}.` : "",
-      ret.recordedBy ? `Recorded by ${ret.recordedBy} on ${formatDate(new Date())}.` : "",
-      `Register Status on completion: ${readiness.status}.`,
-    ].filter(Boolean).join(" ");
-    const values = [
-      ret.eventId || "",
-      ret.registerId || "",
-      ret.systemName || "",
-      ret.forum || "",
-      "Retirement and Decommissioning",
-      decided ? retFmtDate(ret.eventDate) : "",
-      decided ? ret.decision : "",
-      conditionText,
-      retFmtDate(ret.conditionDue),
-      conditionStatus,
-      ret.assuranceRef || "",
-      ret.decisionMaker || "",
-      retirementNextGate(ret),
-      notes,
-      ret.decisionRecordRef || "",
-    ];
-    return { headers: RETIREMENT_GATELOG_HEADERS.slice(), values, readiness };
+    const rows = [];
+    const add = (sheet, field, value, review) =>
+      rows.push([`36 / ${sheet}`, field, value || "", review]);
+    const identityReview = ret.registerId
+      ? "Verify this is the existing Council-issued AIR-ID in current 05; do not create or replace it."
+      : "Look up the existing Council-issued AIR-ID in current 05; this tool does not create one.";
+
+    add("Gate Plan (prospective)", "AIR-ID", ret.registerId, identityReview);
+    add("Gate Plan (prospective)", "Plan ID", ret.planId, "Never generated here; verify against the existing 36 Gate Plan.");
+    add("Gate Plan (prospective)", "Gate / forum", ret.forum, "Proposed route only; confirm the authorised forum and delegation.");
+    add("Gate Plan (prospective)", "Requirement", "Retirement / decommission review", "Prospective plan prompt; not evidence of a gate event.");
+    add("Gate Plan (prospective)", "Target date", ret.decommissionDate, "User-entered target only; not a decision date.");
+    add("Gate Events (dated)", "Event ID", ret.eventId, "Never generated here; verify against the current Gate Events sheet before linking.");
+    add("Gate Events (dated)", "Plan ID (optional join)", ret.planId, "Verify that this existing plan belongs to the same AIR-ID and gate.");
+    add("Gate Events (dated)", "Decision date", decided ? retFmtDate(ret.eventDate) : "", "User-entered proposal only; formal decision belongs in WCC-AIG-16 or approved native minutes.");
+    add("Gate Events (dated)", "Decision", decided ? ret.decision : "", "User-entered proposal, not an approved decision or live event.");
+    add("Gate Events (dated)", "Decision-maker / role", ret.decisionMaker, "Verify authority and record the formal decision in WCC-AIG-16 / approved minutes.");
+    add("Gate Events (dated)", "Decision record / minutes ref", ret.decisionRecordRef, "Reference only; verify against the authoritative decision record.");
+    if (conditions.length) {
+      conditions.forEach((condition) => add(
+        "Gate Conditions (event-linked)",
+        "Condition / required action",
+        condition,
+        `Separate condition handoff; verify event ID ${ret.eventId || "(not supplied)"}, owner, due date and evidence. No condition ID or completion state is generated.`,
+      ));
+    } else {
+      add("Gate Conditions (event-linked)", "Condition / required action", "", "No conditions supplied; authorised forum decides whether any are needed.");
+    }
+    rows.push([
+      "05 / Register Core",
+      "Operational Status",
+      "",
+      `Current status is not changed by this checklist (${readiness.status}). Verify and update through the controlled Council process.`,
+    ]);
+    return { headers: RETIREMENT_HANDOFF_HEADERS.slice(), rows, readiness };
   }
 
   function retFormDecisionValue(ret) {
     // Map the gate decision onto WCC-AIG-16's controlled set:
     // Approved / Approved with conditions / Deferred / Rejected.
-    if (!retirementDecided(ret)) return "Deferred — pending decision";
-    if (ret.decision === "Progress with condition") return "Approved with conditions";
-    if (ret.decision === "Progress" || ret.decision === "Stop") return "Approved"; // gate field: Stop = decommission
-    return "Deferred"; // Return for evidence, Pause, Noted, Priority override, Escalation raised
+    if (!retirementDecided(ret)) return "Not entered — decision reserved to authorised forum";
+    return `User-entered draft: ${ret.decision} (not verified or approved)`;
   }
 
   function buildRetirementDecisionRecord(ret) {
@@ -3011,21 +2907,21 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     const heading = (t) => { rows.push(""); rows.push(t); rows.push("-".repeat(t.length)); };
 
     push(
-      "GOVERNANCE DECISION RECORD (WCC-AIG-16)",
-      "Westminster City Council · AI Governance Playbook (Level 5, §3.10.4)",
-      "Retirement / decommission",
+      "DECISION-PAPER HANDOFF — NOT A FORMAL WCC-AIG-16 RECORD",
+      "Proposed Westminster governance suite is a draft; authorised owner must verify the current process.",
+      "Retirement / decommission — draft prompts only",
       "=====================================================================",
     );
 
     heading("1. Decision reference");
     push(
-      line("Decision record ID", ret.decisionRecordRef || "GDR-XXXX (assign)"),
+      line("Decision record ID", ret.decisionRecordRef || "(not supplied; use existing authorised record ref)"),
       line("System / model name", ret.systemName || "(not entered)"),
       line("AIR-ID", ret.registerId || "(no ID)"),
       line("Decision date", decisionDate),
       line("Decision-making body", ret.forum || "(not recorded)"),
       line("Risk classification", ret.tier || "(not set)"),
-      line("Decision authority / delegation", ret.boardDecision === "Yes" ? `${ret.forum || "Council decision forum"} (confirmed delegation)` : na),
+      line("Decision authority / delegation", ret.boardDecision === "Yes" ? "User-entered Yes — verify delegation and evidence" : na),
       line("Meeting / written-decision ref", ret.decisionRecordRef || na),
     );
 
@@ -3102,7 +2998,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     push(
       "",
       "---------------------------------------------------------------------",
-      line("Register Status on completion", readiness.status),
+      line("Register Status (not changed)", readiness.status),
     );
     if (!readiness.complete && readiness.outstanding.length) {
       push("Outstanding before decommission:");
@@ -3178,8 +3074,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     IMPACT_DIMENSIONS,
     TIERS,
     DEFAULT_FORUMS,
-    REGISTER_HEADERS,
-    CALCULATED_INDEXES,
+    DRAFT_HANDOFF_HEADERS,
     calculateAgpi,
     priorityFor,
     calculateRisk,
@@ -3188,7 +3083,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     assessmentRequirements,
     buildEvidenceList,
     buildRoute,
-    buildRegisterRow,
+    build05DraftHandoff,
     AGENCY_DIMENSIONS,
     AGENCY_MULTIPLIERS,
     CAPABILITY_VECTOR,
@@ -3205,7 +3100,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     RETIREMENT_PRIORITIES,
     RETIREMENT_FIELDS,
     RETIREMENT_GROUP_ORDER,
-    RETIREMENT_GATELOG_HEADERS,
+    RETIREMENT_HANDOFF_HEADERS,
     retLevelFor,
     retirementFieldsFor,
     retirementConditions,
@@ -3524,6 +3419,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       floorReason,
       governanceStatus: "Triage complete — formal governance approvals pending",
     };
+    results.requirements = logic.assessmentRequirements(profile, results);
     return {
       profile,
       forums,
@@ -3638,8 +3534,11 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       (results.triggerIds && results.triggerIds.includes("agentic"));
 
     const anyAssessment =
-      req.dpia === "Yes" || req.eia === "Yes" || req.humanRights ||
-      req.atrs === "Yes" || req.supplierDueDiligence || req.dpiaScreening;
+      req.dpia.startsWith("Potential DPIA") ||
+      req.eia.startsWith("Potential full assessment") ||
+      req.humanRights ||
+      req.atrs === "Yes" ||
+      req.supplierDueDiligence;
     const label = results.priority.label || "";
     const lowPriority =
       label.indexOf("Priority 4") === 0 || label.indexOf("Priority 5") === 0;
@@ -3660,7 +3559,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       return {
         key: "light",
         name: "Light-touch governance pathway",
-        why: "Low risk, low governance priority, unable to act and no mandatory or specialist trigger. Maintain the AIR-ID and Register entry, proportionate baseline documentation including the applicable Model Card or system documentation, named ownership, controls and periodic review."
+        why: "Low risk and low governance priority do not waive duties. Complete Equality Act s149, HRA s6 and data-protection/privacy screening, verify the Council-issued AIR-ID and current 05 state, and retain proportionate baseline documentation, named ownership, controls and review."
       };
     }
 
@@ -3717,7 +3616,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       );
       if (results.tierFloored) {
         parts.push(
-          "This effective tier is what governs and should carry to the Dashboard and board reporting; the Register Risk Tier stays residual, and the floor is recorded in the Gate Log (36).",
+          "This is a triage result, not current 05 assurance state. If an authorised forum decides on escalation, record that decision in WCC-AIG-16 or approved native minutes and link its dated Gate Event in 36.",
         );
       }
       if (results.triggerIds.length) {
@@ -3739,8 +3638,8 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     byId("summaryIntensity").textContent = results.assuranceIntensity;
     byId("summaryNextGate").textContent = route[0].requirement;
     byId("summaryCommercial").textContent = logic.commercialRequired(profile)
-      ? "Required"
-      : "Not required — record N/A";
+      ? "Potential route — commercial owner confirms"
+      : "Not indicated by intake — confirm case-specific need";
     byId("summaryEscalation").textContent = results.triggerIds.length
       ? `${results.triggerIds.length} mandatory trigger${results.triggerIds.length === 1 ? "" : "s"}`
       : "No mandatory trigger selected";
@@ -3774,11 +3673,11 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
   }
 
   function validateForExport() {
-    const required = [byId("registerId"), byId("systemName"), byId("purpose")];
+    const required = [byId("systemName"), byId("purpose")];
     const invalid = required.find((field) => !field.value.trim());
     if (invalid) {
       byId("validationMessage").textContent =
-        "Add the AIR-ID, system or model name and purpose before exporting.";
+        "Add the system or model name and purpose before exporting. AIR-ID is Council-issued: use the existing identifier or leave it blank; this tool never creates one.";
       invalid.reportValidity();
       invalid.focus();
       return false;
@@ -3838,7 +3737,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       `Systems / tools accessed: ${profile.systemsAccessed || "Not entered"}`,
       `Lifecycle: ${profile.lifecycle}`,
       `Data type: ${profile.dataType}`,
-      `Commercial approval needed: ${logic.commercialRequired(profile) ? "Yes" : "No"}`,
+      `Commercial route indicated by intake: ${logic.commercialRequired(profile) ? "Potential route — confirm with commercial owner" : "Not indicated — case-specific confirmation required"}`,
       "",
       "AGPI PRIORITY",
       "-------------",
@@ -3863,7 +3762,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       `Effective governance tier: ${results.effectiveTierName}${results.tierFloored ? ` (governance floor: ${results.floorReason})` : ""}`,
       ...(results.tierFloored
         ? [
-            "  Note: the effective governance tier is what drives oversight and should carry through to the Dashboard (18) and board reporting (17). The AI Register Risk Tier remains the residual tier; record the escalation floor in the Gate Log (36) and the Risk Worksheet (07).",
+            "  Note: this effective triage tier is a draft routing input, not a current assurance state. If a formal decision is reached, record it in WCC-AIG-16 or approved native minutes and link the separate dated Gate Event in 36.",
           ]
         : []),
       `Inherent risk tier: ${results.inherentTierName}`,
@@ -3915,7 +3814,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
         `Worst plausible chain: ${a.worstChain || "Not entered"}`,
         `Capabilities selected: ${a.capabilities.length ? a.capabilities.join("; ") : "None selected"}`,
         `Agent Record (ASBOM) reference: ${a.asbomRef || "Not entered"}`,
-        "Written to the register: Is Agent = Yes, autonomy level and agency tier.",
+        "Draft handoff only: no agent authority is granted. WCC-AIG-45 owns permissions and delegations.",
       );
     }
 
@@ -3936,7 +3835,9 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       "IMPORTANT",
       "---------",
       "This is a planned route, not evidence that any gate has been passed.",
-      "Record each formal decision and its conditions in the Gate Log and Evidence Index.",
+      "05 holds permanent Council-issued AIR-ID and current assurance state. 36 separates prospective Gate Plan, dated Gate Events and event-linked Gate Conditions.",
+      "Formal decisions stay in WCC-AIG-16 or approved native minutes; evidence remains at source with versioned pointers in 05.",
+      "This draft does not create an AIR-ID, assurance state, legal scope, FRIA completion, approval, publication or ISO conformity.",
       "Decision support only: validate forum names, delegated authorities and assessment requirements locally.",
     );
     return `${lines.join("\n")}\n`;
@@ -3962,7 +3863,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     const rawAgentic = readAgentic();
     return {
       schemaVersion: "1.0",
-      suiteVersion: "v19.9 Agentic Security and Monitoring",
+      suiteVersion: "Proposed Westminster integrated suite draft — not approved",
       exportedAt: new Date().toISOString(),
       profile,
       agpi: {
@@ -4457,10 +4358,10 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       ...calculation.profile,
       dateFirstUsed: formatInputDate(calculation.profile.dateFirstUsed),
     };
-    const row = logic.buildRegisterRow(profile, calculation.results, new Date(), latestAgentic);
+    const handoff = logic.build05DraftHandoff(profile, calculation.results, latestAgentic);
     download(
-      `${safeSlug(profile.systemName)}-register-row.csv`,
-      logic.toCsv(row.headers, [row.values]),
+      `${safeSlug(profile.systemName)}-05-register-review-handoff.csv`,
+      logic.toCsv(handoff.headers, handoff.rows),
       "text/csv;charset=utf-8",
     );
   }
@@ -4637,7 +4538,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     if (r.escalations.length) html += "<p><strong>Escalation:</strong> " + esc(r.escalations.join("; ")) + "</p>";
     if (r.flags.length) html += '<p class="ag-flag"><strong>Flags:</strong> ' + esc(r.flags.join("; ")) + "</p>";
     html += "<p><strong>Deployment control:</strong> " + esc(r.deploymentControl) + "</p>";
-    html += '<p class="muted">Written to the register export: Is Agent = Yes, autonomy and agency tier. Open an Agent Record (ASBOM) for the full composition and the authority graph.</p>';
+    html += '<p class="muted">Draft handoff only: the triage suggests an agent classification and agency tier. WCC-AIG-45 owns permissions and delegations; verify the current authorised Agent Record and never infer authority from this result.</p>';
     host.innerHTML = html; host.hidden = false;
   }
   buildAgenticInputs();
@@ -4667,13 +4568,19 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
   function buildPriorityOptions() {
     const sel = byId("ret-priority");
     sel.replaceChildren();
+    const prompt = document.createElement("option");
+    prompt.value = "";
+    prompt.textContent = "Select current priority from 05";
+    prompt.disabled = true;
+    prompt.selected = true;
+    sel.appendChild(prompt);
     logic.RETIREMENT_PRIORITIES.forEach((p) => {
       const o = document.createElement("option");
       o.value = p.label;
       o.textContent = p.label;
       sel.appendChild(o);
     });
-    sel.value = "Priority 2 - High";
+    sel.value = "";
   }
 
   function currentLevel() {
@@ -4761,12 +4668,13 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     const level = currentLevel();
     const label = byId("ret-priority").value;
     const n = logic.retirementFieldsFor(level).length;
-    let extra = "the base decommission set";
+    let extra = "the full decommission gate while current priority is unverified";
     if (level <= 1) extra = "the full decommission gate, including board-level assurance";
     else if (level <= 2) extra = "records, accountability and notification checks on top of the base set";
     else if (level <= 3) extra = "continuity and dependency checks on top of the base set";
-    byId("retireScaleNote").textContent =
-      `${label}: the gate asks ${extra} (${n} fields). Set the priority to the system's current Register value so the depth matches its governance weight.`;
+    byId("retireScaleNote").textContent = label
+      ? `${label}: the gate asks ${extra} (${n} fields). Verify this against the system's current 05 value.`
+      : `Current 05 priority not selected: full-depth prompts are shown (${n} fields). Select the system's verified current priority to adjust review depth.`;
   }
 
   function renderOutputs() {
@@ -4786,7 +4694,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     panel.appendChild(h);
     if (readiness.complete) {
       const p = document.createElement("p");
-      p.textContent = "All gate conditions for this priority are recorded. Register Status can move to Decommissioned once the forum decision is logged.";
+      p.textContent = "All checklist answers are present. This is user-entered and unverified; it does not create a decision, close conditions or change the current 05 status.";
       p.style.margin = "0.4rem 0 0";
       panel.appendChild(p);
     } else {
@@ -4803,9 +4711,9 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       panel.appendChild(ul);
     }
 
-    byId("retireGateLog").textContent = gate.headers
-      .map((head, i) => `${head}: ${gate.values[i]}`)
-      .join("\n");
+    byId("retireGateLog").textContent = gate.rows
+      .map((row) => gate.headers.map((head, i) => `${head}: ${row[i]}`).join("\n"))
+      .join("\n\n");
     byId("retireDecision").textContent = logic.buildRetirementDecisionRecord(ret);
   }
 
@@ -4883,12 +4791,12 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
   byId("retireDownloadGateLog").addEventListener("click", () => {
     if (!validate()) return;
     const gate = logic.buildRetirementGateLogRow(collect());
-    download(slug(byId("ret-systemName").value) + "-retirement-gate-event.csv",
-      logic.toCsv(gate.headers, [gate.values]), "text/csv;charset=utf-8");
+    download(slug(byId("ret-systemName").value) + "-retirement-36-review-handoff.csv",
+      logic.toCsv(gate.headers, gate.rows), "text/csv;charset=utf-8");
   });
   byId("retireDownloadDecision").addEventListener("click", () => {
     if (!validate()) return;
-    download(slug(byId("ret-systemName").value) + "-retirement-decision-record.txt",
+    download(slug(byId("ret-systemName").value) + "-retirement-decision-paper-handoff.txt",
       logic.buildRetirementDecisionRecord(collect()), "text/plain;charset=utf-8");
   });
   byId("retireCopy").addEventListener("click", async () => {
@@ -4896,8 +4804,8 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     const ret = collect();
     const gate = logic.buildRetirementGateLogRow(ret);
     const text =
-      "GATE LOG EVENT (WCC-AIG-36)\n" +
-      gate.headers.map((h, i) => `${h}: ${gate.values[i]}`).join("\n") +
+      "36 RETIREMENT REVIEW HANDOFF — NOT A LIVE WORKBOOK ROW\n" +
+      gate.rows.map((row) => gate.headers.map((h, i) => `${h}: ${row[i]}`).join("\n")).join("\n\n") +
       "\n\n" + logic.buildRetirementDecisionRecord(ret);
     const status = byId("retireCopyStatus");
     try {
