@@ -645,7 +645,7 @@
     };
     return {
       schemaVersion: "1.0",
-      suiteVersion: "Proposed Westminster integrated suite draft — not approved",
+      suiteVersion: "Proposed integrated AI governance suite draft — not approved",
       exportedAt: exportedAt || new Date().toISOString(),
       profile,
       agpi: {
@@ -1208,7 +1208,7 @@
 
     push(
       "DECISION-PAPER HANDOFF — NOT A FORMAL WCC-AIG-16 RECORD",
-      "Proposed Westminster governance suite is a draft; authorised owner must verify the current process.",
+      "Proposed AI governance suite is a draft; authorised owner must verify the current process.",
       "Retirement / decommission — draft prompts only",
       "=====================================================================",
     );
