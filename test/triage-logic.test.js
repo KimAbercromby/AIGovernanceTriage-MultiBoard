@@ -278,6 +278,43 @@ test("canonical JSON and AIG-DEC-02 handoff remain provisional", () => {
   assert.match(csv, /not an import-ready record/);
 });
 
+test("agentic exports are bound to the profile and answers that were reviewed", () => {
+  const profile = fixture().profile;
+  const inputs = { dimensions: { autonomy: 2 }, multipliers: ["Delegation"] };
+  const assessment = logic.computeAgentic(inputs);
+  const reviewedKey = logic.agenticContextKey(profile, inputs);
+
+  assert.equal(
+    logic.currentAgenticAssessment(assessment, reviewedKey, profile, inputs),
+    assessment,
+  );
+  assert.equal(
+    logic.currentAgenticAssessment(
+      assessment,
+      reviewedKey,
+      { ...profile, systemName: "Different system" },
+      inputs,
+    ),
+    null,
+  );
+  assert.equal(
+    logic.currentAgenticAssessment(
+      assessment,
+      reviewedKey,
+      profile,
+      { ...inputs, dimensions: { autonomy: 4 } },
+    ),
+    null,
+  );
+
+  const app = require("node:fs").readFileSync(
+    require("node:path").join(__dirname, "../src/triage-app.js"),
+    "utf8",
+  );
+  assert.match(app, /function validateForExport\(\)[\s\S]*?logic\.currentAgenticAssessment/);
+  assert.match(app, /buildCanonicalRecord\(calculation, latestAgentic \? readAgentic\(\) : null, latestAgentic\)/);
+});
+
 test("accessible score cards and default calculations stay visibly provisional", () => {
   const fs = require("node:fs");
   const path = require("node:path");
