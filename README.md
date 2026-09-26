@@ -15,21 +15,22 @@ workbook drafts. They are **proposed and unapproved**, not an approved or live
 policy, process or record. This public tool does not read or write controlled
 records and must not be treated as issued authority.
 
-- **05:** permanent Council-issued AIR-ID and current assurance state. Look up and
+- **AIG-INV-04:** permanent Council-issued AIR-ID and current assurance state. Look up and
   verify an existing AIR-ID in the current controlled workbook; this tool never
-  creates one. Its "05 review handoff" is explicitly non-importable and does not
+  creates one. Its register review handoff is explicitly non-importable and does not
   assert current approval, operational state or assurance.
-- **36:** its standalone draft separates prospective **Gate Plan**, dated **Gate
+- **AIG-DEC-04:** its proposed draft separates prospective **Gate Plan**, dated **Gate
   Events**, and event-linked **Gate Conditions**. Exports are planning/review
   prompts only, not live rows or events.
-- **Capabilities and System Map:** a separate draft catalogue. Triage offers a
+- **AIG-INV-05 Capabilities and System Map:** a proposed controlled catalogue
+  artefact, not approved or adopted. Triage offers a
   clearly labelled proposal for outcome-led use cases, capabilities and a UC →
   CAP relationship without an AIR-ID. The System map accepts only an existing
   official AIR-ID; the map is not a second register.
-- **16:** authorised decisions remain in WCC-AIG-16 or approved native forum
+- **AIG-DEC-03:** authorised decisions remain in the decision record or approved native forum
   minutes. The tool can prepare decision prompts; it does not decide or approve.
-- **45 / 46:** WCC-AIG-45 is authoritative for agent scope and permissions;
-  WCC-AIG-46 covers derived delegation paths. A map link, agency classification,
+- **AIG-AGT-04 / AIG-AGT-05:** AIG-AGT-04 is authoritative for agent scope and permissions;
+  AIG-AGT-05 covers derived delegation paths. A map link, agency classification,
   Agent Record handoff or capability vector grants no authority.
 
 AGPI is governance prioritisation, not a legal risk finding or waiver. Every
@@ -49,10 +50,10 @@ evidence.
 - Review the separate governance-priority and risk classifications, screening
   prompts, assurance evidence plan and configured governance route.
 - Run agentic triage when a system can act. It proposes a tier and containment
-  review; WCC-AIG-45 remains authoritative for permissions and delegations.
-- Download a 05 review handoff, draft Capabilities and System Map handoff,
+  review; AIG-AGT-04 remains authoritative for permissions and delegations.
+- Download an AIG-INV-04 review handoff, proposed controlled AIG-INV-05 map handoff,
   AGPI/risk/agentic pre-fills, prospective gate plan, artefact handoff or case
-  summary, including a WCC-AIG-38 paper-review handoff with blank preparer and
+  summary, including a AIG-DEC-02 paper-review handoff with blank preparer and
   actual paper date. Outputs are drafts that must be reconciled with current
   records and local owners; they are not directly importable rows.
 - Switch to retirement/decommissioning for a user-entered checklist and

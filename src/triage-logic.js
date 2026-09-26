@@ -166,7 +166,7 @@
     release: "Delivery / release authority (including ethics gate)",
   };
 
-  // Exports deliberately use a handoff schema, never an import-ready 05/36 row.
+  // Exports deliberately use a handoff schema, never an import-ready row.
   const DRAFT_HANDOFF_HEADERS = [
     "Target artefact / sheet",
     "Field label or prompt",
@@ -182,11 +182,11 @@
     "Latest gate Event ID", "Assessment / evidence ref", "Next review",
   ]);
   const ASSESSMENT_FIELDS = new Set([
-    "AIR-ID", "Priority (06)", "06 ref / date", "Risk tier (07)",
-    "07 ref / date", "Agency tier (47/48)", "47/48 ref / date",
+    "AIR-ID", "Priority (AIG-ASS-01)", "AIG-ASS-01 ref / date", "Risk tier (AIG-ASS-02)",
+    "AIG-ASS-02 ref / date", "Agency tier (AIG-AGT-02/AIG-AGT-03)", "AIG-AGT-02/AIG-AGT-03 ref / date",
     "Privacy / DPIA position", "Equality / EIA position",
-    "Other specialist finding refs", "45 Agent Record ref",
-    "46 Authority Graph ref", "39 Monitoring ref", "As-at date",
+    "Other specialist finding refs", "AIG-AGT-04 Agent Record ref",
+    "AIG-AGT-05 Authority Graph ref", "AIG-OPS-02 Monitoring ref", "As-at date",
   ]);
   const GATE_PLAN_FIELDS = new Set([
     "Plan ID", "AIR-ID", "Gate/forum", "Trigger/lifecycle", "Requirement",
@@ -208,17 +208,17 @@
   ]);
   function fieldReferenceType(sheet, field) {
     const value = String(field || "").trim();
-    const exact05 =
+    const exactRegister =
       (sheet === "AI Register" && REGISTER_FIELDS.has(value)) ||
       (sheet === "Assessment summary" && ASSESSMENT_FIELDS.has(value));
-    const exact36 =
+    const exactGateLog =
       (sheet.includes("Gate Plan") && GATE_PLAN_FIELDS.has(value)) ||
       (sheet.includes("Gate Events") && GATE_EVENT_FIELDS.has(value)) ||
       (sheet.includes("Gate Conditions") && GATE_CONDITION_FIELDS.has(value));
-    return exact05
-      ? "Proposed 05 sheet/field label — owner verification required"
-      : exact36
-        ? "Exact 36 contract header — handoff only, not import-ready"
+    return exactRegister
+      ? "Proposed AIG-INV-04 sheet/field label — owner verification required"
+      : exactGateLog
+        ? "AIG-DEC-04 contract header — handoff only, not import-ready"
         : "Prompt / candidate label — exact controlled field not verified";
   }
 
@@ -419,7 +419,7 @@
         ],
         status: retrospective ? "Draft plan — retrospective baseline" : "Draft plan — proposed",
         handoff:
-          "Propose any prospective gate requirements in 36 Gate Plan. Record a dated decision as a separate Gate Event and create each condition as an event-linked Gate Condition only after the authorised decision.",
+          "Propose any prospective gate requirements in the AIG-DEC-04 Gate Plan. Record a dated decision as a separate Gate Event and create each condition as an event-linked Gate Condition only after the authorised decision.",
       },
       {
         sequence: 3,
@@ -491,7 +491,7 @@
         ],
         status: retrospective ? "Draft plan — continuation decision proposed" : "Draft plan — proposed",
         handoff:
-          "If authorised, record the release decision in WCC-AIG-16 or approved native minutes, link the dated 36 Gate Event, and record each condition separately. Triage does not approve deployment.",
+          "If authorised, record the release decision in AIG-DEC-03 or approved native minutes, link the dated AIG-DEC-04 Gate Event, and record each condition separately. Triage does not approve deployment.",
       },
     ];
   }
@@ -508,7 +508,7 @@
     const canAct = profile.actionAuthority && profile.actionAuthority !== "None — outputs only";
     return profile.capability === "Agentic AI" || canAct || (results.triggerIds && results.triggerIds.includes("agentic"));
   }
-  function build05DraftHandoff(profile, results, agentic) {
+  function buildRegisterDraftHandoff(profile, results, agentic) {
     const rows = [];
     const add = (sheet, field, value, review) =>
       rows.push([
@@ -522,15 +522,15 @@
         review,
       ]);
     const identityReview = profile.registerId
-      ? "Verify this is the existing permanent Council-issued AIR-ID in the current 05 workbook; never replace or mint it."
-      : "Obtain the permanent Council-issued AIR-ID from the current 05 workbook; this tool does not create one.";
+      ? "Verify this is the existing permanent Council-issued AIR-ID in AIG-INV-04; never replace or mint it."
+      : "Obtain the permanent Council-issued AIR-ID through AIG-INV-04; this tool does not create one.";
     const supplierSource = [
       profile.supplierDeveloper && `Supplier / developer: ${profile.supplierDeveloper}`,
       profile.source && `Source: ${profile.source}`,
     ].filter(Boolean).join("; ");
 
-    // Target only the real sheet and field names in the standalone proposed
-    // 05 workbook. Blank status/reference fields are deliberate: triage cannot
+    // Target only the real sheet and field names in the proposed
+    // AIG-INV-04 Register. Blank status/reference fields are deliberate: triage cannot
     // establish current state, formal decisions, assessment records or IDs.
     add("AI Register", "AIR-ID", profile.registerId, identityReview);
     add("AI Register", "System name", profile.systemName, "Verify against the current authoritative record.");
@@ -539,26 +539,26 @@
     add("AI Register", "Service Owner", profile.serviceOwner, "Verify the current accountable owner.");
     add("AI Register", "Supplier / source", supplierSource, "Combined from separate intake prompts for review; verify the supplier/source value against the actual workbook field and source.");
     add("AI Register", "Lifecycle stage", profile.lifecycle, "Proposed stage; map to the workbook's controlled list.");
-    add("AI Register", "Approval status", "", "Do not infer or change current approval status. Formal decisions remain in WCC-AIG-16 or authorised native minutes.");
-    add("AI Register", "Operational status", "", "Do not infer or change current operational status; verify the current 05 record.");
-    add("AI Register", "Can it act?", "", "Do not set Yes/No from this triage. Verify actual capability and permissions against WCC-AIG-45 and complete the applicable agent assessment.");
-    add("AI Register", "Decision record ref", "", "Only the authorised owner supplies a reference to an actual WCC-AIG-16 or approved native decision record.");
-    add("AI Register", "Latest gate Event ID", "", "Only the 36 owner supplies the ID of an actual dated Gate Event; triage creates none.");
+    add("AI Register", "Approval status", "", "Do not infer or change current approval status. Formal decisions remain in AIG-DEC-03 or authorised native minutes.");
+    add("AI Register", "Operational status", "", "Do not infer or change current operational status; verify the current AIG-INV-04 record.");
+    add("AI Register", "Can it act?", "", "Do not set Yes/No from this triage. Verify actual capability and permissions against AIG-AGT-04 and complete the applicable agent assessment.");
+    add("AI Register", "Decision record ref", "", "Only the authorised owner supplies a reference to an actual AIG-DEC-03 or approved native decision record.");
+    add("AI Register", "Latest gate Event ID", "", "Only the AIG-DEC-04 owner supplies the ID of an actual dated Gate Event; triage creates none.");
     add("AI Register", "Assessment / evidence ref", "", "Add only an existing, verified reference; evidence remains at source.");
     add("AI Register", "Next review", "", "Set by the accountable owner from the approved review schedule.");
     add("Assessment summary", "AIR-ID", profile.registerId, identityReview);
-    add("Assessment summary", "Priority (06)", `${results.priority.label}; triage score ${results.agpiScore}`, "Draft triage prompt only; verify the current priority and reference against the actual 06 record.");
-    add("Assessment summary", "06 ref / date", "", "Only enter an existing, verified 06 record reference and date.");
-    add("Assessment summary", "Risk tier (07)", "", `Triage effective tier is ${results.effectiveTierName}; it is not the current assessor-confirmed 07 tier or evidence reference.`);
-    add("Assessment summary", "07 ref / date", "", "Only enter an existing, verified 07 assessment reference and date.");
-    add("Assessment summary", "Agency tier (47/48)", agentic && agentic.tierLabel, "Draft agentic triage only; verify the authorised assessment and applicable 47/48 record.");
-    add("Assessment summary", "47/48 ref / date", "", "Only enter an existing, verified 47/48 assessment reference and date.");
+    add("Assessment summary", "Priority (AIG-ASS-01)", `${results.priority.label}; triage score ${results.agpiScore}`, "Draft triage prompt only; verify the current priority and reference against the actual AIG-ASS-01 record.");
+    add("Assessment summary", "AIG-ASS-01 ref / date", "", "Only enter an existing, verified AIG-ASS-01 record reference and date.");
+    add("Assessment summary", "Risk tier (AIG-ASS-02)", "", `Triage effective tier is ${results.effectiveTierName}; it is not the current assessor-confirmed AIG-ASS-02 tier or evidence reference.`);
+    add("Assessment summary", "AIG-ASS-02 ref / date", "", "Only enter an existing, verified AIG-ASS-02 assessment reference and date.");
+    add("Assessment summary", "Agency tier (AIG-AGT-02/AIG-AGT-03)", agentic && agentic.tierLabel, "Draft agentic triage only; verify the authorised assessment and applicable AIG-AGT-02/AIG-AGT-03 record.");
+    add("Assessment summary", "AIG-AGT-02/AIG-AGT-03 ref / date", "", "Only enter an existing, verified AIG-AGT-02/AIG-AGT-03 assessment reference and date.");
     add("Assessment summary", "Privacy / DPIA position", `Privacy screening required; ${results.requirements.dpia || "DPIA position requires screening"}`, "Screening/indication only; DPO or privacy owner determines applicability and completion.");
     add("Assessment summary", "Equality / EIA position", `Equality screening required; ${results.requirements.eia || "EIA position requires screening"}`, "Screening/indication only; equality owner determines applicability and completion.");
     add("Assessment summary", "Other specialist finding refs", "", "Only enter existing, verified specialist record references.");
-    add("Assessment summary", "45 Agent Record ref", agentic && agentic.asbomRef, "User-entered pointer only; confirm the existing authorised WCC-AIG-45 Agent Record.");
-    add("Assessment summary", "46 Authority Graph ref", "", "Only enter an existing verified WCC-AIG-46 reference; the map or triage does not grant authority.");
-    add("Assessment summary", "39 Monitoring ref", "", "Only enter an existing, verified WCC-AIG-39 record reference.");
+    add("Assessment summary", "AIG-AGT-04 Agent Record ref", agentic && agentic.asbomRef, "User-entered pointer only; confirm the existing authorised AIG-AGT-04 Agent Record.");
+    add("Assessment summary", "AIG-AGT-05 Authority Graph ref", "", "Only enter an existing verified AIG-AGT-05 reference; the map or triage does not grant authority.");
+    add("Assessment summary", "AIG-OPS-02 Monitoring ref", "", "Only enter an existing, verified AIG-OPS-02 record reference.");
     add("Assessment summary", "As-at date", "", "Set only when the authorised owner verifies and updates the assessment summary.");
     return { headers: DRAFT_HANDOFF_HEADERS.slice(), rows };
   }
@@ -571,22 +571,22 @@
       "Review, evidence or authority still required",
     ];
     const rows = [
-      ["Capabilities and System Map / Use cases", "UC-ID", "", "Propose only after the catalogue and ID rules are approved; this tool never issues identifiers."],
-      ["Capabilities and System Map / Use cases", "Outcome-led use case", profile.purpose || "", "Intake purpose is a proposal, not an approved purpose; confirm one outcome/workflow and reconcile against the canonical 04 source."],
-      ["Capabilities and System Map / Use cases", "Service / workflow", profile.serviceArea || "", "Confirm the service/workflow with its owner."],
-      ["Capabilities and System Map / Use cases", "Service Owner", profile.serviceOwner || "", "Confirm accountable owner and their authority to validate this map entry."],
-      ["Capabilities and System Map / Use cases", "Canonical 04 / source ref", "", "Add an exact source artefact and row/URI; do not copy source records."],
-      ["Capabilities and System Map / Use cases", "AIR-ID (only if issued)", profile.registerId || "", profile.registerId ? "Verify the existing permanent AIR-ID against current 05; do not replace or mint it." : "Blank is valid at this proposal stage; only add an official AIR-ID after one is issued and verified in 05."],
-      ["Capabilities and System Map / Use cases", "Confidence / verified on / state", "Unknown / blank / Proposed", "Do not mark Confirmed without source-reconciled endpoints, named owner, source, High/Medium confidence and verification date."],
-      ["Capabilities and System Map / Capabilities", "CAP-ID", "", "Propose only under approved catalogue and ID rules; this tool never issues identifiers."],
-      ["Capabilities and System Map / Capabilities", "Function (verb + noun)", profile.capability || "", "Triage classification is only a starting point; rewrite as an atomic reusable function and confirm inputs, outputs, boundary, owner and source."],
-      ["Capabilities and System Map / Capabilities", "Inputs / outputs / boundary", "", "Capability owner and service specialist define and verify these; do not infer them from the intake category."],
-      ["Capabilities and System Map / Relationships", "Edge ID", "", "Map owner assigns an ID under the approved map rules; this tool never issues one."],
-      ["Capabilities and System Map / Relationships", "From type / ID → relationship → To type / ID", "UC / blank → requires → CAP / blank", "Proposed UC → CAP relationship only. UC/CAP IDs remain proposals; no official AIR-ID is needed for this edge."],
-      ["Capabilities and System Map / Relationships", "AIR context", "", "Leave blank for UC → CAP. Other relationships require an existing official AIR-ID reconciled to the current 05 record."],
-      ["Capabilities and System Map / Relationships", "Meaning / Link owner / source / confidence / verified on / state", "Use case may require the proposed capability / owner and source to confirm / Unknown / blank / Proposed", "Do not mark Confirmed until both endpoints are source-reconciled with owner, evidence, High/Medium confidence and verification date."],
-      ["Capabilities and System Map / System map", "System entry", "", "Do not create a system-map row without an existing official AIR-ID. 05 remains authoritative for AIR-ID, purpose, Service Owner and current status."],
-      ["Capabilities and System Map / All sheets", "Authority and record boundaries", "Draft proposal only", "Map links grant no access, permission, approval or decision right. 36 remains separate for plans, dated events and event-linked conditions; 45 is authoritative for agent scope and 46 for derived delegation paths."],
+      ["AIG-INV-05 Capabilities and System Map / Use cases", "UC-ID", "", "Propose only after the catalogue and ID rules are approved; this tool never issues identifiers."],
+      ["AIG-INV-05 Capabilities and System Map / Use cases", "Outcome-led use case", profile.purpose || "", "Intake purpose is a proposal, not an approved purpose; confirm one outcome/workflow and reconcile against the canonical AIG-INV-03 source."],
+      ["AIG-INV-05 Capabilities and System Map / Use cases", "Service / workflow", profile.serviceArea || "", "Confirm the service/workflow with its owner."],
+      ["AIG-INV-05 Capabilities and System Map / Use cases", "Service Owner", profile.serviceOwner || "", "Confirm accountable owner and their authority to validate this map entry."],
+      ["AIG-INV-05 Capabilities and System Map / Use cases", "Canonical AIG-INV-03 / source ref", "", "Add an exact source artefact and row/URI; do not copy source records."],
+      ["AIG-INV-05 Capabilities and System Map / Use cases", "AIR-ID (only if issued)", profile.registerId || "", profile.registerId ? "Verify the existing permanent AIR-ID against current AIG-INV-04; do not replace or mint it." : "Blank is valid at this proposal stage; only add an official AIR-ID after one is issued and verified in AIG-INV-04."],
+      ["AIG-INV-05 Capabilities and System Map / Use cases", "Confidence / verified on / state", "Unknown / blank / Proposed", "Do not mark Confirmed without source-reconciled endpoints, named owner, source, High/Medium confidence and verification date."],
+      ["AIG-INV-05 Capabilities and System Map / Capabilities", "CAP-ID", "", "Propose only under approved catalogue and ID rules; this tool never issues identifiers."],
+      ["AIG-INV-05 Capabilities and System Map / Capabilities", "Function (verb + noun)", profile.capability || "", "Triage classification is only a starting point; rewrite as an atomic reusable function and confirm inputs, outputs, boundary, owner and source."],
+      ["AIG-INV-05 Capabilities and System Map / Capabilities", "Inputs / outputs / boundary", "", "Capability owner and service specialist define and verify these; do not infer them from the intake category."],
+      ["AIG-INV-05 Capabilities and System Map / Relationships", "Edge ID", "", "Map owner assigns an ID under the approved map rules; this tool never issues one."],
+      ["AIG-INV-05 Capabilities and System Map / Relationships", "From type / ID → relationship → To type / ID", "UC / blank → requires → CAP / blank", "Proposed UC → CAP relationship only. UC/CAP IDs remain proposals; no official AIR-ID is needed for this edge."],
+      ["AIG-INV-05 Capabilities and System Map / Relationships", "AIR context", "", "Leave blank for UC → CAP. Other relationships require an existing official AIR-ID reconciled to the current AIG-INV-04 record."],
+      ["AIG-INV-05 Capabilities and System Map / Relationships", "Meaning / Link owner / source / confidence / verified on / state", "Use case may require the proposed capability / owner and source to confirm / Unknown / blank / Proposed", "Do not mark Confirmed until both endpoints are source-reconciled with owner, evidence, High/Medium confidence and verification date."],
+      ["AIG-INV-05 Capabilities and System Map / System map", "System entry", "", "Do not create a system-map row without an existing official AIR-ID. AIG-INV-04 remains authoritative for AIR-ID, purpose, Service Owner and current status."],
+      ["AIG-INV-05 Capabilities and System Map / All sheets", "Authority and record boundaries", "Proposed controlled AIG-INV-05; draft only", "If adopted, the map is controlled/versioned; it remains a relationship catalogue, not a second Register. Map links grant no access, permission, approval or decision right. AIG-DEC-04 remains separate for plans, dated events and event-linked conditions; AIG-AGT-04 is authoritative for agent scope and AIG-AGT-05 is a derived delegation view."],
     ];
     return { headers, rows };
   }
@@ -614,8 +614,8 @@
 
   function buildGatePlanCsv(profile, route) {
     const headers = [
-      "Handoff target: WCC-AIG-36 Gate Plan / WCC-AIG-40 Gate Map context",
-      "Draft plan: AIR-ID reference (verify in 05)",
+      "Handoff target: AIG-DEC-04 Gate Plan / AIG-DEC-01 Gate Map context",
+      "Draft plan: AIR-ID reference (verify in AIG-INV-04)",
       "System / Model Name (verify)",
       "Suggested gate order",
       "Prospective requirement",
@@ -626,7 +626,7 @@
       "Handoff note",
     ];
     const rows = route.map((gate) => [
-      "WCC-AIG-36 Gate Plan; WCC-AIG-40 Gate Map is routing context only",
+      "AIG-DEC-04 Gate Plan; AIG-DEC-01 Gate Map is routing context only",
       profile.registerId || "",
       profile.systemName || "",
       gate.sequence,
@@ -647,8 +647,8 @@
       : "none selected";
     const headers = [
       "Export status",
-      "WCC-AIG-38 field reference",
-      "AIR-ID (verify existing Council-issued ID in current 05; do not create)",
+      "AIG-DEC-02 field reference",
+      "AIR-ID (verify existing Council-issued system identity in AIG-INV-04; do not create)",
       "System",
       "Forum",
       "Gate",
@@ -665,7 +665,7 @@
       "Full evidence references (owner to complete)",
     ];
     const rows = route.map((gate) => [
-      "Draft triage prompt — review and complete in WCC-AIG-38; not an import-ready record",
+      "Draft triage prompt — review and complete in AIG-DEC-02; not an import-ready record",
       "Template field prompt — exact controlled field contract not verified",
       profile.registerId || "",
       profile.systemName || "",
@@ -765,7 +765,7 @@
     };
   }
 
-  // Fields the proposed 05 AI Register does not hold are routed to the
+  // Fields the proposed AIG-INV-04 AI Register does not hold are routed to the
   // artefact whose form owns them. Returns prompts, not import-ready records;
   // approval and any event-linked conditions remain with their formal owners.
   function buildArtefactHandoff(profile, results) {
@@ -775,7 +775,7 @@
 
     const triggered = results.triggerIds.length > 0;
     items.push({
-      artefact: "WCC-AIG-07 AI Risk Assessment Worksheet",
+      artefact: "AIG-ASS-02 AI Risk Assessment Worksheet",
       section: "Step 4 \u2014 Mandatory escalation triggers",
       fields: [
         { label: "Escalation triggered?", value: triggered ? "Yes" : "No" },
@@ -791,38 +791,38 @@
 
     if (isAgentSystem(profile, results)) {
       items.push({
-        artefact: "WCC-AIG-48 Agentic Triage + WCC-AIG-45 Agent Record (ASBOM)",
+        artefact: "AIG-AGT-03 Agentic Triage + AIG-AGT-04 Agent Record (ASBOM)",
         section: "Can-it-act gate, agency profile and authority envelope",
         fields: [
           { label: "Can it act (is an agent)?", value: "Yes" },
           { label: "Agentic triage required?", value: "Yes — complete before routing" },
         ],
-        note: "Run the Agentic Triage (48): score the five agency dimensions, set the autonomy level and agency tier, test the authority boundary and kill-switch, and open the Agent Record / ASBOM (45). The register carries Is Agent, autonomy and agency tier; the ASBOM holds the full composition and the Authority Graph (46) derives from it. Consequential actions in service are recorded in the Agentic Action / Decision Record (50).",
+        note: "Run AIG-AGT-03 Agentic Triage: score the five agency dimensions, set the autonomy level and agency tier, test the authority boundary and kill-switch, and open the AIG-AGT-04 Agent Record / ASBOM. The Register carries Is Agent, autonomy and agency tier; the ASBOM holds the full composition and AIG-AGT-05 Authority Graph derives from it. Consequential actions in service are recorded in AIG-AGT-06.",
       });
       items.push({
-        artefact: "WCC-AIG-46 Agent Authority Graph",
-        section: "Authority graph derived from WCC-AIG-45 ASBOM",
+        artefact: "AIG-AGT-05 Agent Authority Graph",
+        section: "Authority graph derived from AIG-AGT-04 ASBOM",
         fields: [
-          { label: "Agent / AIR-ID reference", value: profile.registerId || "Pending current 05 AIR-ID and 45 ASBOM reference" },
+          { label: "Agent / AIR-ID reference", value: profile.registerId || "Pending current AIG-INV-04 AIR-ID and AIG-AGT-04 ASBOM reference" },
           { label: "Authority edge / delegation", value: "Not supplied — authorised owner to verify in ASBOM and delegation record" },
           { label: "Authority granted by this triage", value: "No" },
         ],
-        note: "46 is a derived view, not a grant of authority. Verify every edge, constraint and revocation path against the current WCC-AIG-45 ASBOM and formal delegated authority.",
+        note: "AIG-AGT-05 is a derived view, not a grant of authority. Verify every edge, constraint and revocation path against the current AIG-AGT-04 ASBOM and formal delegated authority.",
       });
       items.push({
-        artefact: "WCC-AIG-39 AI Post-Deployment Monitoring and Review Log",
+        artefact: "AIG-OPS-02 AI Post-Deployment Monitoring and Review Log",
         section: "Agentic runtime monitoring prompts",
         fields: [
-          { label: "AIR-ID / system reference", value: profile.registerId || "Pending current 05 AIR-ID" },
+          { label: "AIR-ID / system reference", value: profile.registerId || "Pending current AIG-INV-04 AIR-ID" },
           { label: "Monitoring status / evidence", value: "Not supplied — owner, approved thresholds and evidence reference pending" },
         ],
-        note: "Monitoring proposals only; do not create a 39 result, owner, threshold or evidence claim from triage.",
+        note: "Monitoring proposals only; do not create an AIG-OPS-02 result, owner, threshold or evidence claim from triage.",
       });
       items.push({
-        artefact: "WCC-AIG-50 Agentic Action / Decision Record",
+        artefact: "AIG-AGT-06 Agentic Action / Decision Record",
         section: "Consequential action record prompt",
         fields: [
-          { label: "Action / decision evidence reference", value: "Not supplied — record consequential actions in controlled 50 when operated" },
+          { label: "Action / decision evidence reference", value: "Not supplied — record consequential actions in AIG-AGT-06 when operated" },
           { label: "Authority granted by this triage", value: "No" },
         ],
         note: "No action record, decision or authority is created by this handoff. Link actual action records to verified agent / ASBOM identity and authorised boundaries.",
@@ -830,7 +830,7 @@
     }
 
     items.push({
-      artefact: "WCC-AIG-10 Data Protection Impact Assessment",
+      artefact: "AIG-ASS-05 Data Protection Impact Assessment",
       section: "Section 2 \u2014 Screening (is a DPIA required?)",
       fields: [
         { label: "Materially affects individuals?", value: yn(profile.affectsIndividuals) },
@@ -840,7 +840,7 @@
     });
 
     items.push({
-        artefact: "WCC-AIG-11 Equality Impact Assessment",
+        artefact: "AIG-ASS-06 Equality Impact Assessment",
         section: "Section 2 \u2014 Equality Act 2010 section 149 screening (all tiers)",
         fields: [
           { label: "Public / resident facing?", value: yn(profile.publicFacing) },
@@ -850,7 +850,7 @@
       });
 
     items.push({
-        artefact: "WCC-AIG-12 Human Rights Assessment",
+        artefact: "AIG-ASS-07 Human Rights Assessment",
         section: "Section 3 \u2014 Human Rights Act 1998 section 6 screening (all tiers)",
         fields: [
           { label: "Materially affects individuals?", value: yn(profile.affectsIndividuals) },
@@ -864,14 +864,14 @@
       results.triggerIds.includes("statutory")
     ) {
       items.push({
-        artefact: "WCC-AIG-41 AI Contestability and Redress Control",
+        artefact: "AIG-OPS-04 AI Contestability and Redress Control",
         section: "Resident challenge route",
         fields: [
           { label: "Public / resident facing?", value: yn(profile.publicFacing) },
           { label: "Materially affects individuals?", value: yn(profile.affectsIndividuals) },
           { label: "Informs a statutory decision?", value: results.triggerIds.includes("statutory") ? "Yes" : "No" },
         ],
-        note: "Resident-facing or decision-influencing AI: ensure the WCC-AIG-41 challenge route \u2014 plain-language \u2018ask us to look again\u2019, a fresh independent human review with authority to change the decision, and redress \u2014 is in place, with the LGSCO as the external escalation.",
+        note: "Resident-facing or decision-influencing AI: ensure the AIG-OPS-04 challenge route \u2014 plain-language \u2018ask us to look again\u2019, a fresh independent human review with authority to change the decision, and redress \u2014 is in place, with the LGSCO as the external escalation.",
       });
     }
 
@@ -882,7 +882,7 @@
       requirements.humanRightsPotential ? "Human Rights Assessment" : null,
     ].filter(Boolean);
     items.push({
-      artefact: "WCC-AIG-15 ATRS Record",
+      artefact: "AIG-ASS-10 ATRS Record",
       section: "Tier 1 Summary + Section 6 \u2014 Risks, Mitigations and Impact Assessments",
       fields: [
         { label: "ATRS intake indication (not applicability decision)", value: requirements.atrs },
@@ -904,7 +904,7 @@
 
     const procurement = commercialRequired(profile);
     items.push({
-      artefact: "WCC-AIG-13 Supplier AI Due Diligence Questionnaire",
+      artefact: "AIG-ASS-08 Supplier AI Due Diligence Questionnaire",
       section: "Procurement / contracting",
       fields: [
         { label: "Procurement route indicated by intake?", value: procurement ? "Potential route — confirm" : "Not indicated — confirm" },
@@ -915,9 +915,9 @@
     });
 
     const screeningPrompts = [
-      ["WCC-AIG-10 Data Protection Impact Assessment", requirements.dpia, "DPO / privacy owner"],
-      ["WCC-AIG-11 Equality Impact Assessment", requirements.eia, "Equality owner"],
-      ["WCC-AIG-12 Human Rights Assessment", requirements.humanRights, "Legal owner"],
+      ["AIG-ASS-05 Data Protection Impact Assessment", requirements.dpia, "DPO / privacy owner"],
+      ["AIG-ASS-06 Equality Impact Assessment", requirements.eia, "Equality owner"],
+      ["AIG-ASS-07 Human Rights Assessment", requirements.humanRights, "Legal owner"],
     ];
     screeningPrompts.forEach(([artefact, indication, owner]) => {
       const existing = items.find((item) => item.artefact === artefact);
@@ -931,7 +931,7 @@
     });
 
     items.push({
-      artefact: "WCC-AIG-38 Decision-Ready Paper",
+      artefact: "AIG-DEC-02 Decision-Ready Paper",
       section: "Triage headline",
       fields: [
         { label: "Governance priority", value: results.priority.label },
@@ -943,11 +943,11 @@
     });
 
     items.push({
-      artefact: "WCC-AIG-16 Governance Decision Record + separate 05 and 36 workbook drafts",
+      artefact: "AIG-DEC-03 Governance Decision Record + separate AIG-INV-04 and AIG-DEC-04 workbook drafts",
       section: "Formal decision and linked gate records",
       fields: [
-        { label: "Decision-maker / date", value: "Not supplied — authorised forum records in WCC-AIG-16 or approved native minutes" },
-        { label: "05 / 36 relationship", value: "05 keeps AIR-ID and current assurance; 36 separates prospective Gate Plan, dated Gate Events and event-linked Gate Conditions." },
+        { label: "Decision-maker / date", value: "Not supplied — authorised forum records in AIG-DEC-03 or approved native minutes" },
+        { label: "AIG-INV-04 / AIG-DEC-04 relationship", value: "AIG-INV-04 keeps the permanent AIR-ID and current assurance; AIG-DEC-04 separates prospective Gate Plans, dated Gate Events and event-linked Gate Conditions." },
       ],
       note: "Handoff only: this export does not create an AIR-ID, plan/event/condition row, approval, decision record, event ID or evidence. Verify against the applicable current Council-controlled workbook and authorised process; the proposed suite remains a draft.",
     });
@@ -1011,7 +1011,7 @@
   const RETIREMENT_FIELDS = [
     { id: "reason", group: "Decision", showAtOrAbove: 5, type: "select", label: "Reason for retirement", options: RETIREMENT_REASONS },
     { id: "rationale", group: "Decision", showAtOrAbove: 5, type: "textarea", label: "Rationale (why retire, options considered)" },
-    { id: "monitoringRef", group: "Decision", showAtOrAbove: 5, type: "text", label: "Prompted by a monitoring finding? Ref in the Post-Deployment Monitoring Log (WCC-AIG-39), if any", placeholder: "39 row / review ref" },
+    { id: "monitoringRef", group: "Decision", showAtOrAbove: 5, type: "text", label: "Prompted by a monitoring finding? Ref in the Post-Deployment Monitoring Log (AIG-OPS-02), if any", placeholder: "AIG-OPS-02 row / review ref" },
     { id: "hasSuccessor", group: "Decision", showAtOrAbove: 5, type: "select", label: "Replacement or successor system?", options: ["No", "Yes"] },
     { id: "successorId", group: "Decision", showAtOrAbove: 5, type: "text", label: "Successor AIR-ID (if any)", placeholder: "AIR-XXXX" },
     { id: "decommissionDate", group: "Decision", showAtOrAbove: 5, type: "date", label: "Planned decommission date" },
@@ -1023,7 +1023,7 @@
     { id: "dependencies", group: "Continuity", showAtOrAbove: 3, type: "textarea", label: "Downstream dependencies (what consumes its outputs)" },
     { id: "fallback", group: "Continuity", showAtOrAbove: 3, type: "select", label: "Fallback or transition arrangement before switch-off?", options: ["Not needed", "Planned", "Confirmed in place"] },
     { id: "affectedStaff", group: "Continuity", showAtOrAbove: 3, type: "textarea", label: "Affected staff: process change or retraining" },
-    { id: "monitoringClosure", group: "Continuity", showAtOrAbove: 3, type: "select", label: "Post-Deployment Monitoring Log (WCC-AIG-39) closure", options: ["Not applicable - no active monitoring", "To be closed", "Closed"] },
+    { id: "monitoringClosure", group: "Continuity", showAtOrAbove: 3, type: "select", label: "Post-Deployment Monitoring Log (AIG-OPS-02) closure", options: ["Not applicable - no active monitoring", "To be closed", "Closed"] },
 
     { id: "atrsAction", group: "Records and accountability", showAtOrAbove: 2, type: "select", label: "ATRS record action", options: ["No ATRS record exists", "Withdraw", "Update / mark retired"] },
     { id: "residualOwner", group: "Records and accountability", showAtOrAbove: 2, type: "text", label: "Residual accountability owner (complaints, appeals, subject access, audit)" },
@@ -1039,8 +1039,8 @@
     { id: "postReview", group: "Critical assurance", showAtOrAbove: 1, type: "select", label: "Post-retirement / lessons-learned review scheduled?", options: ["No", "Yes: date recorded"] },
     { id: "notifyLive", group: "Critical assurance", showAtOrAbove: 1, type: "select", label: "Resident notification and appeal handling live before switch-off?", options: ["No", "Yes"] },
 
-    { id: "planId", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Existing Gate Plan ID (verify in 36; do not invent)", placeholder: "Existing plan ID only" },
-    { id: "eventId", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Existing Event ID (verify in 36; do not invent)", placeholder: "Existing event ID only" },
+    { id: "planId", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Existing Gate Plan ID (verify in AIG-DEC-04; do not invent)", placeholder: "Existing plan ID only" },
+    { id: "eventId", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Existing Event ID (verify in AIG-DEC-04; do not invent)", placeholder: "Existing event ID only" },
     { id: "forum", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Gate / forum" },
     { id: "decision", group: "Gate event record", showAtOrAbove: 5, type: "select", label: "Gate decision (Stop = decommission; Progress with condition = approve with conditions)", options: ["Pending: not yet decided", "Progress", "Progress with condition", "Return for evidence", "Pause", "Stop", "Noted", "Priority override", "Escalation raised"] },
     { id: "eventDate", group: "Gate event record", showAtOrAbove: 5, type: "date", label: "Date of decision (leave blank until decided)" },
@@ -1048,9 +1048,9 @@
     { id: "conditionDue", group: "Gate event record", showAtOrAbove: 3, type: "date", label: "Condition due date (if any)" },
     { id: "assuranceRef", group: "Gate event record", showAtOrAbove: 2, type: "text", label: "Assurance opinion reference" },
     { id: "evidenceRefs", group: "Gate event record", showAtOrAbove: 3, type: "text", label: "Evidence references (recorded in Notes)", placeholder: "Disposal record, ATRS update log, notification plan" },
-    { id: "decisionRecordRef", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Existing WCC-AIG-16 / approved minutes reference (verify)", placeholder: "Existing authorised decision reference" },
+    { id: "decisionRecordRef", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Existing AIG-DEC-03 / approved minutes reference (verify)", placeholder: "Existing authorised decision reference" },
     { id: "recordedBy", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Recorded by (recorded in Notes)" },
-    { id: "airIdEvidenceRef", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "AIR-ID evidence reference in current 05", placeholder: "Current 05 record / source URI" },
+    { id: "airIdEvidenceRef", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "AIR-ID evidence reference in AIG-INV-04", placeholder: "AIG-INV-04 record / source URI" },
     { id: "assuranceEvidenceRef", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Current 05 assurance-state evidence reference", placeholder: "Current 05 snapshot / source URI" },
     { id: "authorityEvidenceRef", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Decision authority / delegation evidence reference", placeholder: "Delegation record / source URI" },
   ];
@@ -1095,7 +1095,7 @@
       c.push("Confirm accounts, API keys and agentic action scopes are revoked at switch-off.");
     }
     if (ret.fallback === "Planned") c.push("Confirm the fallback or transition arrangement is in place before switch-off.");
-    if (ret.monitoringClosure === "To be closed") c.push("Close the Post-Deployment Monitoring Log (WCC-AIG-39): set Review Status to closed and cancel any scheduled reviews.");
+    if (ret.monitoringClosure === "To be closed") c.push("Close the Post-Deployment Monitoring Log (AIG-OPS-02): set Review Status to closed and cancel any scheduled reviews.");
     if (ret.supplierExit === "In progress") c.push("Complete supplier contract closure and data return or destruction.");
     if (ret.atrsAction === "Withdraw") c.push("Withdraw the ATRS record.");
     if (ret.atrsAction === "Update / mark retired") c.push("Update the ATRS record to retired.");
@@ -1119,24 +1119,24 @@
     const level = Number(ret.priorityLevel) || 1;
     const decided = retirementDecided(ret);
     const outstanding = [];
-    if (!ret.priorityLabel) outstanding.push("Current 05 governance priority not verified; full-depth prompts are shown until it is.");
-    if (!ret.tier) outstanding.push("Current 05 assurance/risk tier not verified.");
+    if (!ret.priorityLabel) outstanding.push("Current AIG-INV-04 governance priority not verified; full-depth prompts are shown until it is.");
+    if (!ret.tier) outstanding.push("Current AIG-INV-04 assurance/risk tier not verified.");
     if (!ret.registerId) outstanding.push("Existing Council-issued AIR-ID not recorded.");
-    if (!ret.airIdEvidenceRef) outstanding.push("AIR-ID evidence from the current 05 record is missing.");
-    if (!ret.assuranceEvidenceRef) outstanding.push("Current 05 assurance-state evidence is missing.");
+    if (!ret.airIdEvidenceRef) outstanding.push("AIR-ID evidence from the current AIG-INV-04 record is missing.");
+    if (!ret.assuranceEvidenceRef) outstanding.push("Current AIG-INV-04 assurance-state evidence is missing.");
     if (!ret.authorityEvidenceRef) outstanding.push("Decision authority / delegation evidence is missing; self-report is not evidence of authority.");
     if (!ret.planId) outstanding.push("Existing Gate Plan ID not recorded or verified.");
     if (!ret.eventId) outstanding.push("Existing Gate Event ID not recorded or verified.");
     if (!ret.forum) outstanding.push("Deciding forum not recorded.");
     if (!ret.decisionMaker) outstanding.push("Decision-maker / role not recorded.");
-    if (!ret.decisionRecordRef) outstanding.push("WCC-AIG-16 / approved native minutes reference not recorded.");
+    if (!ret.decisionRecordRef) outstanding.push("AIG-DEC-03 / approved native minutes reference not recorded.");
     if (!decided) outstanding.push("Gate decision not yet recorded.");
     if (decided && !ret.eventDate) outstanding.push("Date of decision not set.");
     if (!ret.decommissionDate) outstanding.push("Planned decommission date not set.");
     if (ret.accessTeardown !== "Confirmed revoked") outstanding.push("Access, keys and action scopes not yet confirmed revoked.");
     if (ret.dataDisposition && !ret.dataBasis) outstanding.push("Data retention or disposal basis not stated.");
     if (level <= 3 && ret.fallback === "Planned") outstanding.push("Fallback arrangement planned but not confirmed in place.");
-    if (level <= 3 && ret.monitoringClosure === "To be closed") outstanding.push("Post-Deployment Monitoring Log (WCC-AIG-39) not yet closed.");
+    if (level <= 3 && ret.monitoringClosure === "To be closed") outstanding.push("Post-Deployment Monitoring Log (AIG-OPS-02) not yet closed.");
     if (level <= 2) {
       if (!ret.residualOwner) outstanding.push("Residual accountability owner not named.");
       if (ret.residentNotify === "Required: planned") outstanding.push("Required resident notification not yet completed.");
@@ -1173,7 +1173,7 @@
     const add = (sheet, field, value, review) => {
       const target = sheet === "AI Register" || sheet === "Assessment summary"
         ? sheet
-        : `36 / ${sheet}`;
+        : `AIG-DEC-04 / ${sheet}`;
       rows.push([
         target,
         field,
@@ -1186,22 +1186,22 @@
       ]);
     };
     const identityReview = ret.registerId
-      ? "Verify this is the existing Council-issued AIR-ID in current 05; do not create or replace it."
-      : "Look up the existing Council-issued AIR-ID in current 05; this tool does not create one.";
+      ? "Verify this is the existing Council-issued AIR-ID in AIG-INV-04; do not create or replace it."
+      : "Look up the existing Council-issued AIR-ID in AIG-INV-04; this tool does not create one.";
 
     const plan = "Gate Plan (prospective)";
     add(plan, "AIR-ID", ret.registerId, identityReview);
-    add(plan, "Plan ID", ret.planId, "Never generated here; verify against the existing 36 Gate Plan.");
+    add(plan, "Plan ID", ret.planId, "Never generated here; verify against the existing AIG-DEC-04 Gate Plan.");
     add(plan, "Gate/forum", ret.forum, "Proposed route only; confirm the authorised forum and delegation.");
     add(plan, "Trigger/lifecycle", "Retirement / decommission review", "Prospective plan prompt; not an event.");
     add(plan, "Requirement", "Review whether retirement should be authorised", "A question for the authorised forum; not an attained decision.");
-    add(plan, "Basis/triage ref", ret.monitoringRef, "Provide verified 39 / triage source reference; user-entered pointer only.");
+    add(plan, "Basis/triage ref", ret.monitoringRef, "Provide verified AIG-OPS-02 / triage source reference; user-entered pointer only.");
     add(plan, "Target date", ret.decommissionDate, "Proposed target only; not an actual decision or decommission date.");
     add(plan, "Responsible role", "", "Accountable role to be supplied and verified; no assignment or delegation is made.");
     add(plan, "Plan state", "Draft proposal — owner review pending", "Never treated as an actual Gate Event or completed status.");
     add(plan, "waiver rationale+authority", "", "No waiver proposed or authorised by this handoff.");
-    add(plan, "Source version", "Review against current 05/36 version", "Record actual controlled source version before transfer.");
-    add(plan, "Plan QA", "Pending", "Complete QA in the controlled 36 workbook.");
+    add(plan, "Source version", "Review against current AIG-INV-04/AIG-DEC-04 version", "Record actual controlled source version before transfer.");
+    add(plan, "Plan QA", "Pending", "Complete QA in the proposed AIG-DEC-04 workbook.");
 
     const event = "Gate Events (dated; proposed handoff, not an actual event)";
     add(event, "Event ID", ret.eventId, "Never generated here; verify against the current Gate Events sheet before linking.");
@@ -1211,7 +1211,7 @@
     add(event, "Decision date", decided ? retFmtDate(ret.eventDate) : "", "User-entered proposal only; actual date belongs to the authoritative event.");
     add(event, "Decision", decided ? ret.decision : "", "User-entered proposal, not an approved decision or live event.");
     add(event, "Assurance opinion ref", ret.assuranceRef, "Verify actual versioned assurance opinion; blank means evidence pending.");
-    add(event, "Decision-maker/role", ret.decisionMaker, "Verify current authority and record actual decision in WCC-AIG-16 / approved native minutes.");
+    add(event, "Decision-maker/role", ret.decisionMaker, "Verify current authority and record actual decision in AIG-DEC-03 / approved native minutes.");
     add(event, "Next gate", "Pending authorised forum", "Forum to set; not inferred from triage.");
     add(event, "Event notes", ret.rationale, "Proposal context only; not a record of an event that occurred.");
     add(event, "Decision record/minutes ref", ret.decisionRecordRef, "Reference only; verify against authoritative decision record.");
@@ -1219,20 +1219,20 @@
     add(event, "Event record state", "Not recorded — actual event not verified", "Do not mark as actual/complete based on this draft.");
     add(event, "Recorded by/role", ret.recordedBy, "User-entered prompt only; verify actual recorder/role.");
     add(event, "Evidence source/URI", ret.evidenceRefs, "Verify each source and URI; blank means event evidence is pending.");
-    add(event, "Event QA", "Pending", "Complete QA in controlled 36 after authoritative record entry.");
+    add(event, "Event QA", "Pending", "Complete QA in proposed AIG-DEC-04 after authoritative record entry.");
     add(event, "Plan ID", ret.planId, "Optional join; verify this existing plan belongs to this AIR-ID and gate.");
     add(event, "priority override fields", "", "No override proposed; use controlled override process and authority if applicable.");
     add("AI Register", "AIR-ID", ret.registerId, identityReview);
     add("AI Register", "Operational status", "", `Current status is not changed by this checklist (${readiness.status}). Verify and update through the controlled process.`);
-    add("Assessment summary", "As-at date", "", "Update only when the authorised owner verifies the actual 05 assessment summary.");
-    add("AI Register", "Assessment / evidence ref", ret.airIdEvidenceRef, "Source pointer only; verify the permanent AIR-ID against current 05.");
-    add("Assessment summary", "07 ref / date", ret.assuranceEvidenceRef, "Source pointer only; verify current 07 assessment and its actual date against current 05; not an approval.");
-    add("Assessment summary", "39 Monitoring ref", "", "Only enter an existing verified 39 monitoring record reference.");
-    add("AI Register", "Decision record ref", "", "Only enter a reference to the actual authorised WCC-AIG-16 / approved native decision record.");
+    add("Assessment summary", "As-at date", "", "Update only when the authorised owner verifies the actual AIG-INV-04 assessment summary.");
+    add("AI Register", "Assessment / evidence ref", ret.airIdEvidenceRef, "Source pointer only; verify the permanent AIR-ID against AIG-INV-04.");
+    add("Assessment summary", "AIG-ASS-02 ref / date", ret.assuranceEvidenceRef, "Source pointer only; verify current AIG-ASS-02 assessment and its actual date against AIG-INV-04; not an approval.");
+    add("Assessment summary", "AIG-OPS-02 Monitoring ref", "", "Only enter an existing verified AIG-OPS-02 monitoring record reference.");
+    add("AI Register", "Decision record ref", "", "Only enter a reference to the actual authorised AIG-DEC-03 / approved native decision record.");
     add("Assessment summary", "Other specialist finding refs", ret.authorityEvidenceRef, "Authority evidence pointer only; verify the actual delegation record and current decision-maker authority.");
     if (conditions.length) {
       conditions.forEach((condition) => {
-        const target = "Gate Conditions (event-linked; proposed action only)";
+        const target = "AIG-DEC-04 / Gate Conditions (event-linked; proposed action only)";
         add(target, "Condition ID", "", "Never generated here; controlled owner assigns only after an actual event.");
         add(target, "Event ID", ret.eventId, "Verify actual event exists before linking a condition.");
         add(target, "AIR-ID derived", ret.registerId, "Verify derived relationship in the controlled workbook.");
@@ -1243,10 +1243,10 @@
         add(target, "Resolved/waived on", "", "No resolution or waiver asserted.");
         add(target, "Resolution evidence/waiver authority ref", "", "Evidence/authority pending; no resolution or waiver asserted.");
         add(target, "Overdue derived", "Derived by controlled workbook", "Do not calculate or manually assert overdue state.");
-        add(target, "Condition QA", "Pending", "Complete QA in controlled 36 after actual event-linked record.");
+        add(target, "Condition QA", "Pending", "Complete QA in proposed AIG-DEC-04 after actual event-linked record.");
       });
     } else {
-      const target = "Gate Conditions (event-linked; proposed action only)";
+      const target = "AIG-DEC-04 / Gate Conditions (event-linked; proposed action only)";
       add(target, "Condition ID", "", "Never generated here; controlled owner assigns only after an actual event.");
       add(target, "Event ID", ret.eventId, "Verify actual event exists before linking a condition.");
       add(target, "AIR-ID derived", ret.registerId, "Verify derived relationship in the controlled workbook.");
@@ -1257,13 +1257,13 @@
       add(target, "Resolved/waived on", "", "No resolution or waiver asserted.");
       add(target, "Resolution evidence/waiver authority ref", "", "Evidence/authority pending; no resolution or waiver asserted.");
       add(target, "Overdue derived", "Derived by controlled workbook", "Do not calculate or manually assert overdue state.");
-      add(target, "Condition QA", "Pending", "Complete QA in controlled 36 after actual event-linked record.");
+      add(target, "Condition QA", "Pending", "Complete QA in proposed AIG-DEC-04 after actual event-linked record.");
     }
     return { headers: RETIREMENT_HANDOFF_HEADERS.slice(), rows, readiness };
   }
 
   function retFormDecisionValue(ret) {
-    // Map the gate decision onto WCC-AIG-16's controlled set:
+    // Map the gate decision onto AIG-DEC-03's controlled set:
     // Approved / Approved with conditions / Deferred / Rejected.
     if (!retirementDecided(ret)) return "Not entered — decision reserved to authorised forum";
     return `User-entered draft: ${ret.decision} (not verified or approved)`;
@@ -1283,8 +1283,8 @@
     const heading = (t) => { rows.push(""); rows.push(t); rows.push("-".repeat(t.length)); };
 
     push(
-      "DECISION-PAPER HANDOFF — NOT A FORMAL WCC-AIG-16 RECORD",
-      "The separate 05 Register and 36 Gate Log workbook designs are proposed and unapproved; the authorised owner must verify the current process.",
+      "DECISION-PAPER HANDOFF — NOT A FORMAL AIG-DEC-03 RECORD",
+      "AIG-INV-04 Register and AIG-DEC-04 Gate Log workbook designs are proposed and unapproved; the authorised owner must verify the current process.",
       "Retirement / decommission — draft prompts only",
       "=====================================================================",
     );
@@ -1294,8 +1294,8 @@
       line("Decision record ID", ret.decisionRecordRef || "(not supplied; use existing authorised record ref)"),
       line("System / model name", ret.systemName || "(not entered)"),
       line("AIR-ID", ret.registerId || "(no ID)"),
-      line("AIR-ID evidence in current 05", ret.airIdEvidenceRef || "(missing — verify against current 05)"),
-      line("Current 05 assurance-state evidence", ret.assuranceEvidenceRef || "(missing — verify current 05)"),
+      line("AIR-ID evidence in AIG-INV-04", ret.airIdEvidenceRef || "(missing — verify against AIG-INV-04)"),
+      line("Current AIG-INV-04 assurance-state evidence", ret.assuranceEvidenceRef || "(missing — verify current AIG-INV-04)"),
       line("Decision date", decisionDate),
       line("Decision-making body", ret.forum || "(not recorded)"),
       line("Risk classification", ret.tier || "(not set)"),
@@ -1306,7 +1306,7 @@
     heading("2. Decision");
     push(
       line("Decision", retFormDecisionValue(ret)),
-      line("Gate decision (WCC-AIG-36)", decided ? ret.decision : "Pending: not yet decided"),
+      line("Gate decision (AIG-DEC-04)", decided ? ret.decision : "Pending: not yet decided"),
       "",
       "Summary of the decision and reasoning:",
     );
@@ -1314,7 +1314,7 @@
       `Retire and decommission ${ret.systemName || "the system"}${ret.registerId ? " (" + ret.registerId + ")" : ""}.`,
       ret.reason ? `Reason: ${ret.reason}.` : "",
       ret.rationale ? `Rationale: ${ret.rationale}` : "",
-      ret.monitoringRef ? `Prompted by monitoring finding ${ret.monitoringRef} (WCC-AIG-39).` : "",
+      ret.monitoringRef ? `Prompted by monitoring finding ${ret.monitoringRef} (AIG-OPS-02).` : "",
       ret.hasSuccessor === "Yes"
         ? `Successor: ${ret.successorId || "named, ID not recorded"} — enters intake as its own system.`
         : "No successor system.",
@@ -1464,7 +1464,7 @@
     assessmentRequirements,
     buildEvidenceList,
     buildRoute,
-    build05DraftHandoff,
+    buildRegisterDraftHandoff,
     buildCapabilitiesMapHandoff,
     fieldReferenceType,
     AGENCY_DIMENSIONS,

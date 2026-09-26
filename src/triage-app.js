@@ -452,7 +452,7 @@
       return {
         key: "light",
         name: "Light-touch governance pathway",
-        why: "Low risk and low governance priority do not waive duties. Complete Equality Act s149, HRA s6 and data-protection/privacy screening, verify the Council-issued AIR-ID and current 05 state, and retain proportionate baseline documentation, named ownership, controls and review."
+        why: "Low risk and low governance priority do not waive duties. Complete Equality Act s149, HRA s6 and data-protection/privacy screening, verify the Council-issued AIR-ID and current AIG-INV-04 state, and retain proportionate baseline documentation, named ownership, controls and review."
       };
     }
 
@@ -509,7 +509,7 @@
       );
       if (results.tierFloored) {
         parts.push(
-          "This is a triage result, not current 05 assurance state. If an authorised forum decides on escalation, record that decision in WCC-AIG-16 or approved native minutes and link its dated Gate Event in 36.",
+          "This is a triage result, not current AIG-INV-04 assurance state. If an authorised forum decides on escalation, record that decision in AIG-DEC-03 or approved native minutes and link its dated Gate Event in AIG-DEC-04.",
         );
       }
       if (results.triggerIds.length) {
@@ -656,7 +656,7 @@
       `Provisional effective triage tier: ${results.effectiveTierName}${results.tierFloored ? ` (governance floor: ${results.floorReason})` : ""}`,
       ...(results.tierFloored
         ? [
-            "  Note: this effective triage tier is a draft routing input, not a current assurance state. If a formal decision is reached, record it in WCC-AIG-16 or approved native minutes and link the separate dated Gate Event in 36.",
+            "  Note: this effective triage tier is a draft routing input, not a current assurance state. If a formal decision is reached, record it in AIG-DEC-03 or approved native minutes and link the separate dated Gate Event in AIG-DEC-04.",
           ]
         : []),
       `Provisional inherent risk tier: ${results.inherentTierName}`,
@@ -708,7 +708,7 @@
         `Worst plausible chain: ${a.worstChain || "Not entered"}`,
         `Capabilities selected: ${a.capabilities.length ? a.capabilities.join("; ") : "None selected"}`,
         `Agent Record (ASBOM) reference: ${a.asbomRef || "Not entered"}`,
-        "Draft handoff only: no agent authority is granted. WCC-AIG-45 owns permissions and delegations.",
+        "Draft handoff only: no agent authority is granted. AIG-AGT-04 owns permissions and delegations.",
       );
     }
 
@@ -729,8 +729,8 @@
       "IMPORTANT",
       "---------",
       "This is a planned route, not evidence that any gate has been passed.",
-      "05 holds permanent Council-issued AIR-ID and current assurance state. 36 separates prospective Gate Plan, dated Gate Events and event-linked Gate Conditions.",
-      "Formal decisions stay in WCC-AIG-16 or approved native minutes; evidence remains at source with versioned pointers in 05. The separate proposed Capabilities and System Map is a relationship catalogue, not a second register.",
+      "AIG-INV-04 holds the permanent Council-issued AIR-ID and current assurance state. AIG-DEC-04 separates prospective Gate Plans, dated Gate Events and event-linked Gate Conditions.",
+      "Formal decisions stay in AIG-DEC-03 or approved native minutes; evidence remains at source with versioned pointers in AIG-INV-04. Proposed controlled artefact AIG-INV-05 is a relationship catalogue, not a second Register, and is not approved/adopted.",
       "This draft does not create an AIR-ID, assurance state, legal scope, FRIA completion, approval, publication or ISO conformity.",
       "Decision support only: validate forum names, delegated authorities and assessment requirements locally.",
     );
@@ -787,7 +787,7 @@
       ["Authorised governance-priority uplift (optional)", ""],
       ["Effective governance priority", r.effectiveGovernancePriority || r.priority.label],
       ["Priority uplift / routing rationale", ""],
-      ["Source / completion status", ""] // Formula-owned in WCC-AIG-06; do not paste a status.
+      ["Source / completion status", ""] // Formula-owned in AIG-ASS-01; do not paste a status.
     ];
     return fieldValueCsv(rows);
   }
@@ -890,7 +890,7 @@
       ["Jurisdiction", ""],
       ["Autonomy Level", a.autonomyLabel],
       ["Agency Tier", a.tierLabel],
-      ["AGPI Priority (from 05)", r.effectiveGovernancePriority || r.priority.label],
+      ["AGPI Priority (from AIG-INV-04)", r.effectiveGovernancePriority || r.priority.label],
       ["Persistence?", ""],
       ["Memory Type", ""],
       ["Can delegate / create agents?", ""],
@@ -932,7 +932,7 @@
     return logic.toCsv(
       ["Target artefact", "Field label / prompt", "Field reference type", "Triage draft value", "Value status", "Review, evidence or authority still required"],
       rows.map(([field, value]) => [
-        "WCC-AIG-45 Agent Record / ASBOM",
+        "AIG-AGT-04 Agent Record / ASBOM",
         field,
         "Prompt / candidate label — exact controlled field not verified",
         value == null ? "" : value,
@@ -951,7 +951,7 @@
     const add = (artefact, field, value, treatment) => {
       rows.push([artefact, field, value == null ? "" : value, treatment]);
     };
-    const risk = "WCC-AIG-07 / Triage Import";
+    const risk = "AIG-ASS-02 / Triage Import";
     add(risk, "AIR-ID", p.registerId, "Triage value; assessor confirms");
     add(risk, "Effective Governance Tier", r.effectiveTierName, "Triage value; assessor confirms");
     add(risk, "Assurance Intensity", r.assuranceIntensity, "Triage value; assessor confirms");
@@ -959,11 +959,11 @@
     add(risk, "Rollback Capability", yesNo(a.rollback), "Self-reported at triage; verify evidence");
     add(risk, "Boundaries Tested", yesNo(a.boundariesTested), "Self-reported at triage; verify evidence");
 
-    const triage = "WCC-AIG-48 / Agentic Triage assessment";
+    const triage = "AIG-AGT-03 / Agentic Triage assessment";
     add(triage, "AIR-ID", p.registerId, "Assessment identity");
     logic.AGENCY_DIMENSIONS.forEach((d) => {
       const note = a.dimensionNotes[d.id] || {};
-      add(triage, d.label + " score (0-5)", a[d.id], "Provisional; confirm against WCC-AIG-47");
+      add(triage, d.label + " score (0-5)", a[d.id], "Provisional; confirm against AIG-AGT-02");
       add(triage, d.label + " rationale", note.rationale || "", "Blank means assessment explanation is outstanding");
       add(triage, d.label + " evidence ref", note.evidenceRef || "", "Blank means evidence reference is outstanding");
     });
@@ -975,23 +975,23 @@
     add(triage, "Required control route", a.pathway, "Not an approval or runtime control");
     add(triage, "Production readiness gate", "Required runtime controls Implemented and Evidenced or effective, time-bounded compensating control accepted under Council delegation", "No production approval from triage");
 
-    const security = "WCC-AIG-20 / AI Security Review Checklist";
+    const security = "AIG-ASS-11 / AI Security Review Checklist";
     add(security, "AIR-ID", p.registerId, "Action-capable systems: applies at every base risk tier; review depth is proportionate");
     ["ASI01 Agent Goal Hijack","ASI02 Tool Misuse","ASI03 Identity and Privilege Abuse","ASI04 Agentic Supply Chain Vulnerabilities","ASI05 Unexpected Code Execution","ASI06 Memory and Context Poisoning","ASI07 Insecure Inter-Agent Communication","ASI08 Cascading Failures","ASI09 Human-Agent Trust Exploitation","ASI10 Rogue Agents"].forEach(risk => add(security, risk, "", "Record applicability/rationale, owner, required and actual state, test result and evidence; blank is outstanding"));
 
-    const record = "WCC-AIG-45 / Agent Record";
+    const record = "AIG-AGT-04 / Agent Record";
     add(record, "AIR-ID", p.registerId, "Carry forward");
     add(record, "Agent Name", p.systemName, "Proposed; confirm");
     add(record, "Approved Purpose (mandate)", "", "Only fill after formal authorisation");
     add(record, "Autonomy Level", a.autonomyLabel, "Triage proposal; confirm authorised level");
     add(record, "Agency Tier", a.tierLabel, "Triage proposal; confirm");
-    add(record, "AGPI Priority (from 05)", r.effectiveGovernancePriority || r.priority.label, "Confirm Register value");
+    add(record, "AGPI Priority (from AIG-INV-04)", r.effectiveGovernancePriority || r.priority.label, "Confirm Register value");
     add(record, "Notes", "Proposed purpose from intake: " + p.purpose, "Context only; no approved mandate");
     add(record, "Kill-switch tested?", "", "Test evidence required");
     add(record, "Rollback capability?", "", "Test evidence required");
-    add("WCC-AIG-45 / Runtime Controls", "Control ID", "ASI01–ASI10 where applicable", "One row per applicable control; set required/actual state, test, owner and evidence; no state is presumed");
+    add("AIG-AGT-04 / Runtime Controls", "Control ID", "ASI01–ASI10 where applicable", "One row per applicable control; set required/actual state, test, owner and evidence; no state is presumed");
 
-    const vector = "WCC-AIG-45 / Capability Vector";
+    const vector = "AIG-AGT-04 / Capability Vector";
     add(vector, "AIR-ID", p.registerId, "Carry forward");
     logic.CAPABILITY_VECTOR.forEach((capability) => add(
       vector, capability, a.capabilities.includes(capability) ? "Yes" : "",
@@ -1009,24 +1009,24 @@
     ));
     add(vector, "Notes", "Triage seed; verify all capabilities and multipliers.", "Context");
 
-    const authority = "WCC-AIG-46 / Agent Authority Graph (derived from 45 ASBOM)";
+    const authority = "AIG-AGT-05 / Agent Authority Graph (derived from AIG-AGT-04 ASBOM)";
     add(authority, "AIR-ID / agent reference", p.registerId, "Identity pointer only; no authority edge created");
-    add(authority, "Authority delegated", "", "Map only an existing authorised edge from WCC-AIG-45; no authority granted here");
+    add(authority, "Authority delegated", "", "Map only an existing authorised edge from AIG-AGT-04; no authority granted here");
     add(authority, "Constraints / ceiling", "", "Verify against ASBOM and formal delegation; do not infer from triage multipliers");
     add(authority, "Revocable how", "", "Prompt only; evidence revocation before any authority is granted");
 
-    const monitoring = "WCC-AIG-39 / Monitoring Log";
+    const monitoring = "AIG-OPS-02 / Monitoring Log";
     add(monitoring, "AIR-ID", p.registerId, "Identity seed only; no monitoring result created");
     add(monitoring, "AI System / Service", p.systemName, "Identity seed only");
     add(monitoring, "Monitoring Owner", "", "Assign and confirm at deployment");
     add(monitoring, "Metric Category", "Agentic security / operations", "Assessor to confirm category for each applicable metric");
     add(monitoring, "Approved Threshold / Tolerance", "", "Set and approve per metric before live use; blank is outstanding");
-    add(monitoring, "Evidence Location", "", "Cite WCC-AIG-50 action IDs and verified logs when operated; no test is presumed");
+    add(monitoring, "Evidence Location", "", "Cite AIG-AGT-06 action IDs and verified logs when operated; no test is presumed");
     ["Denied tool calls","Authority changes","Memory writes","Loops and delegation","External destinations","Human overrides","Time to containment"].forEach(metric => add(monitoring, "Metric / Indicator", metric, "Set Approved Threshold / Tolerance, Monitoring Owner, review window and evidence before live use where applicable"));
 
-    const actions = "WCC-AIG-50 / Agentic Action / Decision Record";
+    const actions = "AIG-AGT-06 / Agentic Action / Decision Record";
     add(actions, "AIR-ID / agent reference", p.registerId, "Identity pointer only; no action record or decision created");
-    add(actions, "Action / decision record reference", "", "Record each consequential action in the controlled 50 record when operated; no action authority is granted");
+    add(actions, "Action / decision record reference", "", "Record each consequential action in the proposed AIG-AGT-06 artefact when operated; no action authority is granted");
     add(actions, "Human review / outcome / evidence", "", "Prompt only; verify recorded human review, outcome and source evidence");
 
     return logic.toCsv(
@@ -1103,7 +1103,7 @@
     return logic.toCsv(
       ["Target artefact", ...headers.map((field) => `${field} — prompt / proposed value`), "Field/value status"],
       [[
-        "WCC-AIG-45 Agent Record / Capability Vector",
+        "AIG-AGT-04 Agent Record / Capability Vector",
         ...row,
         "Triage handoff only — unselected capabilities remain unknown, not No; verify exact fields and scope against the current controlled ASBOM.",
       ]],
@@ -1179,9 +1179,9 @@
       ...calculation.profile,
       dateFirstUsed: formatInputDate(calculation.profile.dateFirstUsed),
     };
-    const handoff = logic.build05DraftHandoff(profile, calculation.results, latestAgentic);
+    const handoff = logic.buildRegisterDraftHandoff(profile, calculation.results, latestAgentic);
     download(
-      `${safeSlug(profile.systemName)}-05-register-review-handoff.csv`,
+      `${safeSlug(profile.systemName)}-AIG-INV-04-register-review-handoff.csv`,
       logic.toCsv(handoff.headers, handoff.rows),
       "text/csv;charset=utf-8",
     );
@@ -1192,7 +1192,7 @@
     const calculation = update();
     const handoff = logic.buildCapabilitiesMapHandoff(calculation.profile);
     download(
-      `${safeSlug(calculation.profile.systemName)}-capabilities-system-map-draft-handoff.csv`,
+      `${safeSlug(calculation.profile.systemName)}-AIG-INV-05-capabilities-system-map-draft-handoff.csv`,
       logic.toCsv(handoff.headers, handoff.rows),
       "text/csv;charset=utf-8",
     );
@@ -1259,10 +1259,10 @@
       controlEntered;
     const reviewed = byId("triageReviewed").checked;
     const message = !completeInputs
-      ? "Synthetic / incomplete example: untouched score fields still use built-in defaults. Complete and review every score and trigger. This is not current 05 assurance."
+      ? "Synthetic / incomplete example: untouched score fields still use built-in defaults. Complete and review every score and trigger. This is not current AIG-INV-04 assurance."
       : !reviewed
-        ? "All score inputs have been entered, but this triage is not yet confirmed. Review the scores, action authority and triggers. This is not current 05 assurance."
-        : "User-confirmed triage inputs. The calculated priority, risk tier and route remain provisional decision support, not current 05 assurance.";
+        ? "All score inputs have been entered, but this triage is not yet confirmed. Review the scores, action authority and triggers. This is not current AIG-INV-04 assurance."
+        : "User-confirmed triage inputs. The calculated priority, risk tier and route remain provisional decision support, not current AIG-INV-04 assurance.";
     ["priorityProvisionalCue", "riskProvisionalCue", "provisionalCue"].forEach((id) => {
       const cue = byId(id);
       if (cue) {
@@ -1388,7 +1388,7 @@
     if (r.escalations.length) html += "<p><strong>Escalation:</strong> " + esc(r.escalations.join("; ")) + "</p>";
     if (r.flags.length) html += '<p class="ag-flag"><strong>Flags:</strong> ' + esc(r.flags.join("; ")) + "</p>";
     html += "<p><strong>Deployment control:</strong> " + esc(r.deploymentControl) + "</p>";
-    html += '<p class="muted">Draft handoff only: the triage suggests an agent classification and agency tier. WCC-AIG-45 owns permissions and delegations; verify the current authorised Agent Record and never infer authority from this result.</p>';
+    html += '<p class="muted">Draft handoff only: the triage suggests an agent classification and agency tier. AIG-AGT-04 owns permissions and delegations; verify the current authorised Agent Record and never infer authority from this result.</p>';
     host.innerHTML = html; host.hidden = false;
   }
   buildAgenticInputs();
