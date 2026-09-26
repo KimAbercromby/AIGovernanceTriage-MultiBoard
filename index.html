@@ -1008,6 +1008,15 @@ footer p {
     .retire-output { margin: 1.6rem 0; }
     .retire-output h3 { color: var(--navy); }
     .retire-output pre { white-space: pre-wrap; word-break: break-word; background: #f6f7f9; border: 1px solid #d9dde3; border-radius: 8px; padding: 1rem; font-size: 0.82rem; line-height: 1.5; overflow-x: auto; }
+    .retire-drafts { margin: 1.4rem 0; border: 1px solid #d9dde3; border-radius: 8px; background: #fff; }
+    .retire-drafts > summary { cursor: pointer; list-style: none; padding: 0.9rem 1.1rem; color: var(--navy); font-weight: 700; display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.8rem; }
+    .retire-drafts > summary::-webkit-details-marker { display: none; }
+    .retire-drafts > summary::after { content: "Show"; color: var(--navy-2); font-size: 0.85rem; margin-left: auto; }
+    .retire-drafts[open] > summary::after { content: "Hide"; }
+    .retire-drafts > summary:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+    .retire-drafts-hint { color: #536477; font-size: 0.85rem; font-weight: 400; }
+    .retire-drafts .retire-output { margin: 0; padding: 0 1.1rem 1rem; }
+    .retire-drafts .retire-output + .retire-output { padding-top: 1rem; border-top: 1px solid #d9dde3; }
     @media print { .mode-switch { display: none !important; } #retireMode .export-panel { display: none !important; } }
   
     /* ---- Collapsible input steps (Medium cleanup) ---- */
@@ -1971,20 +1980,22 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
 
           <div class="retire-readiness" id="retireReadiness" role="status" aria-live="polite"></div>
 
-          <div class="retire-output">
-            <h3>AIG-DEC-04 plan / event / condition review handoff</h3>
-            <p class="lede">
-              Review this event handoff against the proposed AIG-DEC-04 workbook and verify
-              the Council-issued AIR-ID. User-entered readiness answers are not
-              verified evidence and do not change current Register status.
-            </p>
-            <pre id="retireGateLog"></pre>
-          </div>
-
-          <div class="retire-output">
-            <h3>Decision-paper handoff for AIG-DEC-03 (not a formal record)</h3>
-            <pre id="retireDecision"></pre>
-          </div>
+          <details class="retire-drafts" id="retireDrafts">
+            <summary>Technical handoff drafts <span class="retire-drafts-hint">Optional preview · download options below</span></summary>
+            <div class="retire-output">
+              <h3>AIG-DEC-04 plan / event / condition review handoff</h3>
+              <p class="lede">
+                Review this event handoff against the proposed AIG-DEC-04 workbook and verify
+                the Council-issued AIR-ID. User-entered readiness answers are not
+                verified evidence and do not change current Register status.
+              </p>
+              <pre id="retireGateLog"></pre>
+            </div>
+            <div class="retire-output">
+              <h3>Decision-paper handoff for AIG-DEC-03 (not a formal record)</h3>
+              <pre id="retireDecision"></pre>
+            </div>
+          </details>
 
           <div class="export-panel">
             <div>
@@ -5237,6 +5248,16 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     } catch (_e) {
       status.textContent = "The browser blocked clipboard access. Use the download buttons instead.";
     }
+  });
+  const drafts = byId("retireDrafts");
+  let restoreDraftsAfterPrint = null;
+  window.addEventListener("beforeprint", () => {
+    if (restoreDraftsAfterPrint === null) restoreDraftsAfterPrint = !drafts.open;
+    drafts.open = true;
+  });
+  window.addEventListener("afterprint", () => {
+    if (restoreDraftsAfterPrint) drafts.open = false;
+    restoreDraftsAfterPrint = null;
   });
   byId("retirePrint").addEventListener("click", () => window.print());
 
