@@ -25,8 +25,11 @@
 
   const profileFieldIds = [
     "registerId",
+    "ucId",
+    "ucIdStatus",
     "systemName",
     "purpose",
+    "usePurpose",
     "serviceArea",
     "serviceOwner",
     "supplierDeveloper",
@@ -427,6 +430,9 @@
     byId("continuityIdentity").textContent = profile.registerId
       ? `Entered AIR-ID: ${profile.registerId} · verify against AIG-INV-04`
       : "AIR-ID pending · use the intake reference until confirmed";
+    byId("continuityIdentity").textContent += profile.ucId
+      ? ` · UC-ID: ${profile.ucId} (${profile.ucIdStatus || "verification pending"})`
+      : " · UC-ID pending for this use by operator choice; not a shared system baseline";
     const next = route[0];
     byId("continuityNext").textContent = next
       ? `Next proposed handoff: ${next.requirement} · ${next.forum}. Carry the confirmed AIR-ID forward; do not mark the gate complete here.`
@@ -496,7 +502,8 @@
     }
 
     byId("agpiScore").textContent = formatNumber(results.agpiScore);
-    byId("agpiPriority").textContent = `Provisional · ${results.priority.label}`;
+    byId("agpiPriority").textContent =
+      `Provisional · ${results.priority.label} · UC-ID ${profile.ucId || "pending"} use-specific`;
     byId("agpiAction").textContent = results.priority.action;
     byId("needle").style.left = `${results.agpiScore}%`;
 
@@ -505,7 +512,8 @@
       `${formatNumber(results.risk.inherent)} · ${results.inherentTierName}`;
     byId("residualRisk").textContent =
       `${formatNumber(results.risk.residual)} · ${results.residualTierName}`;
-    byId("riskTier").textContent = `Provisional · ${results.effectiveTierName}`;
+    byId("riskTier").textContent =
+      `Provisional · ${results.effectiveTierName} · UC-ID ${profile.ucId || "pending"} use-specific`;
     byId("tierStat").className =
       `stat tier-${results.effectiveTierName.toLowerCase()}`;
 
@@ -543,9 +551,10 @@
       byId("escalationText").textContent = "";
     }
 
-    byId("summaryPriority").textContent = `Provisional · ${results.priority.label}`;
+    byId("summaryPriority").textContent =
+      `Provisional · ${results.priority.label} · UC-ID ${profile.ucId || "pending"} use-specific`;
     byId("summaryTier").textContent =
-      `Provisional · ${results.effectiveTierName}` +
+      `Provisional · ${results.effectiveTierName} · UC-ID ${profile.ucId || "pending"} use-specific` +
       (results.tierFloored ? ` (governance floor: ${results.floorReason})` : "") +
       ` · inherent ${results.inherentTierName} · residual ${formatNumber(results.risk.residual)} (${results.residualTierName})`;
     byId("summaryIntensity").textContent = `Provisional · ${results.assuranceIntensity}`;
@@ -594,13 +603,22 @@
       readAgentic(),
     );
     if (staleAgentic) invalidateAgency();
-    const required = [byId("systemName"), byId("purpose")];
+    const required = [byId("systemName"), byId("purpose"), byId("usePurpose")];
     const invalid = required.find((field) => !field.value.trim());
     if (invalid) {
       byId("validationMessage").textContent =
-        "Add the system or model name and purpose before exporting. AIR-ID is Council-issued: use the existing identifier or leave it blank; this tool never creates one.";
+        "Add the system or model name, system purpose and exact use-case purpose before exporting. AIR-ID and UC-ID are never created here; leave UC-ID pending if it is not already available.";
       invalid.reportValidity();
       invalid.focus();
+      return false;
+    }
+    const ucId = byId("ucId").value.trim();
+    const ucIdStatus = byId("ucIdStatus").value;
+    const ucPending = ucIdStatus === "Pending — no UC-ID entered";
+    if ((!ucId && !ucPending) || (ucId && ucPending)) {
+      byId("validationMessage").textContent =
+        "Enter a UC-ID and choose Existing or Provisional, or leave the ID blank with Pending selected. The tool never issues or verifies a UC-ID.";
+      byId("ucId").focus();
       return false;
     }
     if (!byId("triageReviewed").checked) {
@@ -649,8 +667,12 @@
       "",
       `Generated: ${logic.formatDate(new Date())}`,
       `AIR-ID: ${profile.registerId || "Not assigned"}`,
+      `UC-ID: ${profile.ucId || "Pending — not assigned"}`,
+      `UC-ID status: ${profile.ucIdStatus || "Pending — no UC-ID entered"}`,
       `System / model: ${profile.systemName || "Not entered"}`,
       `Purpose: ${profile.purpose || "Not entered"}`,
+      `Exact scoped use purpose / outcome: ${profile.usePurpose || "Not entered"}`,
+      "Assessment scope: priority and risk apply only to the stated use/outcome; materially different uses require distinct use-scoped triage. This is not approval.",
       `Service area: ${profile.serviceArea || "Not entered"}`,
       `Service owner: ${profile.serviceOwner || "Not entered"}`,
       `Supplier / developer: ${profile.supplierDeveloper || "Not entered"}`,
@@ -801,6 +823,12 @@
     const rows = [
       ["System / model name", p.systemName],
       ["AIR-ID", p.registerId],
+      ["UC-ID (target: blank only for shared baseline; pending use-specific ID is distinct)", p.ucId],
+      ["Use-case scope / exact outcome assessed", p.usePurpose],
+      ["UC-ID entry status (not verification)", p.ucIdStatus],
+      ["UC-ID interpretation", p.ucId ? "UC-ID-specific use triage." : "UC-ID-specific provisional use triage; ID pending, not a selected shared system baseline."],
+      ["Import limitation", p.ucId ? "Use-scoped proposal; verify this UC-ID before transfer." : "Use-scoped triage has no UC-ID yet; keep pending and do not treat blank as shared system baseline or transfer as a completed assessment."],
+      ["Priority / score scope", `This AGPI triage applies only to UC-ID ${p.ucId || "(pending)"} and the stated use outcome; reassess materially different uses separately. Not approval.`],
       ["Service area", p.serviceArea],
       ["Service owner", p.serviceOwner],
       ["Assessed by (owner to complete)", ""],
@@ -841,7 +869,13 @@
     const rows = [
       ["AIR-ID", p.registerId],
       ["System / Model Name", p.systemName],
-      ["Purpose / Description", p.purpose],
+      ["Purpose / Description", p.usePurpose || p.purpose],
+      ["UC-ID (target: blank only for explicit system baseline; pending use-specific ID is distinct)", p.ucId],
+      ["UC-ID entry status (not verification)", p.ucIdStatus],
+      ["UC-ID interpretation", p.ucId ? "UC-ID-specific use triage." : "UC-ID-specific provisional use triage; ID pending, not a selected shared system baseline."],
+      ["Triage / assessment scope", "UC-ID-specific"],
+      ["Use-case outcome / scope key", p.usePurpose || p.purpose],
+      ["Risk assessment scope", `This risk triage applies only to UC-ID ${p.ucId || "(pending)"} and the stated use outcome; reassess materially different uses separately. Not approval.`],
       ["Service Area", p.serviceArea],
       ["Service Owner", p.serviceOwner],
       ["Supplier / Developer", p.supplierDeveloper],
@@ -907,6 +941,8 @@
     const a = latestAgentic;
     const rows = [
       ["AIR-ID", p.registerId],
+      ["UC-ID scope (not authority)", p.ucId],
+      ["Exact use purpose / outcome", p.usePurpose || p.purpose],
       ["Agent Name", p.systemName],
       ["Approved Purpose (mandate)", ""],
       ["Prohibited Purposes", ""],
@@ -919,7 +955,8 @@
       ["Jurisdiction", ""],
       ["Autonomy Level", a.autonomyLabel],
       ["Agency Tier", a.tierLabel],
-      ["AGPI Priority (from AIG-INV-04)", r.effectiveGovernancePriority || r.priority.label],
+      ["Current system AGPI Priority (verify AIG-INV-04)", ""],
+      ["Use-specific triage AGPI priority (not system summary)", r.priority.label],
       ["Persistence?", ""],
       ["Memory Type", ""],
       ["Can delegate / create agents?", ""],
@@ -980,8 +1017,11 @@
     const add = (artefact, field, value, treatment) => {
       rows.push([artefact, field, value == null ? "" : value, treatment]);
     };
+    add("Triage scope — applies to following proposed prompts only", "UC-ID", p.ucId || "", p.ucIdStatus || "Pending — no UC-ID entered; no identifier is generated");
+    add("Triage scope — applies to following proposed prompts only", "Exact use purpose / outcome", p.usePurpose || p.purpose, "Operator-entered scope; proposal only, not a mandate or approval");
     const risk = "AIG-ASS-02 / Triage Import";
     add(risk, "AIR-ID", p.registerId, "Triage value; assessor confirms");
+    add(risk, "UC-ID / use scope", p.ucId || "", `Scope only; ${p.ucIdStatus || "pending"}; verify independently. Exact outcome: ${p.usePurpose || p.purpose}. Never authority.`);
     add(risk, "Effective Governance Tier", r.effectiveTierName, "Triage value; assessor confirms");
     add(risk, "Assurance Intensity", r.assuranceIntensity, "Triage value; assessor confirms");
     add(risk, "Kill-switch Demonstrated", yesNo(a.killSwitch), "Self-reported at triage; verify evidence");
@@ -990,6 +1030,7 @@
 
     const triage = "AIG-AGT-03 / Agentic Triage assessment";
     add(triage, "AIR-ID", p.registerId, "Assessment identity");
+    add(triage, "UC-ID / use scope", p.ucId || "", `Scope only; ${p.ucIdStatus || "pending"}; verify independently. Exact outcome: ${p.usePurpose || p.purpose}. Never authority.`);
     logic.AGENCY_DIMENSIONS.forEach((d) => {
       const note = a.dimensionNotes[d.id] || {};
       add(triage, d.label + " score (0-5)", a[d.id], "Provisional; confirm against AIG-AGT-02");
@@ -1014,7 +1055,8 @@
     add(record, "Approved Purpose (mandate)", "", "Only fill after formal authorisation");
     add(record, "Autonomy Level", a.autonomyLabel, "Triage proposal; confirm authorised level");
     add(record, "Agency Tier", a.tierLabel, "Triage proposal; confirm");
-    add(record, "AGPI Priority (from AIG-INV-04)", r.effectiveGovernancePriority || r.priority.label, "Confirm Register value");
+    add(record, "Current system AGPI Priority (verify AIG-INV-04)", "", "Leave blank; this UC-specific triage is not the one-row-per-AIR-ID system summary.");
+    add(record, "Use-specific triage AGPI priority (not system summary)", r.priority.label, "Use-specific triage prompt only; do not write into the AIG-INV-04 system summary.");
     add(record, "Notes", "Proposed purpose from intake: " + p.purpose, "Context only; no approved mandate");
     add(record, "Kill-switch tested?", "", "Test evidence required");
     add(record, "Rollback capability?", "", "Test evidence required");
@@ -1219,7 +1261,7 @@
   function capabilitiesMapExport() {
     if (!validateForExport()) return;
     const calculation = update();
-    const handoff = logic.buildCapabilitiesMapHandoff(calculation.profile);
+    const handoff = logic.buildCapabilitiesMapHandoff(calculation.profile, calculation.results);
     download(
       `${safeSlug(calculation.profile.systemName)}-AIG-INV-05-capabilities-system-map-draft-handoff.csv`,
       logic.toCsv(handoff.headers, handoff.rows),
@@ -1315,7 +1357,7 @@
     if (target.matches && target.matches("#likelihood")) likelihoodEntered = true;
     if (target.matches && target.matches("#control")) controlEntered = true;
     if (target.matches && target.matches(
-      '[data-dimension], [data-impact], [data-trigger], #likelihood, #control, #actionAuthority'
+      '[data-dimension], [data-impact], [data-trigger], #likelihood, #control, #actionAuthority, #ucId, #ucIdStatus, #usePurpose'
     )) byId("triageReviewed").checked = false;
     update();
   }
