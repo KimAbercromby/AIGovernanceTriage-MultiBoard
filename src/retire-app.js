@@ -123,6 +123,9 @@
     const ret = collect();
     const gate = logic.buildRetirementGateLogRow(ret);
     const readiness = gate.readiness;
+    byId("retireContinuityIdentity").textContent = byId("ret-registerId").value.trim()
+      ? `Entered AIR-ID: ${byId("ret-registerId").value.trim()} · verify against AIG-INV-04`
+      : "AIR-ID pending · confirm against AIG-INV-04";
 
     const panel = byId("retireReadiness");
     panel.className = "retire-readiness " + (readiness.complete ? "is-complete" : "is-pending");

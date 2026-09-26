@@ -1430,7 +1430,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
           <p class="eyebrow">How it works</p>
           <h2 id="intro-title">One front door, proportionate governance pathways</h2>
           <p>Use the tool to draft triage and prospective routing prompts for one AI system. AGPI prioritises governance attention; it does not waive Equality Act 2010 section 149, Human Rights Act 1998 section 6, privacy, data-protection or other case-specific duties. Every tier requires rights, equality and privacy screening. A non-agentic system may still be High or Critical risk. Agent authority and permissions belong in AIG-AGT-04; a triage score grants none. Outputs are review handoffs, not live Register rows, current assurance state, Gate Plan / Event / Condition entries or formal decisions.</p>
-          <p><strong>Record key:</strong> AIG-INV-04 (AI Register) owns the permanent Council-issued AIR-ID and current system state. AIG-DEC-04 (Gate Log) keeps plans, dated events and event-linked conditions separate from that Register. Proposed controlled AIG-INV-05 is a relationship map only—not approved/adopted and not a decision, permission or approval source.</p>
+          <p><strong>One system thread:</strong> AIG-INV-04 (AI Register) owns the permanent Council-issued AIR-ID and current system state. Carry that same AIR-ID into AIG-DEC-04 (Gate Log) plans, dated events and event-linked conditions, with formal decisions in AIG-DEC-03 or approved minutes. These are linked records with distinct owners, not disconnected journeys. Proposed controlled AIG-INV-05 is a descriptive relationship map only—not approved/adopted and not a decision, permission or approval source.</p>
           <p>
             A proportionate pathway may reduce review depth, but never skips initial
             equality, human-rights, privacy and other relevant screening. Specialists and
@@ -1703,9 +1703,10 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
           <p class="eyebrow">Step 4 of 4</p>
           <h2 id="route-title">Multi-board governance route</h2>
           <p class="lede">
-            One classification and evidence set travels through the decision relay.
-            Each completed decision must be added to the Gate Log; this planned route
-            is not itself evidence that a gate has been passed.
+            Keep one system identity throughout the forum journey. This proposed route
+            prepares the next handoff; an authorised decision, its dated gate event and
+            the Register's current position are linked through the same AIR-ID. No gate
+            is passed by this triage.
           </p>
 
           <p class="provisional-cue" id="provisionalCue" role="status">
@@ -1717,6 +1718,22 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
             <strong id="routeBannerName"></strong>
             <span id="routeBannerWhy" class="route-banner-why"></span>
           </div>
+
+          <section class="continuity-thread" aria-label="One system, connected record trail">
+            <div class="continuity-heading">
+              <span class="mini-label">ONE SYSTEM · ONE STABLE AIR-ID</span>
+              <strong id="continuityIdentity">Awaiting an authorised AIR-ID</strong>
+            </div>
+            <ol class="continuity-steps">
+              <li><b>Identify</b><span>AIG-INV-04 Register confirms the AIR-ID and current state.</span></li>
+              <li><b>Plan</b><span>Carry that ID into the proposed AIG-DEC-04 Gate Plan and named forum route.</span></li>
+              <li><b>Decide and record</b><span>The authorised decision belongs in AIG-DEC-03 or approved minutes; cite it in a dated AIG-DEC-04 Gate Event, with any event-linked Conditions.</span></li>
+              <li><b>Reconcile</b><span>Update AIG-INV-04 current position against the decision and latest Event ID.</span></li>
+            </ol>
+            <p class="continuity-next" id="continuityNext"></p>
+            <p class="continuity-caveat">This is a draft handoff, not a live link or approval. If the AIR-ID is pending, keep the intake reference separate until the Register owner issues or confirms it. AIG-INV-05 adds descriptive context, not another gate.</p>
+            <a class="continuity-link" href="https://kimabercromby.github.io/AIGovernanceWalkthrough-MultiBoard/" target="_blank" rel="noopener noreferrer">Explore the connected lifecycle <span>Illustrative examples · no case details transferred ↗</span></a>
+          </section>
 
           <div class="summary-grid" aria-live="polite">
             <div>
@@ -1839,6 +1856,21 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
           .route-banner.route-light{border-left-color:#2E7D52}
           .route-banner.route-standard{border-left-color:#C8AB36}
           .route-banner.route-agentic{border-left-color:#9B1C1C;background:#fbf5f5}
+          .continuity-thread{margin:1rem 0 1.35rem;padding:1rem 1.15rem;border:1px solid #c7d4df;border-left:5px solid #c8ab36;border-radius:9px;background:#f7fafc;color:#122c47}
+          .continuity-heading{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:.35rem 1rem}
+          .continuity-heading .mini-label{font-size:.76rem;letter-spacing:.06em;font-weight:800;color:#426078}
+          .continuity-heading strong{font-size:1.06rem;overflow-wrap:anywhere}
+          .continuity-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.75rem;list-style:none;margin:1rem 0;padding:0;counter-reset:thread}
+          .continuity-steps li{position:relative;padding:.65rem .75rem .65rem 2.25rem;border-radius:7px;background:#fff;border:1px solid #dbe3e9;counter-increment:thread}
+          .continuity-steps li::before{content:counter(thread);position:absolute;left:.7rem;top:.65rem;width:1.1rem;height:1.1rem;line-height:1.1rem;text-align:center;border-radius:50%;background:#122c47;color:white;font-size:.73rem;font-weight:800}
+          .continuity-steps b{display:block;font-size:.88rem;margin-bottom:.25rem}
+          .continuity-steps span{display:block;font-size:.81rem;line-height:1.4;color:#314556}
+          .continuity-next{font-weight:700;margin:.25rem 0 .45rem}
+          .continuity-caveat{font-size:.84rem;line-height:1.45;color:#3f5565;margin:.45rem 0}
+          .continuity-link{display:inline-block;font-weight:700;font-size:.88rem;margin-top:.3rem}
+          .continuity-link span{display:block;font-weight:400;color:#3f5565;font-size:.8rem}
+          @media(max-width:900px){.continuity-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+          @media(max-width:560px){.continuity-steps{grid-template-columns:1fr}}
           #agenticStep fieldset{border:1px solid #d9dee6;border-radius:8px;margin:10px 0;padding:8px 12px}
           #agenticStep legend{font-weight:700;color:#122C47;padding:0 6px}
           #agenticStep .agency-dim{display:flex;flex-direction:column;margin:6px 0}
@@ -1882,9 +1914,23 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
             Retirement is a governance gate in its own right, not a triage. This
             mode does not score AGPI or plan a deployment route. It drafts retirement
             handoffs scaled to the priority read from the current Council record.
-            The proposed AIG-DEC-04 workbook separates the prospective plan, dated event and linked
-            conditions; formal decisions remain in AIG-DEC-03 or approved minutes.
+            Follow the same AIR-ID into an authorised retirement decision, dated event
+            and any conditions, then reconcile the Register's current position.
           </p>
+
+          <section class="continuity-thread" aria-label="Retirement record trail">
+            <div class="continuity-heading">
+              <span class="mini-label">SAME SYSTEM · SAME AIR-ID THROUGH RETIREMENT</span>
+              <strong id="retireContinuityIdentity">Awaiting an authorised AIR-ID</strong>
+            </div>
+            <ol class="continuity-steps">
+              <li><b>Confirm</b><span>Read the current position and stable AIR-ID from AIG-INV-04.</span></li>
+              <li><b>Decide</b><span>Retirement authority and rationale belong in AIG-DEC-03 or approved minutes.</span></li>
+              <li><b>Record</b><span>Link the dated retirement Event and any Conditions to the same AIR-ID in AIG-DEC-04.</span></li>
+              <li><b>Close the loop</b><span>Reconcile AIG-INV-04 current state without erasing the gate history.</span></li>
+            </ol>
+            <p class="continuity-caveat">This tool drafts a handoff only. No retirement decision, Gate Event or Register update is made here.</p>
+          </section>
 
           <div class="form-grid">
             <label class="field">

@@ -147,6 +147,22 @@ test("public triage offers the proposed controlled AIG-INV-05 map handoff withou
   assert.doesNotMatch(html, /Westminster/i);
 });
 
+test("triage and retirement show a continuous AIR-ID trail without claiming live updates", () => {
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const html = fs.readFileSync(path.join(__dirname, "../index.html"), "utf8");
+  const triage = fs.readFileSync(path.join(__dirname, "../src/triage-app.js"), "utf8");
+  const retire = fs.readFileSync(path.join(__dirname, "../src/retire-app.js"), "utf8");
+  assert.match(html, /id="continuityIdentity"/);
+  assert.match(html, /id="continuityNext"/);
+  assert.match(html, /id="retireContinuityIdentity"/);
+  assert.match(html, /AIG-DEC-03 or approved minutes; cite it in a dated AIG-DEC-04 Gate Event/);
+  assert.match(html, /no case details transferred/i);
+  assert.match(html, /No retirement decision, Gate Event or Register update is made here/);
+  assert.match(triage, /renderContinuity\(profile, route\)/);
+  assert.match(retire, /byId\("retireContinuityIdentity"\)\.textContent/);
+});
+
 test("CSV export escapes formula-injection prefixes", () => {
   const csv = logic.toCsv(["field"], [["=cmd|unsafe"]]);
   assert.match(csv, /'=cmd\|unsafe/);
