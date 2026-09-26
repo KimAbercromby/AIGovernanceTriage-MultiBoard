@@ -730,7 +730,7 @@
       "---------",
       "This is a planned route, not evidence that any gate has been passed.",
       "05 holds permanent Council-issued AIR-ID and current assurance state. 36 separates prospective Gate Plan, dated Gate Events and event-linked Gate Conditions.",
-      "Formal decisions stay in WCC-AIG-16 or approved native minutes; evidence remains at source with versioned pointers in 05.",
+      "Formal decisions stay in WCC-AIG-16 or approved native minutes; evidence remains at source with versioned pointers in 05. The separate proposed Capabilities and System Map is a relationship catalogue, not a second register.",
       "This draft does not create an AIR-ID, assurance state, legal scope, FRIA completion, approval, publication or ISO conformity.",
       "Decision support only: validate forum names, delegated authorities and assessment requirements locally.",
     );
@@ -762,11 +762,7 @@
   }
 
   function buildCanonicalRecord(calculation) {
-    return logic.buildCanonicalRecord(
-      calculation,
-      readAgentic(),
-      latestAgentic,
-    );
+    return logic.buildCanonicalRecord(calculation, readAgentic(), latestAgentic);
   }
 
   function agpiPrefillCsv(calculation) {
@@ -1119,7 +1115,7 @@
     const calculation = update();
     if (!latestAgentic) {
       byId("validationMessage").textContent =
-        "Run Assess agency before downloading the Capability Vector pre-fill.";
+        "Run Assess agency before downloading the Capability Vector review handoff.";
       byId("agenticStep").scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
@@ -1165,7 +1161,7 @@
     const calculation = update();
     if (!latestAgentic) {
       byId("validationMessage").textContent =
-        "Run Assess agency before downloading the Agent Record pre-fill.";
+        "Run Assess agency before downloading the Agent Record review handoff.";
       byId("agenticStep").scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
@@ -1186,6 +1182,17 @@
     const handoff = logic.build05DraftHandoff(profile, calculation.results, latestAgentic);
     download(
       `${safeSlug(profile.systemName)}-05-register-review-handoff.csv`,
+      logic.toCsv(handoff.headers, handoff.rows),
+      "text/csv;charset=utf-8",
+    );
+  }
+
+  function capabilitiesMapExport() {
+    if (!validateForExport()) return;
+    const calculation = update();
+    const handoff = logic.buildCapabilitiesMapHandoff(calculation.profile);
+    download(
+      `${safeSlug(calculation.profile.systemName)}-capabilities-system-map-draft-handoff.csv`,
       logic.toCsv(handoff.headers, handoff.rows),
       "text/csv;charset=utf-8",
     );
@@ -1244,31 +1251,6 @@
   buildImpacts();
   update();
 
-  function markScoreInputEntered(target) {
-    if (!target || !target.matches) return;
-    if (target.matches("[data-dimension]")) {
-      enteredAgpiDimensions.add(target.dataset.dimension);
-    }
-    if (target.matches("[data-impact]")) {
-      enteredImpactDimensions.add(target.dataset.impact);
-    }
-    if (target.matches("#likelihood")) likelihoodEntered = true;
-    if (target.matches("#control")) controlEntered = true;
-  }
-
-  function handleFormInput(event) {
-    const target = event.target;
-    markScoreInputEntered(target);
-    if (target.matches && target.matches(
-      '[data-dimension], [data-impact], [data-trigger], #likelihood, #control, #actionAuthority'
-    )) {
-      byId("triageReviewed").checked = false;
-    }
-    update();
-  }
-  form.addEventListener("input", handleFormInput);
-  form.addEventListener("change", handleFormInput);
-
   function updateProvisionalCue() {
     const completeInputs =
       enteredAgpiDimensions.size === logic.DIMENSIONS.length &&
@@ -1289,8 +1271,26 @@
       }
     });
   }
+  function handleFormInput(event) {
+    const target = event.target;
+    if (target.matches && target.matches("[data-dimension]")) {
+      enteredAgpiDimensions.add(target.dataset.dimension);
+    }
+    if (target.matches && target.matches("[data-impact]")) {
+      enteredImpactDimensions.add(target.dataset.impact);
+    }
+    if (target.matches && target.matches("#likelihood")) likelihoodEntered = true;
+    if (target.matches && target.matches("#control")) controlEntered = true;
+    if (target.matches && target.matches(
+      '[data-dimension], [data-impact], [data-trigger], #likelihood, #control, #actionAuthority'
+    )) byId("triageReviewed").checked = false;
+    update();
+  }
+  form.addEventListener("input", handleFormInput);
+  form.addEventListener("change", handleFormInput);
   updateProvisionalCue();
   byId("downloadRegister").addEventListener("click", registerExport);
+  byId("downloadCapabilitiesMap").addEventListener("click", capabilitiesMapExport);
   byId("downloadCanonical").addEventListener("click", canonicalExport);
   byId("downloadAgpi").addEventListener("click", agpiExport);
   byId("downloadRisk").addEventListener("click", riskExport);
