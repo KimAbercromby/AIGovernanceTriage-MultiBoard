@@ -5,6 +5,15 @@
   const byId = (id) => document.getElementById(id);
   const form = byId("triageForm");
   let latestAgentic = null;
+  let latestAgenticContextKey = null;
+  const agencyExportIds = ["downloadAgent", "downloadCapability", "downloadAgenticGovernance"];
+  function syncAgencyExportAvailability() {
+    agencyExportIds.forEach((id) => {
+      const button = byId(id);
+      button.disabled = !latestAgentic;
+      button.setAttribute("aria-disabled", String(!latestAgentic));
+    });
+  }
   const enteredAgpiDimensions = new Set();
   const enteredImpactDimensions = new Set();
   let likelihoodEntered = false;
@@ -567,6 +576,13 @@
   }
 
   function validateForExport() {
+    const staleAgentic = latestAgentic && !logic.currentAgenticAssessment(
+      latestAgentic,
+      latestAgenticContextKey,
+      getProfile(),
+      readAgentic(),
+    );
+    if (staleAgentic) invalidateAgency();
     const required = [byId("systemName"), byId("purpose")];
     const invalid = required.find((field) => !field.value.trim());
     if (invalid) {
@@ -582,7 +598,9 @@
       byId("triageReviewed").focus();
       return false;
     }
-    byId("validationMessage").textContent = "";
+    byId("validationMessage").textContent = staleAgentic
+      ? "The system profile or agency answers changed since the last assessment. That assessment was invalidated; run Assess agency again before exporting agentic records."
+      : "";
     return true;
   }
 
@@ -762,7 +780,7 @@
   }
 
   function buildCanonicalRecord(calculation) {
-    return logic.buildCanonicalRecord(calculation, readAgentic(), latestAgentic);
+    return logic.buildCanonicalRecord(calculation, latestAgentic ? readAgentic() : null, latestAgentic);
   }
 
   function agpiPrefillCsv(calculation) {
@@ -1273,6 +1291,10 @@
   }
   function handleFormInput(event) {
     const target = event.target;
+    if (latestAgentic && target && (
+      profileFieldIds.includes(target.id) ||
+      (byId("agenticStep").contains && byId("agenticStep").contains(target))
+    )) invalidateAgency();
     if (target.matches && target.matches("[data-dimension]")) {
       enteredAgpiDimensions.add(target.dataset.dimension);
     }
@@ -1360,6 +1382,8 @@
       .find((el) => !el || el.value === "");
     if (missing) {
       latestAgentic = null;
+      latestAgenticContextKey = null;
+      syncAgencyExportAvailability();
       byId("agencyResult").hidden = true;
       byId("validationMessage").textContent =
         "Score all five agency dimensions before assessing agency.";
@@ -1373,6 +1397,8 @@
       actionAuthority === "Human approves each action" ? 1 : 0;
     if (autonomy < minimumAutonomy) {
       latestAgentic = null;
+      latestAgenticContextKey = null;
+      syncAgencyExportAvailability();
       byId("agencyResult").hidden = true;
       byId("validationMessage").textContent =
         "The autonomy score conflicts with the automated action authority selected above. Review both answers before assessing agency.";
@@ -1381,6 +1407,8 @@
     }
     byId("validationMessage").textContent = "";
     latestAgentic = logic.computeAgentic(readAgentic());
+    latestAgenticContextKey = logic.agenticContextKey(getProfile(), readAgentic());
+    syncAgencyExportAvailability();
     const r = latestAgentic; const host = byId("agencyResult");
     let html = '<p class="ag-tier">' + esc(r.tierLabel) + "</p>";
     html += "<p><strong>Autonomy:</strong> " + esc(r.autonomyLabel) + "</p>";
@@ -1392,12 +1420,15 @@
     host.innerHTML = html; host.hidden = false;
   }
   buildAgenticInputs();
+  syncAgencyExportAvailability();
   const invalidateAgency = () => {
     if (!latestAgentic) return;
     latestAgentic = null;
+    latestAgenticContextKey = null;
+    syncAgencyExportAvailability();
     byId("agencyResult").hidden = true;
     byId("validationMessage").textContent =
-      "Agency inputs changed. Run Assess agency again before exporting agentic records.";
+      "System profile or agency inputs changed. Run Assess agency again before exporting agentic records.";
   };
   byId("agenticStep").addEventListener("change", invalidateAgency);
   byId("actionAuthority").addEventListener("change", invalidateAgency);

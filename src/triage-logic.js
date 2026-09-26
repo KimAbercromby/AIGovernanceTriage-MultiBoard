@@ -1404,6 +1404,13 @@
     const A = ["A0 advisory","A1 assisted","A2 bounded execution","A3 conditional autonomy","A4 delegated autonomy","A5 open-ended autonomy"];
     return A[Math.max(0, Math.min(5, n | 0))];
   }
+  function agenticContextKey(profile, inputs) {
+    return JSON.stringify({ profile: profile || {}, inputs: inputs || {} });
+  }
+  function currentAgenticAssessment(assessment, reviewedContextKey, profile, inputs) {
+    if (!assessment || !reviewedContextKey) return null;
+    return reviewedContextKey === agenticContextKey(profile, inputs) ? assessment : null;
+  }
   function computeAgentic(input) {
     const d = (input && input.dimensions) || {};
     const g = (k) => Math.max(0, Math.min(5, Number(d[k] || 0)));
@@ -1474,6 +1481,8 @@
     AGENCY_PATHWAYS,
     computeAgentic,
     autonomyLabel,
+    agenticContextKey,
+    currentAgenticAssessment,
     buildGatePlanCsv,
     buildDecisionReadyHandoff,
     buildCanonicalRecord,
