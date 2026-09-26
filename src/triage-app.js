@@ -6,7 +6,7 @@
   const form = byId("triageForm");
   let latestAgentic = null;
   let latestAgenticContextKey = null;
-  const agencyExportIds = ["downloadAgent", "downloadCapability", "downloadAgenticGovernance"];
+  const agencyExportIds = ["downloadAgent", "downloadCapabilities", "downloadAgenticGovernance"];
   function syncAgencyExportAvailability() {
     agencyExportIds.forEach((id) => {
       const button = byId(id);
