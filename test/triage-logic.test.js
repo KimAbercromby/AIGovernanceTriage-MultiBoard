@@ -59,9 +59,9 @@ test("every risk tier carries equality, human-rights and privacy screening", () 
   assert.equal(low.results.requirements.dpiaScreening, true);
 });
 
-test("05 export is a draft handoff and never manufactures identity or assurance state", () => {
+test("AIG-INV-04 export is a draft handoff and never manufactures system identity or assurance state", () => {
   const { profile, results } = fixture();
-  const draft = logic.build05DraftHandoff(profile, results, null);
+  const draft = logic.buildRegisterDraftHandoff(profile, results, null);
   assert.deepEqual(draft.headers, logic.DRAFT_HANDOFF_HEADERS);
   assert.ok(draft.rows.every((row) => row.length === draft.headers.length));
 
@@ -73,23 +73,23 @@ test("05 export is a draft handoff and never manufactures identity or assurance 
       "Assessment / evidence ref", "Next review",
     ],
     "Assessment summary": [
-      "AIR-ID", "Priority (06)", "06 ref / date", "Risk tier (07)", "07 ref / date",
-      "Agency tier (47/48)", "47/48 ref / date", "Privacy / DPIA position",
-      "Equality / EIA position", "Other specialist finding refs", "45 Agent Record ref",
-      "46 Authority Graph ref", "39 Monitoring ref", "As-at date",
+      "AIR-ID", "Priority (AIG-ASS-01)", "AIG-ASS-01 ref / date", "Risk tier (AIG-ASS-02)", "AIG-ASS-02 ref / date",
+      "Agency tier (AIG-AGT-02/AIG-AGT-03)", "AIG-AGT-02/AIG-AGT-03 ref / date", "Privacy / DPIA position",
+      "Equality / EIA position", "Other specialist finding refs", "AIG-AGT-04 Agent Record ref",
+      "AIG-AGT-05 Authority Graph ref", "AIG-OPS-02 Monitoring ref", "As-at date",
     ],
   };
   assert.deepEqual([...new Set(draft.rows.map((row) => row[0]))].sort(), Object.keys(supportedFields).sort());
   assert.ok(draft.rows.every(([sheet, field]) => supportedFields[sheet].includes(field)),
     "every suggestion must use a field name on the proposed workbook's real sheets");
   assert.ok(draft.rows.some((row) => row[0] === "AI Register" && row[1] === "System name"));
-  assert.ok(draft.rows.some((row) => row[0] === "Assessment summary" && row[1] === "Priority (06)"));
+  assert.ok(draft.rows.some((row) => row[0] === "Assessment summary" && row[1] === "Priority (AIG-ASS-01)"));
   assert.ok(draft.rows.every((row) => !/Register Core|Assurance Snapshot/.test(row[0])));
-  assert.ok(draft.rows.every((row) => !/Approved Purpose \/ Boundary|Governance Approval Status|Is Agent\?|Agent Record \(45\) Ref|AGPI \/ assurance \/ risk result/.test(row[1])));
+  assert.ok(draft.rows.every((row) => !/Approved Purpose \/ Boundary|Governance Approval Status|Is Agent\?|Agent Record \(AIG-AGT-04\) Ref|AGPI \/ assurance \/ risk result/.test(row[1])));
 
   const get = (sheet, field) => draft.rows.find((row) => row[0] === sheet && row[1] === field);
   const identity = get("AI Register", "AIR-ID");
-  assert.match(identity[2], /Proposed 05/);
+  assert.match(identity[2], /Proposed AIG-INV-04/);
   assert.equal(identity[3], "");
   assert.match(identity[5], /Council-issued AIR-ID/);
   assert.match(identity[4], /No value asserted/);
@@ -97,8 +97,8 @@ test("05 export is a draft handoff and never manufactures identity or assurance 
   assert.equal(get("AI Register", "Operational status")[3], "");
   assert.equal(get("AI Register", "Can it act?")[3], "");
   assert.match(get("AI Register", "Purpose and boundary")[5], /not approved purpose/);
-  assert.equal(get("Assessment summary", "45 Agent Record ref")[3], "");
-  assert.equal(get("Assessment summary", "46 Authority Graph ref")[3], "");
+  assert.equal(get("Assessment summary", "AIG-AGT-04 Agent Record ref")[3], "");
+  assert.equal(get("Assessment summary", "AIG-AGT-05 Authority Graph ref")[3], "");
 });
 
 test("Capabilities and System Map handoff proposes UC→CAP without minting IDs or requiring AIR-ID", () => {
@@ -116,10 +116,10 @@ test("Capabilities and System Map handoff proposes UC→CAP without minting IDs 
   assert.match(handoff.rows.find((row) => row[1] === "From type / ID → relationship → To type / ID")[2], /UC \/ blank → requires → CAP \/ blank/);
   assert.match(handoff.rows.find((row) => row[1] === "AIR context")[3], /Leave blank for UC → CAP/);
   assert.match(handoff.rows.find((row) => row[1] === "System entry")[3], /without an existing official AIR-ID/);
-  assert.match(handoff.rows.find((row) => row[1] === "Authority and record boundaries")[3], /45 is authoritative.*46 for derived delegation paths/);
+  assert.match(handoff.rows.find((row) => row[1] === "Authority and record boundaries")[3], /AIG-AGT-04 is authoritative.*AIG-AGT-05 is a derived delegation view/);
 });
 
-test("36 gate-plan output is a prospective plan handoff, not an event row", () => {
+test("AIG-DEC-04 gate-plan output is a prospective plan handoff, not an event row", () => {
   const { profile, results } = fixture();
   const route = logic.buildRoute(profile, results, {});
   const csv = logic.buildGatePlanCsv(profile, route);
@@ -129,19 +129,21 @@ test("36 gate-plan output is a prospective plan handoff, not an event row", () =
   assert.doesNotMatch(csv, /Event ID/);
 });
 
-test("formal decisions stay with WCC-AIG-16 and 36 record types stay distinct", () => {
+test("formal decisions stay with AIG-DEC-03 and AIG-DEC-04 record types stay distinct", () => {
   const { profile, results } = fixture();
   const handoff = logic.buildArtefactHandoff(profile, results);
-  const decision = handoff.find((item) => item.artefact.includes("WCC-AIG-16"));
+  const decision = handoff.find((item) => item.artefact.includes("AIG-DEC-03"));
   assert.match(decision.note, /does not create an AIR-ID, plan\/event\/condition row, approval/);
-  assert.match(decision.fields[1].value, /Gate Plan, dated Gate Events and event-linked Gate Conditions/);
+  assert.match(decision.fields[1].value, /Gate Plans, dated Gate Events and event-linked Gate Conditions/);
 });
 
-test("public triage offers the standalone map draft handoff without geographic branding", () => {
+test("public triage offers the proposed controlled AIG-INV-05 map handoff without geographic branding", () => {
   const html = require("node:fs").readFileSync(require("node:path").join(__dirname, "../index.html"), "utf8");
   assert.match(html, /downloadCapabilitiesMap/);
-  assert.match(html, /draft Capabilities \/ System Map handoff/i);
-  assert.match(html, /Proposed UC → CAP links · no AIR-ID needed for that edge/);
+  assert.match(html, /proposed AIG-INV-05 map handoff/i);
+  assert.match(html, /AIG-INV-05 Capabilities and System Map/);
+  assert.match(html, /UC → CAP needs no AIR-ID · relationship pointers only, not decision authority/);
+  assert.match(html, /AIG-INV-04 \(AI Register\) owns the permanent Council-issued AIR-ID.*AIG-DEC-04 \(Gate Log\).*AIG-INV-05/);
   assert.doesNotMatch(html, /Westminster/i);
 });
 
@@ -180,10 +182,10 @@ test("retirement handoff keeps plan, event and conditions separate without imply
   assert.ok(handoff.rows.some((row) => row[1] === "AIR-ID"));
   assert.ok(handoff.rows.some((row) => row[0] === "Assessment summary" && row[1] === "Other specialist finding refs"));
   const decision = logic.buildRetirementDecisionRecord(retirement);
-  assert.match(decision, /NOT A FORMAL WCC-AIG-16 RECORD/);
+  assert.match(decision, /NOT A FORMAL AIG-DEC-03 RECORD/);
   assert.match(decision, /User-entered draft: Progress \(not verified or approved\)/);
   assert.match(decision, /no readiness or completion conclusion/);
-  assert.match(decision, /AIR-ID evidence in current 05/);
+  assert.match(decision, /AIR-ID evidence in AIG-INV-04/);
 });
 
 test("unverified retirement priority uses full-depth prompts and cannot be ready", () => {
@@ -196,11 +198,11 @@ test("unverified retirement priority uses full-depth prompts and cannot be ready
   const readiness = logic.retirementReadiness(retirement);
   assert.equal(retirement.priorityLevel, 1);
   assert.equal(readiness.complete, false);
-  assert.ok(readiness.outstanding.some((item) => /Current 05 governance priority not verified/.test(item)));
-  assert.ok(readiness.outstanding.some((item) => /Current 05 assurance\/risk tier not verified/.test(item)));
+  assert.ok(readiness.outstanding.some((item) => /Current AIG-INV-04 governance priority not verified/.test(item)));
+  assert.ok(readiness.outstanding.some((item) => /Current AIG-INV-04 assurance\/risk tier not verified/.test(item)));
 });
 
-test("36 retirement handoff includes the separate plan, event and condition contracts", () => {
+test("AIG-DEC-04 retirement handoff includes the separate plan, event and condition contracts", () => {
   const handoff = logic.buildRetirementGateLogRow({ systemName: "Legacy service" });
   const fieldsFor = (sheet) => new Set(
     handoff.rows.filter((row) => row[0].includes(sheet)).map((row) => row[1]),
@@ -215,7 +217,7 @@ test("36 retirement handoff includes the separate plan, event and condition cont
     assert.ok(fieldsFor("Gate Conditions").has(field), `Gate Conditions handoff lacks ${field}`);
   }
   assert.ok(handoff.rows.every((row) =>
-    (row[2].includes("Exact 36 contract") || row[2].includes("Proposed 05") || row[2].includes("Prompt")) &&
+    (row[2].includes("AIG-DEC-04 contract") || row[2].includes("Proposed AIG-INV-04") || row[2].includes("Prompt")) &&
     (row[4].includes("proposal") || row[4].includes("No value asserted"))
   ));
 });
@@ -224,10 +226,10 @@ test("specialist screening handoffs preserve pending applicability and evidence"
   const { profile, results } = fixture();
   const handoff = logic.buildArtefactHandoff(profile, results);
   for (const artefact of [
-    "WCC-AIG-10 Data Protection Impact Assessment",
-    "WCC-AIG-11 Equality Impact Assessment",
-    "WCC-AIG-12 Human Rights Assessment",
-    "WCC-AIG-15 ATRS Record",
+    "AIG-ASS-05 Data Protection Impact Assessment",
+    "AIG-ASS-06 Equality Impact Assessment",
+    "AIG-ASS-07 Human Rights Assessment",
+    "AIG-ASS-10 ATRS Record",
   ]) {
     const item = handoff.find((entry) => entry.artefact === artefact);
     assert.ok(item, `missing handoff for ${artefact}`);
@@ -239,7 +241,7 @@ test("specialist screening handoffs preserve pending applicability and evidence"
   assert.match(results.requirements.atrs, /owner applicability confirmation pending/);
 });
 
-test("agentic handoff routes 48, 45, 46, 39 and 50 without granting authority", () => {
+test("agentic handoff routes the grouped AGT/OPS artefacts without granting authority", () => {
   const { profile, results } = fixture();
   profile.capability = "Agentic AI";
   profile.actionAuthority = "Acts within defined bounds — monitored";
@@ -247,14 +249,14 @@ test("agentic handoff routes 48, 45, 46, 39 and 50 without granting authority", 
   results.requirements = logic.assessmentRequirements(profile, results);
   const handoff = logic.buildArtefactHandoff(profile, results);
   const targets = handoff.map((item) => item.artefact).join("\n");
-  for (const id of ["WCC-AIG-48", "WCC-AIG-45", "WCC-AIG-46", "WCC-AIG-39", "WCC-AIG-50"]) {
+  for (const id of ["AIG-AGT-03", "AIG-AGT-04", "AIG-AGT-05", "AIG-OPS-02", "AIG-AGT-06"]) {
     assert.match(targets, new RegExp(id));
   }
-  assert.match(handoff.find((item) => item.artefact.includes("WCC-AIG-46")).note, /not a grant of authority/);
-  assert.match(handoff.find((item) => item.artefact.includes("WCC-AIG-50")).note, /No action record, decision or authority is created/);
+  assert.match(handoff.find((item) => item.artefact.includes("AIG-AGT-05")).note, /not a grant of authority/);
+  assert.match(handoff.find((item) => item.artefact.includes("AIG-AGT-06")).note, /No action record, decision or authority is created/);
 });
 
-test("canonical JSON and WCC-AIG-38 handoff remain provisional", () => {
+test("canonical JSON and AIG-DEC-02 handoff remain provisional", () => {
   const { profile, results } = fixture();
   const route = logic.buildRoute(profile, results, {});
   const calculation = {
@@ -268,7 +270,7 @@ test("canonical JSON and WCC-AIG-38 handoff remain provisional", () => {
   assert.match(record.authorityBoundary.note, /does not evidence gate approval/);
   assert.match(JSON.stringify(record.governance.plannedRoute[0]), /Is the proposal/);
   const csv = logic.buildDecisionReadyHandoff(calculation);
-  assert.match(csv, /WCC-AIG-38 field reference/);
+  assert.match(csv, /AIG-DEC-02 field reference/);
   assert.match(csv, /Prepared by \(owner to complete\)/);
   assert.match(csv, /actual date; do not use export date/);
   assert.match(csv, /Decision question for this forum \(not an attained decision\)/);
@@ -287,7 +289,7 @@ test("accessible score cards and default calculations stay visibly provisional",
   assert.match(html, /id="riskProvisionalCue"/);
   assert.match(html, /id="priorityProvisionalCue"/);
   assert.match(app, /Synthetic \/ incomplete example: untouched score fields still use built-in defaults/);
-  assert.match(app, /not current 05 assurance/);
+  assert.match(app, /not current AIG-INV-04 assurance/);
   assert.match(html, /\.scale > label > span \{[\s\S]*?pointer-events: none;/);
   assert.match(html, /\.scale label \{[\s\S]*?display: block;[\s\S]*?cursor: pointer;/);
 });

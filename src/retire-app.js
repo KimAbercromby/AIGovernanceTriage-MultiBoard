@@ -12,7 +12,7 @@
     sel.replaceChildren();
     const prompt = document.createElement("option");
     prompt.value = "";
-    prompt.textContent = "Select current priority from 05";
+    prompt.textContent = "Select current priority from AIG-INV-04";
     prompt.disabled = true;
     prompt.selected = true;
     sel.appendChild(prompt);
@@ -115,8 +115,8 @@
     else if (level <= 2) extra = "records, accountability and notification checks on top of the base set";
     else if (level <= 3) extra = "continuity and dependency checks on top of the base set";
     byId("retireScaleNote").textContent = label
-      ? `${label}: the gate asks ${extra} (${n} fields). Verify this against the system's current 05 value.`
-      : `Current 05 priority not selected: full-depth prompts are shown (${n} fields). Select the system's verified current priority to adjust review depth.`;
+      ? `${label}: the gate asks ${extra} (${n} fields). Verify this against the system's current AIG-INV-04 value.`
+      : `Current AIG-INV-04 priority not selected: full-depth prompts are shown (${n} fields). Select the system's verified current priority to adjust review depth.`;
   }
 
   function renderOutputs() {
@@ -136,7 +136,7 @@
     panel.appendChild(h);
     if (readiness.complete) {
       const p = document.createElement("p");
-      p.textContent = "No verified readiness conclusion is available. Self-reported answers do not establish evidence, decision authority, closure or current 05 status.";
+      p.textContent = "No verified readiness conclusion is available. Self-reported answers do not establish evidence, decision authority, closure or current AIG-INV-04 status.";
       p.style.margin = "0.4rem 0 0";
       panel.appendChild(p);
     } else {
@@ -233,7 +233,7 @@
   byId("retireDownloadGateLog").addEventListener("click", () => {
     if (!validate()) return;
     const gate = logic.buildRetirementGateLogRow(collect());
-    download(slug(byId("ret-systemName").value) + "-retirement-36-review-handoff.csv",
+    download(slug(byId("ret-systemName").value) + "-retirement-AIG-DEC-04-review-handoff.csv",
       logic.toCsv(gate.headers, gate.rows), "text/csv;charset=utf-8");
   });
   byId("retireDownloadDecision").addEventListener("click", () => {
@@ -246,7 +246,7 @@
     const ret = collect();
     const gate = logic.buildRetirementGateLogRow(ret);
     const text =
-      "36 RETIREMENT REVIEW HANDOFF — NOT A LIVE WORKBOOK ROW\n" +
+      "AIG-DEC-04 RETIREMENT REVIEW HANDOFF — NOT A LIVE WORKBOOK ROW\n" +
       gate.rows.map((row) => gate.headers.map((h, i) => `${h}: ${row[i]}`).join("\n")).join("\n\n") +
       "\n\n" + logic.buildRetirementDecisionRecord(ret);
     const status = byId("retireCopyStatus");
