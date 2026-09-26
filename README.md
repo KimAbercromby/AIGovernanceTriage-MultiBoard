@@ -10,22 +10,27 @@ workflow. The browser stores no entries and sends no data to a server.
 
 ## Suite alignment and status
 
-This tool is aligned as a review aid to the proposed AI governance
-integration suite. The Council suite is a **proposed, unapproved draft**, not an
-approved or live policy, process or workbook. This public tool does not read or
-write Council records and must not be treated as Council-issued authority.
+This tool is aligned as a review aid to proposed, separate AI governance
+workbook drafts. They are **proposed and unapproved**, not an approved or live
+policy, process or record. This public tool does not read or write controlled
+records and must not be treated as issued authority.
 
 - **05:** permanent Council-issued AIR-ID and current assurance state. Look up and
   verify an existing AIR-ID in the current controlled workbook; this tool never
   creates one. Its "05 review handoff" is explicitly non-importable and does not
   assert current approval, operational state or assurance.
-- **36:** the proposed integrated workbook separates prospective **Gate Plan**,
-  dated **Gate Events**, and event-linked **Gate Conditions**. Exports are
-  planning/review prompts only, not live rows or events.
+- **36:** its standalone draft separates prospective **Gate Plan**, dated **Gate
+  Events**, and event-linked **Gate Conditions**. Exports are planning/review
+  prompts only, not live rows or events.
+- **Capabilities and System Map:** a separate draft catalogue. Triage offers a
+  clearly labelled proposal for outcome-led use cases, capabilities and a UC →
+  CAP relationship without an AIR-ID. The System map accepts only an existing
+  official AIR-ID; the map is not a second register.
 - **16:** authorised decisions remain in WCC-AIG-16 or approved native forum
   minutes. The tool can prepare decision prompts; it does not decide or approve.
-- **45:** agent permissions and delegations belong in WCC-AIG-45. An agency
-  classification, Agent Record handoff or capability vector grants no authority.
+- **45 / 46:** WCC-AIG-45 is authoritative for agent scope and permissions;
+  WCC-AIG-46 covers derived delegation paths. A map link, agency classification,
+  Agent Record handoff or capability vector grants no authority.
 
 AGPI is governance prioritisation, not a legal risk finding or waiver. Every
 priority tier includes Equality Act 2010 section 149, Human Rights Act 1998
@@ -45,14 +50,22 @@ evidence.
   prompts, assurance evidence plan and configured governance route.
 - Run agentic triage when a system can act. It proposes a tier and containment
   review; WCC-AIG-45 remains authoritative for permissions and delegations.
-- Download a 05 review handoff, AGPI/risk/agentic pre-fills, prospective gate
-  plan, artefact handoff or case summary. Outputs are drafts that must be
-  reconciled with the current controlled workbook and local owners; they are
-  not directly importable rows.
+- Download a 05 review handoff, draft Capabilities and System Map handoff,
+  AGPI/risk/agentic pre-fills, prospective gate plan, artefact handoff or case
+  summary, including a WCC-AIG-38 paper-review handoff with blank preparer and
+  actual paper date. Outputs are drafts that must be reconciled with current
+  records and local owners; they are not directly importable rows.
 - Switch to retirement/decommissioning for a user-entered checklist and
   separate draft handoffs for a prospective plan, dated event and event-linked
-  conditions. A "complete" checklist means only that answers were entered; it is
-  not verified evidence and does not change the Register status.
+  conditions. The checklist remains unverified and cannot assert readiness,
+  decision completion or switch-off authority; it does not change Register
+  status.
+
+Default scores are synthetic examples until each score input has been entered
+and the user confirms review. Calculated priorities, risk tiers, evidence
+prompts and route decisions remain provisional decision support even after that
+confirmation. Specialist applicability, evidence references and legal N/A
+positions remain pending the relevant owner.
 
 The calculations are decision-support aids, not legal advice, an assurance
 opinion, formal assessment or deployment authority. Forums, local delegations,
