@@ -504,6 +504,12 @@
     }).format(date || new Date());
   }
 
+  function ucIdEntryStatus(profile) {
+    return profile.ucId
+      ? profile.ucIdStatus || "Operator-entered; verification pending"
+      : "Pending — no UC-ID entered; use-specific provisional case, not shared system baseline";
+  }
+
   function isAgentSystem(profile, results) {
     const canAct = profile.actionAuthority && profile.actionAuthority !== "None — outputs only";
     return profile.capability === "Agentic AI" || canAct || (results.triggerIds && results.triggerIds.includes("agentic"));
@@ -547,9 +553,9 @@
     add("AI Register", "Assessment / evidence ref", "", "Add only an existing, verified reference; evidence remains at source.");
     add("AI Register", "Next review", "", "Set by the accountable owner from the approved review schedule.");
     add("Assessment summary", "AIR-ID", profile.registerId, identityReview);
-    add("Assessment summary", "Priority (AIG-ASS-01)", `${results.priority.label}; triage score ${results.agpiScore}`, "Draft triage prompt only; verify the current priority and reference against the actual AIG-ASS-01 record.");
+    add("Assessment summary", "Priority (AIG-ASS-01)", "", `Leave blank: AIG-INV-04 Assessment summary is a one-row-per-AIR-ID system summary, not a UC-specific priority slot. This ${results.priority.label} (score ${results.agpiScore}) is a use-specific triage prompt for UC-ID ${profile.ucId || "(pending)"} and exact use purpose "${profile.usePurpose || profile.purpose || "(not entered)"}"; do not write it to the system summary. Re-score materially different uses separately, then have the owner reconcile the system-level summary and current AIG-ASS-01 from authoritative assessments.`);
     add("Assessment summary", "AIG-ASS-01 ref / date", "", "Only enter an existing, verified AIG-ASS-01 record reference and date.");
-    add("Assessment summary", "Risk tier (AIG-ASS-02)", "", `Triage effective tier is ${results.effectiveTierName}; it is not the current assessor-confirmed AIG-ASS-02 tier or evidence reference.`);
+    add("Assessment summary", "Risk tier (AIG-ASS-02)", "", `UC-ID ${profile.ucId || "(pending)"}; exact use purpose "${profile.usePurpose || profile.purpose || "(not entered)"}". Triage effective tier is ${results.effectiveTierName}; it is not the current assessor-confirmed AIG-ASS-02 tier or evidence reference. Reassess materially different uses separately.`);
     add("Assessment summary", "AIG-ASS-02 ref / date", "", "Only enter an existing, verified AIG-ASS-02 assessment reference and date.");
     add("Assessment summary", "Agency tier (AIG-AGT-02/AIG-AGT-03)", agentic && agentic.tierLabel, "Draft agentic triage only; verify the authorised assessment and applicable AIG-AGT-02/AIG-AGT-03 record.");
     add("Assessment summary", "AIG-AGT-02/AIG-AGT-03 ref / date", "", "Only enter an existing, verified AIG-AGT-02/AIG-AGT-03 assessment reference and date.");
@@ -563,7 +569,7 @@
     return { headers: DRAFT_HANDOFF_HEADERS.slice(), rows };
   }
 
-  function buildCapabilitiesMapHandoff(profile) {
+  function buildCapabilitiesMapHandoff(profile, results) {
     const headers = [
       "Target workbook / sheet",
       "Suggested field",
@@ -571,8 +577,9 @@
       "Review, evidence or authority still required",
     ];
     const rows = [
-      ["AIG-INV-05 Capabilities and System Map / Use cases", "UC-ID", "", "Propose only after the catalogue and ID rules are approved; this tool never issues identifiers."],
-      ["AIG-INV-05 Capabilities and System Map / Use cases", "Outcome-led use case", profile.purpose || "", "Intake purpose is a proposal, not an approved purpose; confirm one outcome/workflow and reconcile against the canonical AIG-INV-03 source."],
+      ["AIG-INV-05 Capabilities and System Map / Use cases", "UC-ID", profile.ucId || "", profile.ucId ? `${profile.ucIdStatus || "Operator-entered; verification pending"}. Verify against the catalogue/current owner; this tool never issues identifiers or verifies an ID.` : "UC-ID pending by operator choice for this use-specific case; blank does not mean shared system baseline. Leave pending until a verified existing or provisional identifier is supplied. This tool never issues identifiers."],
+      ["AIG-INV-05 Capabilities and System Map / Use cases", "Outcome-led use case", profile.usePurpose || profile.purpose || "", `Exact scoped purpose/outcome proposal for UC-ID ${profile.ucId || "(pending)"}; confirm one materially distinct outcome/workflow and reconcile against the canonical AIG-INV-03 source. Not an approved mandate.`],
+      ["AIG-INV-05 Capabilities and System Map / Use cases", "UC-ID status (operator entry only)", ucIdEntryStatus(profile), "An operator statement is not independent verification; catalogue owner verifies current ID and source."],
       ["AIG-INV-05 Capabilities and System Map / Use cases", "Service / workflow", profile.serviceArea || "", "Confirm the service/workflow with its owner."],
       ["AIG-INV-05 Capabilities and System Map / Use cases", "Service Owner", profile.serviceOwner || "", "Confirm accountable owner and their authority to validate this map entry."],
       ["AIG-INV-05 Capabilities and System Map / Use cases", "Canonical AIG-INV-03 / source ref", "", "Add an exact source artefact and row/URI; do not copy source records."],
@@ -582,9 +589,21 @@
       ["AIG-INV-05 Capabilities and System Map / Capabilities", "Function (verb + noun)", profile.capability || "", "Triage classification is only a starting point; rewrite as an atomic reusable function and confirm inputs, outputs, boundary, owner and source."],
       ["AIG-INV-05 Capabilities and System Map / Capabilities", "Inputs / outputs / boundary", "", "Capability owner and service specialist define and verify these; do not infer them from the intake category."],
       ["AIG-INV-05 Capabilities and System Map / Relationships", "Edge ID", "", "Map owner assigns an ID under the approved map rules; this tool never issues one."],
-      ["AIG-INV-05 Capabilities and System Map / Relationships", "From type / ID → relationship → To type / ID", "UC / blank → requires → CAP / blank", "Proposed UC → CAP relationship only. UC/CAP IDs remain proposals; no official AIR-ID is needed for this edge."],
+      ["AIG-INV-05 Capabilities and System Map / Relationships", "From type / ID → relationship → To type / ID", `UC / ${profile.ucId || "blank (pending)"} → requires → CAP / blank`, "Proposed UC → CAP relationship only. UC/CAP IDs remain proposals; if UC-ID is pending, do not invent an endpoint. No official AIR-ID is needed for this edge."],
       ["AIG-INV-05 Capabilities and System Map / Relationships", "AIR context", "", "Leave blank for UC → CAP. Other relationships require an existing official AIR-ID reconciled to the current AIG-INV-04 record."],
       ["AIG-INV-05 Capabilities and System Map / Relationships", "Meaning / Link owner / source / confidence / verified on / state", "Use case may require the proposed capability / owner and source to confirm / Unknown / blank / Proposed", "Do not mark Confirmed until both endpoints are source-reconciled with owner, evidence, High/Medium confidence and verification date."],
+      ["UC_ID_Risk_Decision_Current_View / proposed pointer only", "UC-ID", profile.ucId || "", `${ucIdEntryStatus(profile)}; operator-entered pointer only. Verify an existing ID or confirm a provisional ID under approved catalogue rules.`],
+      ["UC_ID_Risk_Decision_Current_View / proposed pointer only", "AIR-ID", profile.registerId || "", "System identity pointer only; verify against current AIG-INV-04."],
+      ["UC_ID_Risk_Decision_Current_View / proposed pointer only", "Outcome / workflow", profile.usePurpose || profile.purpose || "", "Exact scoped proposal only; confirm against the canonical source. Not approved purpose."],
+      ["UC_ID_Risk_Decision_Current_View / proposed pointer only", "AGPI priority (UC-specific)", results ? `Triage prompt only: ${results.priority.label}; score ${results.agpiScore}` : "", "Not an assessor-confirmed finding; add only after current AIG-ASS-01 source and as-at date are verified."],
+      ["UC_ID_Risk_Decision_Current_View / proposed pointer only", "Risk tier (UC-specific)", results ? `Triage prompt only: ${results.effectiveTierName}` : "", "Not an assessor-confirmed finding; add only after current AIG-ASS-02 source and as-at date are verified."],
+      ["UC_ID_Risk_Decision_Current_View / proposed pointer only", "Assessment ref(s) / as-at", "", "Add verified AIG-ASS-01 / AIG-ASS-02 source references and as-at dates only."],
+      ["UC_ID_Risk_Decision_Current_View / proposed pointer only", "Decision outcome (source)", "", "Pointer to an actual source decision only; no status or outcome is inferred or created."],
+      ["UC_ID_Risk_Decision_Current_View / proposed pointer only", "Delegated authority / decision ref", "", "Only an existing verified delegation/decision reference; this handoff creates no authority."],
+      ["UC_ID_Risk_Decision_Current_View / proposed pointer only", "AIG-DEC-03 / approved minutes ref", "", "Pointer only; authorised decision remains in the source record."],
+      ["UC_ID_Risk_Decision_Current_View / proposed pointer only", "AIG-DEC-04 dated Decision Event ID / date", "", "Pointer to an actual dated source event only; this tool creates no event."],
+      ["UC_ID_Risk_Decision_Current_View / proposed pointer only", "Condition ID(s)", "", "Only source-reconciled event-linked condition pointers; none are created here."],
+      ["UC_ID_Risk_Decision_Current_View / proposed pointer only", "AIG-OPS-02 use-specific monitoring ref / as-at", "", "Pointer only; do not infer monitoring evidence or status."],
       ["AIG-INV-05 Capabilities and System Map / System map", "System entry", "", "Do not create a system-map row without an existing official AIR-ID. AIG-INV-04 remains authoritative for AIR-ID, purpose, Service Owner and current status."],
       ["AIG-INV-05 Capabilities and System Map / All sheets", "Authority and record boundaries", "Proposed controlled AIG-INV-05; draft only", "If adopted, the map is controlled/versioned; it remains a relationship catalogue, not a second Register. Map links grant no access, permission, approval or decision right. AIG-DEC-04 remains separate for plans, dated events and event-linked conditions; AIG-AGT-04 is authoritative for agent scope and AIG-AGT-05 is a derived delegation view."],
     ];
@@ -624,6 +643,9 @@
       "Evidence / screening prompts",
       "Plan status (proposal only; not an event, condition or approval)",
       "Handoff note",
+      "UC-ID scope(s) (blank only for explicit system baseline; pending UC-ID remains use-specific, not baseline)",
+      "Decision scope (UC-ID specific / Shared system baseline)",
+      "UC-ID interpretation (pending is not shared system baseline)",
     ];
     const rows = route.map((gate) => [
       "AIG-DEC-04 Gate Plan; AIG-DEC-01 Gate Map is routing context only",
@@ -635,7 +657,10 @@
       gate.forum,
       gate.evidence.join("; "),
       `Draft only — ${gate.status}`,
-      gate.handoff,
+      `${gate.handoff} UC-ID entry state: ${ucIdEntryStatus(profile)}. Exact scoped purpose/outcome: ${profile.usePurpose || profile.purpose || "(not entered)"}. Prospective requirement only; not a decision, approval or Gate Event.`,
+      profile.ucId || "",
+      "UC-ID specific",
+      `${ucIdEntryStatus(profile)}; this handoff assesses a use-specific case; no shared system baseline selected`,
     ]);
     return toCsv(headers, rows);
   }
@@ -649,6 +674,9 @@
       "Export status",
       "AIG-DEC-02 field reference",
       "AIR-ID (verify existing Council-issued system identity in AIG-INV-04; do not create)",
+      "UC-ID (scope reference only; verify; never create)",
+      "UC-ID entry status (operator statement only; not verification)",
+      "Exact use purpose / outcome scoped to this triage",
       "System",
       "Forum",
       "Gate",
@@ -668,6 +696,9 @@
       "Draft triage prompt — review and complete in AIG-DEC-02; not an import-ready record",
       "Template field prompt — exact controlled field contract not verified",
       profile.registerId || "",
+      profile.ucId || "",
+      ucIdEntryStatus(profile),
+      profile.usePurpose || profile.purpose || "",
       profile.systemName || "",
       gate.forum,
       `${gate.sequence} of ${route.length}`,
@@ -711,6 +742,13 @@
       suiteVersion: "Proposed integrated AI governance suite draft — not approved",
       exportedAt: exportedAt || new Date().toISOString(),
       profile,
+      triageScope: {
+        ucId: calculation.profile.ucId || "",
+        ucIdEntryStatus: ucIdEntryStatus(calculation.profile),
+        exactUsePurpose: calculation.profile.usePurpose || calculation.profile.purpose || "",
+        basis: "This priority and risk triage is specific to the stated use/outcome, including non-agentic uses. Materially different use/outcome requires distinct UC-ID and separate triage.",
+        authority: "Scope metadata only. No approval, filled decision status, delegated authority, gate event or UC-ID is issued.",
+      },
       agpi: {
         dimensionScores: { ...calculation.agpiScores },
         score: calculation.results.agpiScore,
@@ -772,6 +810,19 @@
     const requirements = assessmentRequirements(profile, results);
     const yn = (v) => (v === "Yes" ? "Yes" : v === "No" ? "No" : "Not stated");
     const items = [];
+
+    items.push({
+      artefact: "UC-ID-scoped triage context — applies to all prompts below",
+      section: "Use/outcome identity and boundary",
+      fields: [
+        { label: "AIR-ID (system identity; verify existing)", value: profile.registerId || "Pending — not entered" },
+        { label: "UC-ID (operator-entered only)", value: profile.ucId || "Pending — not entered" },
+        { label: "UC-ID entry status (not independently verified)", value: ucIdEntryStatus(profile) },
+        { label: "Exact purpose / outcome scoped to this triage", value: profile.usePurpose || profile.purpose || "Not entered" },
+        { label: "Priority and risk scope", value: "This triage applies only to the stated use/outcome; materially different uses require distinct UC-ID and separate priority/risk triage, including non-agentic uses." },
+      ],
+      note: "Context only. UC-ID is never auto-issued; use an operator-entered existing/provisional identifier or leave it pending. This does not create approval, decision status, delegated authority or a gate event.",
+    });
 
     const triggered = results.triggerIds.length > 0;
     items.push({
