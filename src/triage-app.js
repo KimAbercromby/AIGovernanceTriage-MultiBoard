@@ -423,6 +423,16 @@
     });
   }
 
+  function renderContinuity(profile, route) {
+    byId("continuityIdentity").textContent = profile.registerId
+      ? `Entered AIR-ID: ${profile.registerId} · verify against AIG-INV-04`
+      : "AIR-ID pending · use the intake reference until confirmed";
+    const next = route[0];
+    byId("continuityNext").textContent = next
+      ? `Next proposed handoff: ${next.requirement} · ${next.forum}. Carry the confirmed AIR-ID forward; do not mark the gate complete here.`
+      : "No gate has been proposed; the governance owner must confirm the route.";
+  }
+
   function governanceRoute(profile, results) {
     const req = logic.assessmentRequirements(profile, results);
     const canAct =
@@ -475,6 +485,7 @@
   function update() {
     const calculation = calculateAll();
     const { profile, results, route, evidence } = calculation;
+    renderContinuity(profile, route);
 
     const gRoute = governanceRoute(profile, results);
     const routeBanner = byId("routeBanner");
