@@ -7,8 +7,11 @@ const logic = require("../src/triage-logic.js");
 function fixture({ dataType = "None", tier = "Low" } = {}) {
   const profile = {
     registerId: "",
+    ucId: "",
+    ucIdStatus: "Pending — no UC-ID entered",
     systemName: "Example system",
     purpose: "Draft purpose",
+    usePurpose: "Draft use outcome",
     serviceArea: "Service",
     serviceOwner: "Owner",
     supplierDeveloper: "",
@@ -84,6 +87,8 @@ test("AIG-INV-04 export is a draft handoff and never manufactures system identit
     "every suggestion must use a field name on the proposed workbook's real sheets");
   assert.ok(draft.rows.some((row) => row[0] === "AI Register" && row[1] === "System name"));
   assert.ok(draft.rows.some((row) => row[0] === "Assessment summary" && row[1] === "Priority (AIG-ASS-01)"));
+  assert.equal(draft.rows.find((row) =>
+    row[0] === "Assessment summary" && row[1] === "Priority (AIG-ASS-01)")[3], "");
   assert.ok(draft.rows.every((row) => !/Register Core|Assurance Snapshot/.test(row[0])));
   assert.ok(draft.rows.every((row) => !/Approved Purpose \/ Boundary|Governance Approval Status|Is Agent\?|Agent Record \(AIG-AGT-04\) Ref|AGPI \/ assurance \/ risk result/.test(row[1])));
 
@@ -113,7 +118,7 @@ test("Capabilities and System Map handoff proposes UC→CAP without minting IDs 
   assert.ok(handoff.rows.every((row) => row.length === handoff.headers.length));
   assert.equal(handoff.rows.find((row) => row[1] === "UC-ID")[2], "");
   assert.equal(handoff.rows.find((row) => row[1] === "CAP-ID")[2], "");
-  assert.match(handoff.rows.find((row) => row[1] === "From type / ID → relationship → To type / ID")[2], /UC \/ blank → requires → CAP \/ blank/);
+  assert.match(handoff.rows.find((row) => row[1] === "From type / ID → relationship → To type / ID")[2], /UC \/ blank \(pending\) → requires → CAP \/ blank/);
   assert.match(handoff.rows.find((row) => row[1] === "AIR context")[3], /Leave blank for UC → CAP/);
   assert.match(handoff.rows.find((row) => row[1] === "System entry")[3], /without an existing official AIR-ID/);
   assert.match(handoff.rows.find((row) => row[1] === "Authority and record boundaries")[3], /AIG-AGT-04 is authoritative.*AIG-AGT-05 is a derived delegation view/);
@@ -127,6 +132,116 @@ test("AIG-DEC-04 gate-plan output is a prospective plan handoff, not an event ro
   assert.match(csv, /not an event, condition or approval/);
   assert.match(csv, /Draft only/);
   assert.doesNotMatch(csv, /Event ID/);
+});
+
+test("use-scoped handoffs carry exact outcome and operator UC-ID without issuing authority", () => {
+  const { profile, results } = fixture();
+  profile.registerId = "AIR-EXAMPLE";
+  profile.ucId = "UC-EXAMPLE";
+  profile.ucIdStatus = "Provisional — operator-entered, unverified";
+  profile.usePurpose = 'Prioritise "one" case workflow for review';
+  const register = logic.buildRegisterDraftHandoff(profile, results, null);
+  const priority = register.rows.find((row) =>
+    row[0] === "Assessment summary" && row[1] === "Priority (AIG-ASS-01)");
+  assert.equal(priority[3], "", "UC-specific triage priority must not populate the one-row-per-AIR-ID system summary");
+  assert.match(priority[5], /one-row-per-AIR-ID system summary/);
+  assert.match(priority[5], /UC-ID UC-EXAMPLE/);
+  assert.match(priority[5], /Prioritise "one" case workflow for review/);
+  assert.match(priority[5], /Re-score materially different uses separately/);
+
+  const map = logic.buildCapabilitiesMapHandoff(profile, results);
+  assert.equal(map.rows.find((row) => row[1] === "UC-ID")[2], "UC-EXAMPLE");
+  assert.match(map.rows.find((row) => row[1] === "UC-ID")[3], /never issues identifiers or verifies an ID/);
+  assert.equal(map.rows.find((row) => row[1] === "Outcome-led use case")[2], profile.usePurpose);
+  assert.match(map.rows.find((row) => row[1] === "From type / ID → relationship → To type / ID")[2], /UC \/ UC-EXAMPLE → requires → CAP \/ blank/);
+  assert.ok(map.rows.some((row) => row[0].includes("UC_ID_Risk_Decision_Current_View") &&
+    row[1] === "AIG-DEC-04 dated Decision Event ID / date" &&
+    row[2] === ""));
+  assert.match(map.rows.find((row) => row[1] === "AGPI priority (UC-specific)")[2], /Triage prompt only/);
+  assert.match(map.rows.find((row) => row[1] === "Risk tier (UC-specific)")[2], /Triage prompt only/);
+  assert.ok(map.rows.every((row) => row.length === map.headers.length));
+
+  const route = logic.buildRoute(profile, results, {});
+  const plan = logic.buildGatePlanCsv(profile, route);
+  assert.match(plan, /UC-EXAMPLE/);
+  assert.match(plan, /UC-ID specific/);
+  assert.match(plan, /Prioritise ""one"" case workflow for review/);
+  assert.match(plan, /not a decision, approval or Gate Event/);
+
+  const artifacts = logic.buildArtefactHandoff(profile, results);
+  const scope = artifacts.find((item) => item.artefact.startsWith("UC-ID-scoped triage context"));
+  assert.ok(scope);
+  assert.equal(scope.fields.find((field) => field.label === "Exact purpose / outcome scoped to this triage").value, profile.usePurpose);
+  assert.match(scope.note, /does not create approval, decision status, delegated authority or a gate event/);
+  const exported = logic.buildHandoffCsv(profile, results);
+  assert.match(exported, /UC-EXAMPLE/);
+  assert.match(exported, /Prioritise ""one"" case workflow for review/);
+});
+
+test("a pending UC-ID is explicit in AIG-INV-05 handoff and does not mint an identifier", () => {
+  const { profile, results } = fixture();
+  const handoff = logic.buildCapabilitiesMapHandoff(profile);
+  const id = handoff.rows.find((row) => row[1] === "UC-ID");
+  assert.equal(id[2], "");
+  assert.match(id[3], /UC-ID pending by operator choice/);
+  assert.match(id[3], /blank does not mean shared system baseline/);
+  assert.match(handoff.rows.find((row) => row[1] === "UC-ID status (operator entry only)")[2], /Pending/);
+  const plan = logic.buildGatePlanCsv(profile, logic.buildRoute(profile, results, {}));
+  assert.match(plan, /pending UC-ID remains use-specific, not baseline/);
+  assert.match(plan, /Pending — no UC-ID entered; use-specific provisional case, not shared system baseline/);
+  assert.match(plan, /UC-ID specific/);
+  const decisionPaper = logic.buildDecisionReadyHandoff({
+    profile,
+    results,
+    route: logic.buildRoute(profile, results, {}),
+  });
+  assert.match(decisionPaper, /Pending — no UC-ID entered; use-specific provisional case/);
+  assert.match(decisionPaper, /Draft use outcome/);
+  const artifactCsv = logic.buildHandoffCsv(profile, results);
+  assert.match(artifactCsv, /Pending — not entered/);
+  assert.match(artifactCsv, /Draft use outcome/);
+  const app = require("node:fs").readFileSync(require("node:path").join(__dirname, "../src/triage-app.js"), "utf8");
+  assert.match(app, /pending use-specific ID is distinct/);
+  assert.match(app, /UC-ID-specific provisional use triage; ID pending, not a selected shared system baseline/);
+  assert.match(app, /Triage \/ assessment scope", "UC-ID-specific"/);
+});
+
+test("materially different uses retain separate triage priorities without writing either to the system summary", () => {
+  const { profile: base, results: baselineResults } = fixture();
+  const lowProfile = {
+    ...base,
+    ucId: "UC-LOW",
+    ucIdStatus: "Existing — operator says verified; owner must re-check",
+    usePurpose: "Drafting routine internal correspondence",
+  };
+  const highProfile = {
+    ...base,
+    ucId: "UC-HIGH",
+    ucIdStatus: "Provisional — operator-entered, unverified",
+    usePurpose: "Recommending statutory eligibility outcomes",
+  };
+  const lowResults = {
+    ...baselineResults,
+    agpiScore: 10,
+    priority: logic.priorityFor(10),
+  };
+  const highResults = {
+    ...baselineResults,
+    agpiScore: 95,
+    priority: logic.priorityFor(95),
+  };
+  const lowSystemHandoff = logic.buildRegisterDraftHandoff(lowProfile, lowResults, null);
+  const highSystemHandoff = logic.buildRegisterDraftHandoff(highProfile, highResults, null);
+  const systemPriority = (handoff) => handoff.rows.find((row) =>
+    row[0] === "Assessment summary" && row[1] === "Priority (AIG-ASS-01)");
+  assert.equal(systemPriority(lowSystemHandoff)[3], "");
+  assert.equal(systemPriority(highSystemHandoff)[3], "");
+  assert.match(systemPriority(lowSystemHandoff)[5], /Priority 5/);
+  assert.match(systemPriority(highSystemHandoff)[5], /Priority 1/);
+  const lowCurrentView = logic.buildCapabilitiesMapHandoff(lowProfile, lowResults);
+  const highCurrentView = logic.buildCapabilitiesMapHandoff(highProfile, highResults);
+  assert.match(lowCurrentView.rows.find((row) => row[1] === "AGPI priority (UC-specific)")[2], /Priority 5/);
+  assert.match(highCurrentView.rows.find((row) => row[1] === "AGPI priority (UC-specific)")[2], /Priority 1/);
 });
 
 test("formal decisions stay with AIG-DEC-03 and AIG-DEC-04 record types stay distinct", () => {
@@ -298,6 +413,27 @@ test("canonical JSON and AIG-DEC-02 handoff remain provisional", () => {
   assert.match(csv, /Decision question for this forum \(not an attained decision\)/);
   assert.doesNotMatch(csv, /AI Assurance function/);
   assert.match(csv, /not an import-ready record/);
+  assert.match(csv, /UC-ID \(scope reference only; verify; never create\)/);
+  assert.match(csv, /UC-ID entry status \(operator statement only; not verification\)/);
+  assert.match(csv, /Exact use purpose \/ outcome scoped to this triage/);
+});
+
+test("browser UI collects exact UC scope and rejects contradictory ID status before exports", () => {
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const root = path.resolve(__dirname, "..");
+  const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+  const app = fs.readFileSync(path.join(root, "src/triage-app.js"), "utf8");
+  assert.match(html, /id="ucId"/);
+  assert.match(html, /id="ucIdStatus"/);
+  assert.match(html, /<textarea id="usePurpose" rows="2" required>/);
+  assert.match(html, /including\s*\n?\s*non-agentic uses/);
+  assert.match(app, /UC-ID and choose Existing or Provisional/);
+  assert.match(app, /never issues or verifies a UC-ID/);
+  assert.match(app, /This AGPI triage applies only to UC-ID/);
+  assert.match(app, /This risk triage applies only to UC-ID/);
+  assert.doesNotMatch(app, /AGPI Priority \(from AIG-INV-04\)/);
+  assert.match(app, /Current system AGPI Priority \(verify AIG-INV-04\)/);
 });
 
 test("agentic exports are bound to the profile and answers that were reviewed", () => {
