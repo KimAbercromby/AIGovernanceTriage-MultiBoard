@@ -161,6 +161,12 @@ test("triage and retirement show a continuous AIR-ID trail without claiming live
   assert.match(html, /No retirement decision, Gate Event or Register update is made here/);
   assert.match(triage, /renderContinuity\(profile, route\)/);
   assert.match(retire, /byId\("retireContinuityIdentity"\)\.textContent/);
+  const liveTriage = html.split('<script id="triage-app">')[1]?.split("</script>")[0];
+  const liveRetire = html.split('<script id="retire-app">')[1]?.split("</script>")[0];
+  assert.ok(liveTriage && liveRetire, "the public page embeds both active scripts");
+  assert.match(liveTriage, /function renderContinuity\(profile, route\)/);
+  assert.match(liveTriage, /renderContinuity\(profile, route\)/);
+  assert.match(liveRetire, /byId\("retireContinuityIdentity"\)\.textContent/);
 });
 
 test("CSV export escapes formula-injection prefixes", () => {
