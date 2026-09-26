@@ -18,15 +18,27 @@ records and must not be treated as issued authority.
 - **AIG-INV-04:** permanent Council-issued AIR-ID and current assurance state. Look up and
   verify an existing AIR-ID in the current controlled workbook; this tool never
   creates one. Its register review handoff is explicitly non-importable and does not
-  assert current approval, operational state or assurance.
+  assert current approval, operational state or assurance. The one-row-per-AIR-ID
+  Assessment summary priority remains blank in a use-specific handoff; use triage
+  is not copied into the system-level priority summary.
+- **Use-case scope:** one AIR-ID identifies a system, not every purpose for which it
+  may be used. Triage priority and risk for each materially different outcome/workflow
+  separately, including non-agentic uses, with a distinct UC-ID for each use. The
+  operator may enter an existing or provisional UC-ID, or explicitly leave it pending;
+  pending means use-specific UC-ID not yet supplied, never a shared-system-baseline
+  selection. This tool never issues or independently verifies UC-IDs. Each export carries the
+  exact scoped purpose and identifier context. A system-level record, map relationship
+  or triage score is not use approval.
 - **AIG-DEC-04:** its proposed draft separates prospective **Gate Plan**, dated **Gate
   Events**, and event-linked **Gate Conditions**. Exports are planning/review
   prompts only, not live rows or events.
 - **AIG-INV-05 Capabilities and System Map:** a proposed controlled catalogue
   artefact, not approved or adopted. Triage offers a
   clearly labelled proposal for outcome-led use cases, capabilities and a UC →
-  CAP relationship without an AIR-ID. The System map accepts only an existing
-  official AIR-ID; the map is not a second register.
+  CAP relationship without an AIR-ID. It carries only an operator-entered UC-ID
+  or a pending marker, with proposed pointers to the separate UC current view.
+  The System map accepts only an existing official AIR-ID; the map is not a
+  second register or source of decisions/status.
 - **AIG-DEC-03:** authorised decisions remain in the decision record or approved native forum
   minutes. The tool can prepare decision prompts; it does not decide or approve.
 - **AIG-AGT-04 / AIG-AGT-05:** AIG-AGT-04 is authoritative for agent scope and permissions;
@@ -47,6 +59,10 @@ evidence.
 
 - Enter a system profile, AGPI dimension scores, risk impacts and any mandatory
   escalation triggers.
+- Enter the exact purpose/outcome being assessed and an existing/provisional
+  operator-supplied UC-ID, or leave the UC-ID explicitly pending. Re-score each
+  materially different use independently; the same AIR-ID remains the system
+  identity. This applies to non-agentic as well as agentic use.
 - Review the separate governance-priority and risk classifications, screening
   prompts, assurance evidence plan and configured governance route.
 - Run agentic triage when a system can act. It proposes a tier and containment
@@ -55,7 +71,9 @@ evidence.
   AGPI/risk/agentic pre-fills, prospective gate plan, artefact handoff or case
   summary, including a AIG-DEC-02 paper-review handoff with blank preparer and
   actual paper date. Outputs are drafts that must be reconciled with current
-  records and local owners; they are not directly importable rows.
+  records and local owners; they are not directly importable rows. UC-ID and
+  scope values are prompts/pointers only: exports create no UC-ID, approval,
+  filled decision status, delegated authority or Gate Event.
 - Switch to retirement/decommissioning for a user-entered checklist and
   separate draft handoffs for a prospective plan, dated event and event-linked
   conditions. The checklist remains unverified and cannot assert readiness,
