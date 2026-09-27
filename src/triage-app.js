@@ -465,7 +465,7 @@
       return {
         key: "light",
         name: "Light-touch governance pathway",
-        why: "Low risk and low governance priority do not waive duties. Complete Equality Act s149, HRA s6 and data-protection/privacy screening, verify the Council-issued AIR-ID and current AIG-INV-04 state, retain proportionate baseline documentation, named ownership, controls and review, and record the delegated decision for this UC-ID before use (Playbook §3.8.1). An obviously low-risk use can instead take the one-page Fast-Track Screening (AIG-INV-02): its ten validated No answers are recorded as this screening."
+        why: "Low risk and low governance priority do not waive duties. Complete Equality Act s149, HRA s6 and data-protection/privacy screening, verify the Council-issued AIR-ID and current AIG-INV-04 state, retain proportionate baseline documentation, named ownership, controls and review, and record the delegated decision for this UC-ID before use (Playbook §3.8.2.1). An obviously low-risk use can instead take the one-page Fast-Track Screening (AIG-INV-02): its ten validated No answers are recorded as this screening."
       };
     }
 
