@@ -4,9 +4,28 @@ A browser-only triage calculator for drafting an AI-system priority, risk profil
 proportionate governance route, specialist-screening prompts and lifecycle
 handoffs. It preserves the tool's purpose as one front door for priority/risk
 triage and multi-forum routing, with an additional retirement/decommissioning
-workflow. The browser stores no entries and sends no data to a server.
+workflow. The browser stores nothing you enter and sends no data to a server.
+It also includes eleven fictional demo scenarios (see **Pilot lab demo** below).
 
 **Public Pages:** https://kimabercromby.github.io/AIGovernanceTriage-MultiBoard/
+
+## Pilot lab demo
+
+A **Pilot lab** panel at the top of the triage form loads one of eleven uses of a
+made-up system, *DEMO: Riverside Repairs Assistant* (AIR-DEMO-01, UC-DEMO-01 to
+UC-DEMO-11). Together they produce every AGPI priority (1 to 5), every risk tier
+(Low to Critical) and every agency tier (T0 to T5), using the tool's own logic.
+
+The demo is guarded so it cannot be mistaken for, or turned into, a Council record:
+
+- the identifiers are marked DEMO and are not Council-issued;
+- a fixed banner states the data is fictional while a demo is loaded;
+- every export, copy and print route is switched off while a demo is loaded;
+- **Clear demo** reloads the page, so no demo value carries into a real triage.
+
+The scenarios live in `src/pilot-scenarios.js` and the guard in `src/pilot-demo.js`.
+`test/pilot-scenarios.test.js` checks each scenario still produces its documented
+outcome, and that every export control the tool wires up is blocked in demo mode.
 
 ## Suite alignment and status
 

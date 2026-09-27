@@ -11,6 +11,8 @@ const sources = [
   ["triage-logic", "src/triage-logic.js"],
   ["triage-app", "src/triage-app.js"],
   ["retire-app", "src/retire-app.js"],
+  ["pilot-scenarios", "src/pilot-scenarios.js"],
+  ["pilot-demo", "src/pilot-demo.js"],
 ];
 
 let output = html;
