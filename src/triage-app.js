@@ -502,6 +502,17 @@
       byId("routeBannerWhy").textContent = gRoute.why;
     }
 
+    const controlStatus = byId("controlStatus");
+    if (controlStatus) {
+      const evidenced = results.controlEvidence === "Implemented and evidenced" ||
+        results.controlEvidence === "Implemented, evidenced and independently verified";
+      const highInherent = results.inherentTierName === "High" || results.inherentTierName === "Critical";
+      controlStatus.textContent = !evidenced
+        ? "Not counted yet: controls are not evidenced, so the tier uses the risk before controls. This score only shows what the tier could become once they are in place and evidenced."
+        : highInherent && results.controlEvidence !== "Implemented, evidenced and independently verified"
+          ? "Not counted yet: the risk before controls is High or Critical, so the controls also need independent verification before they can lower the tier."
+          : "Counted: controls are implemented and evidenced, so the tier uses the risk after controls (never below any trigger floor).";
+    }
     byId("agpiScore").textContent = formatNumber(results.agpiScore);
     byId("agpiPriority").textContent =
       `Provisional · ${results.priority.label} · UC-ID ${profile.ucId || "pending"} use-specific`;
