@@ -260,6 +260,16 @@
       status.textContent = "The browser blocked clipboard access. Use the download buttons instead.";
     }
   });
+  const drafts = byId("retireDrafts");
+  let restoreDraftsAfterPrint = null;
+  window.addEventListener("beforeprint", () => {
+    if (restoreDraftsAfterPrint === null) restoreDraftsAfterPrint = !drafts.open;
+    drafts.open = true;
+  });
+  window.addEventListener("afterprint", () => {
+    if (restoreDraftsAfterPrint) drafts.open = false;
+    restoreDraftsAfterPrint = null;
+  });
   byId("retirePrint").addEventListener("click", () => window.print());
 
   // ---- init ----
