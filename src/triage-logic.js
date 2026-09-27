@@ -1064,6 +1064,9 @@
   ];
 
   const RETIREMENT_FIELDS = [
+    { id: "retireScope", group: "Decision", showAtOrAbove: 5, type: "select", label: "What is being retired?", options: ["Not stated", "Named use(s) only — UC-ID specific", "Whole system — shared system baseline"] },
+    { id: "ucIds", group: "Decision", showAtOrAbove: 5, type: "text", label: "UC-ID(s) being retired (leave blank only for a whole-system retirement)", placeholder: "UC-XXXX; UC-YYYY" },
+    { id: "allUsesClosed", group: "Decision", showAtOrAbove: 5, type: "select", label: "Whole-system retirement only: are all other uses under this AIR-ID closed or retired?", options: ["Not applicable — named uses only", "Not yet confirmed", "Confirmed — every linked UC-ID closed or retired"] },
     { id: "reason", group: "Decision", showAtOrAbove: 5, type: "select", label: "Reason for retirement", options: RETIREMENT_REASONS },
     { id: "rationale", group: "Decision", showAtOrAbove: 5, type: "textarea", label: "Rationale (why retire, options considered)" },
     { id: "monitoringRef", group: "Decision", showAtOrAbove: 5, type: "text", label: "Prompted by a monitoring finding? Ref in the Post-Deployment Monitoring Log (AIG-OPS-02), if any", placeholder: "AIG-OPS-02 row / review ref" },
@@ -1097,7 +1100,7 @@
     { id: "planId", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Existing Gate Plan ID (verify in AIG-DEC-04; do not invent)", placeholder: "Existing plan ID only" },
     { id: "eventId", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Existing Event ID (verify in AIG-DEC-04; do not invent)", placeholder: "Existing event ID only" },
     { id: "forum", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Gate / forum" },
-    { id: "decision", group: "Gate event record", showAtOrAbove: 5, type: "select", label: "Gate decision (Stop = decommission; Progress with condition = approve with conditions)", options: ["Pending: not yet decided", "Progress", "Progress with condition", "Return for evidence", "Pause", "Stop", "Noted", "Priority override", "Escalation raised"] },
+    { id: "decision", group: "Gate event record", showAtOrAbove: 5, type: "select", label: "Gate decision (Stop = decommission; Progress with condition = approve with conditions)", options: ["Pending: not yet decided", "Progress", "Progress with condition", "Return for evidence", "Pause", "Stop", "Opinion only", "No decision"] },
     { id: "eventDate", group: "Gate event record", showAtOrAbove: 5, type: "date", label: "Date of decision (leave blank until decided)" },
     { id: "decisionMaker", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Decision-maker and role" },
     { id: "conditionDue", group: "Gate event record", showAtOrAbove: 3, type: "date", label: "Condition due date (if any)" },
@@ -1167,7 +1170,17 @@
   }
 
   function retirementDecided(ret) {
-    return !!ret.decision && ret.decision !== "Pending: not yet decided";
+    // "Opinion only" and "No decision" are AIG-DEC-04 outcomes that are not decisions.
+    return !!ret.decision && !["Pending: not yet decided", "Opinion only", "No decision"].includes(ret.decision);
+  }
+
+  // Appendix E.7 / AIG-GOV-03: retire each UC-ID separately; retire the AIR-ID only
+  // when every linked use is closed or retired.
+  function retirementScopeOf(ret) {
+    const scope = String(ret.retireScope || "");
+    if (scope.startsWith("Named use")) return "UC-ID specific";
+    if (scope.startsWith("Whole system")) return "Shared system baseline";
+    return "";
   }
 
   function retirementReadiness(ret) {
@@ -1177,6 +1190,10 @@
     if (!ret.priorityLabel) outstanding.push("Current AIG-INV-04 governance priority not verified; full-depth prompts are shown until it is.");
     if (!ret.tier) outstanding.push("Current AIG-INV-04 assurance/risk tier not verified.");
     if (!ret.registerId) outstanding.push("Existing Council-issued AIR-ID not recorded.");
+    const retScope = retirementScopeOf(ret);
+    if (!retScope) outstanding.push("Retirement scope not stated: named use(s) (UC-ID specific) or the whole system.");
+    if (retScope === "UC-ID specific" && !String(ret.ucIds || "").trim()) outstanding.push("UC-ID(s) being retired not recorded.");
+    if (retScope === "Shared system baseline" && ret.allUsesClosed !== "Confirmed — every linked UC-ID closed or retired") outstanding.push("Whole-system retirement: not yet confirmed that every UC-ID under this AIR-ID is closed or retired (Appendix E.7).");
     if (!ret.airIdEvidenceRef) outstanding.push("AIR-ID evidence from the current AIG-INV-04 record is missing.");
     if (!ret.assuranceEvidenceRef) outstanding.push("Current AIG-INV-04 assurance-state evidence is missing.");
     if (!ret.authorityEvidenceRef) outstanding.push("Decision authority / delegation evidence is missing; self-report is not evidence of authority.");
@@ -1255,8 +1272,8 @@
     add(plan, "Responsible role", "", "Accountable role to be supplied and verified; no assignment or delegation is made.");
     add(plan, "Plan state", "Draft proposal — owner review pending", "Never treated as an actual Gate Event or completed status.");
     add(plan, "N-A / waiver rationale and authority ref", "", "No waiver proposed or authorised by this handoff.");
-    add(plan, "UC-ID scope(s) (blank only for explicit system baseline)", "", "Enter each UC-ID being retired. Leave blank only if the whole shared system baseline is being retired.");
-    add(plan, "Decision scope (UC-ID specific / Shared system baseline)", "", "Choose UC-ID specific when retiring named uses; Shared system baseline only when retiring the whole system.");
+    add(plan, "UC-ID scope(s) (blank only for explicit system baseline)", ret.ucIds, "Enter each UC-ID being retired. Leave blank only if the whole shared system baseline is being retired.");
+    add(plan, "Decision scope (UC-ID specific / Shared system baseline)", retirementScopeOf(ret), "Choose UC-ID specific when retiring named uses; Shared system baseline only when retiring the whole system.");
     add(plan, "Source version", "Review against current AIG-INV-04/AIG-DEC-04 version", "Record actual controlled source version before transfer.");
 
     const event = "Gate Events (dated; proposed handoff, not an actual event)";
@@ -1277,10 +1294,10 @@
     add(event, "Evidence source/URI", ret.evidenceRefs, "Verify each source and URI; blank means event evidence is pending.");
     add(event, "Plan ID (if any)", ret.planId, "Optional join; verify this existing plan belongs to this AIR-ID and gate.");
     add(event, "priority override fields", "", "No override proposed; use controlled override process and authority if applicable.");
-    add(event, "UC-ID(s) covered by this dated event", "", "Enter each UC-ID being retired. Leave blank only if the whole shared system baseline is being retired.");
-    add(event, "Decision scope (UC-ID specific / Shared system baseline)", "", "UC-ID specific is required for a use-level retirement decision; a shared baseline event is not a use decision.");
+    add(event, "UC-ID(s) covered by this dated event", ret.ucIds, "Enter each UC-ID being retired. Leave blank only if the whole shared system baseline is being retired.");
+    add(event, "Decision scope (UC-ID specific / Shared system baseline)", retirementScopeOf(ret), "UC-ID specific is required for a use-level retirement decision; a shared baseline event is not a use decision.");
     add("AI Register", "AIR-ID", ret.registerId, identityReview);
-    add("AI Register", "System baseline operational status", "", `Current status is not changed by this checklist (${readiness.status}). Verify and update through the controlled process.`);
+    add("AI Register", "System baseline operational status", "", `Current status is not changed by this checklist (${readiness.status}). Verify and update through the controlled process.${retirementScopeOf(ret) === "UC-ID specific" ? " Retiring named uses does not retire the system: the AIR-ID row stays active while other uses continue." : ""}`);
     add("Assessment summary", "As-at date", "", "Update only when the authorised owner verifies the actual AIG-INV-04 assessment summary.");
     add("AI Register", "Assessment / evidence ref", ret.airIdEvidenceRef, "Source pointer only; verify the permanent AIR-ID against AIG-INV-04.");
     add("Assessment summary", "AIG-ASS-02 ref / date", ret.assuranceEvidenceRef, "Source pointer only; verify current AIG-ASS-02 assessment and its actual date against AIG-INV-04; not an approval.");
@@ -1289,7 +1306,7 @@
     add("Assessment summary", "Other specialist finding refs", ret.authorityEvidenceRef, "Authority evidence pointer only; verify the actual delegation record and current decision-maker authority.");
     if (conditions.length) {
       conditions.forEach((condition) => {
-        const target = "AIG-DEC-04 / Gate Conditions (event-linked; proposed action only)";
+        const target = "Gate Conditions (event-linked; proposed action only)";
         add(target, "Condition ID", "", "Never generated here; controlled owner assigns only after an actual event.");
         add(target, "Event ID", ret.eventId, "Verify actual event exists before linking a condition.");
         add(target, "AIR-ID", ret.registerId, "Verify derived relationship in the controlled workbook.");
@@ -1299,11 +1316,11 @@
         add(target, "State", "Not recorded — pending decision", "Do not infer an open or completed condition.");
         add(target, "Closed / waived on", "", "No resolution or waiver asserted.");
         add(target, "Evidence / waiver authority ref", "", "Evidence/authority pending; no resolution or waiver asserted.");
-        add(target, "UC-ID scope (blank only if shared system condition)", "", "Enter each UC-ID being retired. Leave blank only if the whole shared system baseline is being retired.");
-        add(target, "Condition scope (UC-ID specific / shared system baseline)", "", "Match the scope of the parent event.");
+        add(target, "UC-ID scope (blank only if shared system condition)", ret.ucIds, "Enter each UC-ID being retired. Leave blank only if the whole shared system baseline is being retired.");
+        add(target, "Condition scope (UC-ID specific / shared system baseline)", retirementScopeOf(ret) === "Shared system baseline" ? "Shared system baseline" : retirementScopeOf(ret), "Match the scope of the parent event.");
       });
     } else {
-      const target = "AIG-DEC-04 / Gate Conditions (event-linked; proposed action only)";
+      const target = "Gate Conditions (event-linked; proposed action only)";
       add(target, "Condition ID", "", "Never generated here; controlled owner assigns only after an actual event.");
       add(target, "Event ID", ret.eventId, "Verify actual event exists before linking a condition.");
       add(target, "AIR-ID", ret.registerId, "Verify derived relationship in the controlled workbook.");
@@ -1313,17 +1330,18 @@
       add(target, "State", "Not recorded — pending decision", "Do not infer an open or completed condition.");
       add(target, "Closed / waived on", "", "No resolution or waiver asserted.");
       add(target, "Evidence / waiver authority ref", "", "Evidence/authority pending; no resolution or waiver asserted.");
-      add(target, "UC-ID scope (blank only if shared system condition)", "", "Enter each UC-ID being retired. Leave blank only if the whole shared system baseline is being retired.");
-      add(target, "Condition scope (UC-ID specific / shared system baseline)", "", "Match the scope of the parent event.");
+      add(target, "UC-ID scope (blank only if shared system condition)", ret.ucIds, "Enter each UC-ID being retired. Leave blank only if the whole shared system baseline is being retired.");
+      add(target, "Condition scope (UC-ID specific / shared system baseline)", retirementScopeOf(ret) === "Shared system baseline" ? "Shared system baseline" : retirementScopeOf(ret), "Match the scope of the parent event.");
     }
     return { headers: RETIREMENT_HANDOFF_HEADERS.slice(), rows, readiness };
   }
 
   function retFormDecisionValue(ret) {
-    // Map the gate decision onto AIG-DEC-03's controlled set:
-    // Approved / Approved with conditions / Deferred / Rejected.
+    // AIG-DEC-03's controlled outcome set is Approved / Approved with conditions /
+    // Deferred / Rejected / Suspended / Retired. An authorised retirement is recorded
+    // as Retired (per UC-ID); a pause is Suspended. The forum, not this tool, decides.
     if (!retirementDecided(ret)) return "Not entered — decision reserved to authorised forum";
-    return `User-entered draft: ${ret.decision} (not verified or approved)`;
+    return `User-entered draft: ${ret.decision} (not verified or approved). In AIG-DEC-03 an authorised retirement is recorded as "Retired" for each UC-ID in scope; a pause is "Suspended".`;
   }
 
   function buildRetirementDecisionRecord(ret) {
@@ -1355,6 +1373,8 @@
       line("Current AIG-INV-04 assurance-state evidence", ret.assuranceEvidenceRef || "(missing — verify current AIG-INV-04)"),
       line("Decision date", decisionDate),
       line("Decision-making body", ret.forum || "(not recorded)"),
+      line("Retirement scope", retirementScopeOf(ret) || "(not stated — named UC-ID(s) or whole system)"),
+      line("UC-ID(s) in scope", ret.ucIds || (retirementScopeOf(ret) === "Shared system baseline" ? "All uses under this AIR-ID (confirm each is closed or retired)" : "(not recorded)")),
       line("Risk classification", ret.tier || "(not set)"),
       line("Decision authority / delegation", ret.authorityEvidenceRef || "(missing — verify current delegated authority; self-report is insufficient)"),
       line("Meeting / written-decision ref", ret.decisionRecordRef || na),
