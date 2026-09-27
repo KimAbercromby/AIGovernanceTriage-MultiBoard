@@ -369,7 +369,7 @@
     };
   }
 
-  // Playbook §3.8.1 / §3.8.2.1 / Appendix F.6: light-touch only for a Priority 4-5,
+  // Playbook §3.8.2.1 / Appendix F.6: light-touch only for a Priority 4-5,
   // Low-tier, non-action-capable use with no mandatory trigger and no indicated
   // specialist assessment. The AI Governance Lead still validates the route.
   function isLightTouch(profile, results) {
@@ -385,7 +385,7 @@
       !(results.triggerIds || []).length && !anyAssessment && !isAgentSystem(profile, results);
   }
 
-  // Governance by trigger, not by catalogue (Playbook §3.8.1, §3.8.2.4):
+  // Governance by trigger, not by catalogue (Playbook §3.8.2.4):
   // screening applies at every tier; fuller assessments follow tier, triggers and
   // action capability.
   function buildEvidenceList(profile, results) {
@@ -403,7 +403,7 @@
     if (tier !== "Low" || triggered || canAct) {
       evidence.push("Responsible AI Assessment");
     }
-    // §3.10.2: the AI Security Review Checklist is a High/Critical minimum and
+    // Playbook §4.5.9: the AI Security Review Checklist is a High/Critical minimum and
     // applies to action-capable systems at every tier (AIG-ASS-11).
     if (tier === "High" || tier === "Critical" || triggered || canAct) {
       evidence.push("Security Review Checklist");
