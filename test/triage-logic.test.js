@@ -543,3 +543,40 @@ test("a High or Critical inherent tier drops only on independently verified cont
   assert.equal(logic.effectiveRiskTier({ inherentTierName: "Medium", residualTierName: "Low", controlEvidence: "Implemented and evidenced" }).effectiveTierName, "Low");
   assert.equal(logic.CONTROL_EVIDENCE.length, 3);
 });
+
+test("light-touch and Low uses are not asked for Medium+ assessments (governance by trigger)", () => {
+  const low = fixture();
+  const ev = logic.buildEvidenceList(low.profile, low.results).join("\n");
+  assert.equal(logic.isLightTouch(low.profile, low.results), true);
+  assert.doesNotMatch(ev, /^Responsible AI Assessment$/m);
+  assert.doesNotMatch(ev, /^Security Review Checklist$/m);
+  assert.match(ev, /Security policy compliance check/);
+  assert.match(ev, /Model Card \(short form/);
+  assert.match(ev, /Equality Act 2010 section 149 screening \(all tiers/);
+});
+
+test("Medium uses need the Responsible AI Assessment; High uses also need the full security checklist", () => {
+  const medium = fixture({ tier: "Medium" });
+  const evM = logic.buildEvidenceList(medium.profile, medium.results);
+  assert.ok(evM.includes("Responsible AI Assessment"));
+  assert.ok(!evM.includes("Security Review Checklist"));
+  assert.ok(evM.includes("Model Card"));
+  const high = fixture({ tier: "High" });
+  const evH = logic.buildEvidenceList(high.profile, high.results);
+  assert.ok(evH.includes("Responsible AI Assessment"));
+  assert.ok(evH.includes("Security Review Checklist"));
+});
+
+test("action-capable or triggered Low uses keep the full assessments", () => {
+  const acting = fixture();
+  acting.profile.actionAuthority = "Human approves each action";
+  const evA = logic.buildEvidenceList(acting.profile, acting.results);
+  assert.equal(logic.isLightTouch(acting.profile, acting.results), false);
+  assert.ok(evA.includes("Responsible AI Assessment"));
+  assert.ok(evA.includes("Security Review Checklist"));
+  const trig = fixture();
+  trig.results.triggerIds = ["novel"];
+  const evT = logic.buildEvidenceList(trig.profile, trig.results);
+  assert.ok(evT.includes("Responsible AI Assessment"));
+  assert.ok(evT.includes("Security Review Checklist"));
+});
