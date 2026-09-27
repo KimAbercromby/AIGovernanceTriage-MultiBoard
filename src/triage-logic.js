@@ -328,7 +328,12 @@
     const affectsPeople = profile.affectsIndividuals === "Yes";
 
     let dpia = "Screening required — DPO/privacy owner confirmation";
-    if (specialData || triggerSet.has("housingCare") || triggerSet.has("statutory")) {
+    // Playbook §4.5.9 / AIG-ASS-05: a completed DPIA is normally required for High and
+    // Critical uses that process personal data; the DPO confirms the Article 35 test.
+    const highTierPersonal =
+      (results.effectiveTierName === "High" || results.effectiveTierName === "Critical") &&
+      profile.dataType && profile.dataType !== "None";
+    if (specialData || highTierPersonal || triggerSet.has("housingCare") || triggerSet.has("statutory")) {
       dpia = "Potential DPIA indication — DPO confirmation";
     } else if (profile.dataType === "None") {
       dpia = "Screening required — no personal data stated; verify";
