@@ -289,7 +289,11 @@
     const tierFloored = effectiveTierName !== residualTierName;
     const floorReasons = [];
     if (!tierRule.controlsEvidenced && inherentTierName !== residualTierName) {
-      floorReasons.push("controls not yet evidenced, so inherent risk tier");
+      floorReasons.push(
+        tierRule.verificationNeeded
+          ? "High/Critical inherent tier awaits independent verification of controls"
+          : "controls not yet evidenced, so inherent risk tier",
+      );
     }
     if (tierRule.floorRaised) {
       floorReasons.push(

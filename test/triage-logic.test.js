@@ -529,6 +529,17 @@ test("risk tier follows inherent risk until controls are implemented and evidenc
   const floored = logic.effectiveRiskTier({ ...base, mandatoryFloorTier: "Critical", controlEvidence: "Implemented and evidenced" });
   assert.equal(floored.effectiveTierName, "Critical");
   assert.ok(floored.floorRaised);
-  assert.equal(logic.effectiveRiskTier({ inherentTierName: "Critical", residualTierName: "Medium", mandatoryFloorTier: "High", controlEvidence: "Implemented and evidenced" }).effectiveTierName, "High");
+  assert.equal(logic.effectiveRiskTier({ inherentTierName: "Critical", residualTierName: "Medium", mandatoryFloorTier: "High", controlEvidence: "Implemented, evidenced and independently verified" }).effectiveTierName, "High");
   assert.deepEqual([1, 5, 5.1, 10, 10.1, 15, 15.1, 25].map(logic.tierNameForScore), ["Low", "Low", "Medium", "Medium", "High", "High", "Critical", "Critical"]);
+});
+
+test("a High or Critical inherent tier drops only on independently verified controls", () => {
+  const crit = { inherentTierName: "Critical", residualTierName: "Medium" };
+  const ev = logic.effectiveRiskTier({ ...crit, controlEvidence: "Implemented and evidenced" });
+  assert.equal(ev.effectiveTierName, "Critical");
+  assert.ok(ev.verificationNeeded);
+  assert.equal(logic.effectiveRiskTier({ ...crit, controlEvidence: "Implemented, evidenced and independently verified" }).effectiveTierName, "Medium");
+  assert.equal(logic.effectiveRiskTier({ ...crit, mandatoryFloorTier: "High", controlEvidence: "Implemented, evidenced and independently verified" }).effectiveTierName, "High");
+  assert.equal(logic.effectiveRiskTier({ inherentTierName: "Medium", residualTierName: "Low", controlEvidence: "Implemented and evidenced" }).effectiveTierName, "Low");
+  assert.equal(logic.CONTROL_EVIDENCE.length, 3);
 });

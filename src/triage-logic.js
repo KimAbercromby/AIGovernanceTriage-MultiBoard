@@ -266,22 +266,30 @@
   }
 
   // Playbook §4.4.8 / AIG-ASS-02: a use is tiered on its inherent risk until the
-  // controls credited in its control score are implemented and evidenced, then on
-  // its residual risk; never below the mandatory trigger floor (§4.4.6).
-  const CONTROL_EVIDENCE = ["Not evidenced — planned or unverified", "Implemented and evidenced"];
+  // controls credited in its control score are implemented and evidenced (and, where
+  // the inherent tier is High or Critical, independently verified), then on its
+  // residual risk; never below the mandatory trigger floor (§4.4.6). This is a
+  // governance tier, not a legal classification.
+  const CONTROL_EVIDENCE = ["Not evidenced — planned or unverified", "Implemented and evidenced", "Implemented, evidenced and independently verified"];
   const TIER_ORDER = ["Low", "Medium", "High", "Critical"];
   function tierNameForScore(score) {
     return score <= 5 ? "Low" : score <= 10 ? "Medium" : score <= 15 ? "High" : "Critical";
   }
   function effectiveRiskTier({ inherentTierName, residualTierName, mandatoryFloorTier = "Low", controlEvidence }) {
-    const controlsEvidenced = controlEvidence === "Implemented and evidenced";
+    const highInherent = inherentTierName === "High" || inherentTierName === "Critical";
+    const verified = controlEvidence === "Implemented, evidenced and independently verified";
+    const evidenced = verified || controlEvidence === "Implemented and evidenced";
+    const verificationNeeded = evidenced && !verified && highInherent;
+    const controlsEvidenced = evidenced && !verificationNeeded;
     const basisTierName = controlsEvidenced ? residualTierName : inherentTierName;
     const floorRaised = TIER_ORDER.indexOf(mandatoryFloorTier) > TIER_ORDER.indexOf(basisTierName);
     const effectiveTierName = floorRaised ? mandatoryFloorTier : basisTierName;
     const basis = controlsEvidenced
       ? "controls evidenced: residual risk tier"
-      : "controls not yet evidenced: inherent risk tier";
-    return { effectiveTierName, basisTierName, controlsEvidenced, floorRaised, basis };
+      : verificationNeeded
+        ? "independent verification needed to lower a High/Critical inherent tier"
+        : "controls not yet evidenced: inherent risk tier";
+    return { effectiveTierName, basisTierName, controlsEvidenced, verificationNeeded, floorRaised, basis };
   }
 
   function commercialRequired(profile) {
