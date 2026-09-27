@@ -2433,20 +2433,55 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     };
   }
 
+  // Playbook §3.8.1 / §3.8.2.1 / Appendix F.6: light-touch only for a Priority 4-5,
+  // Low-tier, non-action-capable use with no mandatory trigger and no indicated
+  // specialist assessment. The AI Governance Lead still validates the route.
+  function isLightTouch(profile, results) {
+    const req = assessmentRequirements(profile, results);
+    const label = (results.priority && results.priority.label) || "";
+    const lowPriority = label.indexOf("Priority 4") === 0 || label.indexOf("Priority 5") === 0;
+    const anyAssessment =
+      req.dpia.startsWith("Potential DPIA") ||
+      req.eia.startsWith("Potential full assessment") ||
+      req.humanRightsPotential ||
+      req.supplierDueDiligence;
+    return lowPriority && results.effectiveTierName === "Low" &&
+      !(results.triggerIds || []).length && !anyAssessment && !isAgentSystem(profile, results);
+  }
+
+  // Governance by trigger, not by catalogue (Playbook §3.8.1, §3.8.2.4):
+  // screening applies at every tier; fuller assessments follow tier, triggers and
+  // action capability.
   function buildEvidenceList(profile, results) {
     const requirements = assessmentRequirements(profile, results);
+    const tier = results.effectiveTierName;
+    const triggered = (results.triggerIds || []).length > 0;
+    const canAct = isAgentSystem(profile, results);
+    const lightTouch = isLightTouch(profile, results);
     const evidence = [
       "AI Intake Form and AI Register entry",
       "AGPI triage result",
       "AI Risk Assessment Worksheet",
-      "Responsible AI Assessment",
-      "Security Review Checklist",
-      "Model Card",
+    ];
+    // §4.6.4: completed for each Medium, High and Critical UC-ID.
+    if (tier !== "Low" || triggered || canAct) {
+      evidence.push("Responsible AI Assessment");
+    }
+    // §3.10.2: the AI Security Review Checklist is a High/Critical minimum and
+    // applies to action-capable systems at every tier (AIG-ASS-11).
+    if (tier === "High" || tier === "Critical" || triggered || canAct) {
+      evidence.push("Security Review Checklist");
+    } else {
+      evidence.push("Security policy compliance check (full Security Review Checklist from High risk, for systems that can act, or where the security owner asks)");
+    }
+    // Appendix A.4: every model has a model card; proportionate for light-touch.
+    evidence.push(lightTouch ? "Model Card (short form: purpose, limits, owner)" : "Model Card");
+    evidence.push(
       "Evidence Index",
       "Equality Act 2010 section 149 screening (all tiers; equality-owner confirmation)",
       "Human Rights Act 1998 section 6 screening (all tiers; legal-owner confirmation)",
       "Data protection and privacy screening (all tiers; DPO confirmation where relevant)",
-    ];
+    );
     evidence.push("Data protection / DPIA applicability screening outcome (all tiers; DPO owner, evidence ref and status pending)");
     evidence.push("ATRS applicability / publication screening (all tiers; owner confirmation, evidence ref and status pending)");
     if (requirements.dpia.startsWith("Potential DPIA")) {
@@ -3644,6 +3679,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     assuranceIntensity,
     assessmentRequirements,
     buildEvidenceList,
+    isLightTouch,
     buildRoute,
     buildRegisterDraftHandoff,
     buildCapabilitiesMapHandoff,
@@ -4123,7 +4159,6 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
   }
 
   function governanceRoute(profile, results) {
-    const req = logic.assessmentRequirements(profile, results);
     const canAct =
       profile.capability === "Agentic AI" ||
       (profile.actionAuthority && profile.actionAuthority !== "None — outputs only") ||
@@ -4133,18 +4168,6 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       profile.actionAuthority === "Acts within defined bounds — monitored" ||
       profile.actionAuthority === "Fully autonomous" ||
       (results.triggerIds && results.triggerIds.includes("agentic"));
-
-    const anyAssessment =
-      req.dpia.startsWith("Potential DPIA") ||
-      req.eia.startsWith("Potential full assessment") ||
-      req.humanRightsPotential ||
-      req.atrs === "Yes" ||
-      req.supplierDueDiligence;
-    const label = results.priority.label || "";
-    const lowPriority =
-      label.indexOf("Priority 4") === 0 || label.indexOf("Priority 5") === 0;
-    const lowTier = results.effectiveTierName === "Low";
-    const noTriggers = results.triggerIds.length === 0;
 
     if (canAct) {
       return {
@@ -4156,7 +4179,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       };
     }
 
-    if (lowPriority && lowTier && noTriggers && !anyAssessment) {
+    if (logic.isLightTouch(profile, results)) {
       return {
         key: "light",
         name: "Light-touch governance pathway",
