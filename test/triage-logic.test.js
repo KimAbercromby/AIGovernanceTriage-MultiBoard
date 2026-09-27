@@ -499,3 +499,24 @@ test("Risk Assessment pre-fill rows match AIG-ASS-02 Triage Import B5:B63 exactl
   assert.deepEqual(labels.slice(0, triageImport.length), triageImport);
   assert.ok(labels.slice(triageImport.length).every((label) => label.startsWith("Note (not imported)")));
 });
+
+test("retirement decision options are AIG-DEC-04 Gate Events outcomes", () => {
+  const gateLogOutcomes = ["Progress", "Progress with condition", "Return for evidence", "Pause", "Stop", "Opinion only", "No decision"];
+  const field = logic.RETIREMENT_FIELDS.find((f) => f.id === "decision");
+  assert.deepEqual(field.options.filter((o) => !o.startsWith("Pending")), gateLogOutcomes);
+  const opinion = logic.buildRetirementGateLogRow({ decision: "Opinion only" });
+  assert.equal(opinion.rows.find((row) => row[1] === "Event type")[3], "");
+});
+
+test("retirement is scoped per UC-ID and a whole-system retirement needs every use closed", () => {
+  const named = logic.buildRetirementGateLogRow({ retireScope: "Named use(s) only — UC-ID specific", ucIds: "UC-0012-A" });
+  assert.equal(named.rows.find((row) => row[1] === "UC-ID(s) covered by this dated event")[3], "UC-0012-A");
+  assert.equal(named.rows.find((row) => row[1] === "Decision scope (UC-ID specific / Shared system baseline)")[3], "UC-ID specific");
+  assert.match(named.rows.find((row) => row[1] === "System baseline operational status")[5], /AIR-ID row stays active/);
+
+  assert.ok(logic.retirementReadiness({}).outstanding.some((item) => /Retirement scope not stated/.test(item)));
+  assert.ok(logic.retirementReadiness({ retireScope: "Named use(s) only — UC-ID specific" }).outstanding.some((item) => /UC-ID\(s\) being retired/.test(item)));
+  const whole = { retireScope: "Whole system — shared system baseline" };
+  assert.ok(logic.retirementReadiness(whole).outstanding.some((item) => /every UC-ID under this AIR-ID/.test(item)));
+  assert.ok(!logic.retirementReadiness({ ...whole, allUsesClosed: "Confirmed — every linked UC-ID closed or retired" }).outstanding.some((item) => /every UC-ID under this AIR-ID/.test(item)));
+});
