@@ -823,7 +823,7 @@
     const rows = [
       ["System / model name", p.systemName],
       ["AIR-ID", p.registerId],
-      ["UC-ID (target: blank only for shared baseline; pending use-specific ID is distinct)", p.ucId],
+      ["UC-ID (blank only for shared baseline)", p.ucId],
       ["Use-case scope / exact outcome assessed", p.usePurpose],
       ["UC-ID entry status (not verification)", p.ucIdStatus],
       ["UC-ID interpretation", p.ucId ? "UC-ID-specific use triage." : "UC-ID-specific provisional use triage; ID pending, not a selected shared system baseline."],
@@ -866,16 +866,12 @@
       (p.actionAuthority && p.actionAuthority !== "None — outputs only") ||
       triggerSet.has("agentic");
 
+    // Rows 1–59 match AIG-ASS-02 Triage Import B5:B63 exactly, in order, so the Value
+    // column can be pasted as one block. Notes after row 59 are context only.
     const rows = [
       ["AIR-ID", p.registerId],
       ["System / Model Name", p.systemName],
       ["Purpose / Description", p.usePurpose || p.purpose],
-      ["UC-ID (target: blank only for explicit system baseline; pending use-specific ID is distinct)", p.ucId],
-      ["UC-ID entry status (not verification)", p.ucIdStatus],
-      ["UC-ID interpretation", p.ucId ? "UC-ID-specific use triage." : "UC-ID-specific provisional use triage; ID pending, not a selected shared system baseline."],
-      ["Triage / assessment scope", "UC-ID-specific"],
-      ["Use-case outcome / scope key", p.usePurpose || p.purpose],
-      ["Risk assessment scope", `This risk triage applies only to UC-ID ${p.ucId || "(pending)"} and the stated use outcome; reassess materially different uses separately. Not approval.`],
       ["Service Area", p.serviceArea],
       ["Service Owner", p.serviceOwner],
       ["Supplier / Developer", p.supplierDeveloper],
@@ -885,7 +881,7 @@
       ["Systems / Tools Accessed", p.systemsAccessed],
       ["Lifecycle Stage", p.lifecycle],
       ["Personal / Special Category Data", p.dataType],
-      ["Triage export date (not an assessment date)", ""],
+      ["Triage Date", ""],
       ["AGPI Score (0-100)", r.agpiScore],
       ["Raw AGPI Priority", r.rawAgpiPriority || r.priority.label],
       ["Authorised Governance Priority Uplift", ""],
@@ -929,7 +925,13 @@
       ["Agentic Flags", a ? (a.flags.length ? a.flags.join("; ") : "None") : ""],
       ["Agentic Escalations", a ? (a.escalations.length ? a.escalations.join("; ") : "None") : ""],
       ["Agentic Deployment Control", a ? a.deploymentControl : ""],
-      ["Agent Record (ASBOM) Ref", a ? (a.asbomRef || "") : ""]
+      ["Agent Record (ASBOM) Ref", a ? (a.asbomRef || "") : ""],
+      ["UC-ID (blank only for explicit system baseline)", p.ucId],
+      ["Triage / assessment scope", "UC-ID-specific"],
+      ["Note (not imported) — UC-ID entry status (not verification)", p.ucIdStatus],
+      ["Note (not imported) — UC-ID interpretation", p.ucId ? "UC-ID-specific use triage." : "UC-ID-specific provisional use triage; ID pending, not a selected shared system baseline."],
+      ["Note (not imported) — Use-case outcome / scope key", p.usePurpose || p.purpose],
+      ["Note (not imported) — Risk assessment scope", `This risk triage applies only to UC-ID ${p.ucId || "(pending)"} and the stated use outcome; reassess materially different uses separately. Not approval.`]
     ];
     return fieldValueCsv(rows);
   }
@@ -941,7 +943,7 @@
     const a = latestAgentic;
     const rows = [
       ["AIR-ID", p.registerId],
-      ["UC-ID scope (not authority)", p.ucId],
+      ["UC-ID(s) within this authority envelope (reference only)", p.ucId],
       ["Exact use purpose / outcome", p.usePurpose || p.purpose],
       ["Agent Name", p.systemName],
       ["Approved Purpose (mandate)", ""],
@@ -993,7 +995,9 @@
       ["Compensating Action", ""],
       ["Budget / Transaction Ceiling", ""],
       ["Agent Creation Authority", ""],
-      ["Self-Modification Authority", ""]
+      ["Self-Modification Authority", ""],
+      ["AG-ID", ""],
+      ["Use-specific delegated decision / gate reference(s)", ""]
     ];
     return logic.toCsv(
       ["Target artefact", "Field label / prompt", "Field reference type", "Triage draft value", "Value status", "Review, evidence or authority still required"],
@@ -1021,7 +1025,7 @@
     add("Triage scope — applies to following proposed prompts only", "Exact use purpose / outcome", p.usePurpose || p.purpose, "Operator-entered scope; proposal only, not a mandate or approval");
     const risk = "AIG-ASS-02 / Triage Import";
     add(risk, "AIR-ID", p.registerId, "Triage value; assessor confirms");
-    add(risk, "UC-ID / use scope", p.ucId || "", `Scope only; ${p.ucIdStatus || "pending"}; verify independently. Exact outcome: ${p.usePurpose || p.purpose}. Never authority.`);
+    add(risk, "UC-ID (blank only for explicit system baseline)", p.ucId || "", `Scope only; ${p.ucIdStatus || "pending"}; verify independently. Exact outcome: ${p.usePurpose || p.purpose}. Never authority.`);
     add(risk, "Effective Governance Tier", r.effectiveTierName, "Triage value; assessor confirms");
     add(risk, "Assurance Intensity", r.assuranceIntensity, "Triage value; assessor confirms");
     add(risk, "Kill-switch Demonstrated", yesNo(a.killSwitch), "Self-reported at triage; verify evidence");

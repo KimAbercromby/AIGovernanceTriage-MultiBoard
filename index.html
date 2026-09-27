@@ -2228,8 +2228,8 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
   ];
   const REGISTER_FIELDS = new Set([
     "AIR-ID", "System name", "Purpose and boundary", "Service area",
-    "Service Owner", "Supplier / source", "Lifecycle stage", "Approval status",
-    "Operational status", "Can it act?", "Decision record ref",
+    "Service Owner", "Supplier / source", "Lifecycle stage",
+    "System baseline approval (not use approval)", "System baseline operational status", "Can it act?", "Decision record ref",
     "Latest gate Event ID", "Assessment / evidence ref", "Next review",
   ]);
   const ASSESSMENT_FIELDS = new Set([
@@ -2239,23 +2239,27 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     "Other specialist finding refs", "AIG-AGT-04 Agent Record ref",
     "AIG-AGT-05 Authority Graph ref", "AIG-OPS-02 Monitoring ref", "As-at date",
   ]);
+  // Exact column headers in the AIG-DEC-04 Gate Log workbook (row 3 of each sheet).
   const GATE_PLAN_FIELDS = new Set([
-    "Plan ID", "AIR-ID", "Gate/forum", "Trigger/lifecycle", "Requirement",
-    "Basis/triage ref", "Target date", "Responsible role", "Plan state",
-    "waiver rationale+authority", "Source version", "Plan QA",
+    "Plan ID", "AIR-ID", "Gate / forum", "Trigger / stage", "Requirement",
+    "Basis / triage ref", "Target date", "Responsible role", "Plan state",
+    "N-A / waiver rationale and authority ref",
+    "UC-ID scope(s) (blank only for explicit system baseline)",
+    "Decision scope (UC-ID specific / Shared system baseline)",
   ]);
   const GATE_EVENT_FIELDS = new Set([
-    "Event ID", "AIR-ID", "Gate/forum", "Lifecycle stage at event",
-    "Decision date", "Decision", "Assurance opinion ref",
-    "Decision-maker/role", "Next gate", "Event notes",
-    "Decision record/minutes ref", "Technical snapshot/as-at ref",
-    "Event record state", "Recorded by/role", "Evidence source/URI",
-    "Event QA", "Plan ID", "priority override fields",
+    "Event ID", "AIR-ID", "Plan ID (if any)", "Gate / forum", "Event type", "Date",
+    "Outcome", "Decision-maker / role", "AIG-DEC-03 / minutes ref",
+    "Assurance opinion ref", "Technical snapshot / as-at ref", "Next gate / action",
+    "Recorded by", "UC-ID(s) covered by this dated event",
+    "Decision scope (UC-ID specific / Shared system baseline)",
   ]);
   const GATE_CONDITION_FIELDS = new Set([
-    "Condition ID", "Event ID", "AIR-ID derived", "Condition/action",
-    "Action owner/role", "Due date", "Condition state", "Resolved/waived on",
-    "Resolution evidence/waiver authority ref", "Overdue derived", "Condition QA",
+    "Condition ID", "Event ID", "AIR-ID", "Required action / condition",
+    "Action owner", "Due date", "State", "Closed / waived on",
+    "Evidence / waiver authority ref",
+    "UC-ID scope (blank only if shared system condition)",
+    "Condition scope (UC-ID specific / shared system baseline)",
   ]);
   function fieldReferenceType(sheet, field) {
     const value = String(field || "").trim();
@@ -2596,8 +2600,8 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     add("AI Register", "Service Owner", profile.serviceOwner, "Verify the current accountable owner.");
     add("AI Register", "Supplier / source", supplierSource, "Combined from separate intake prompts for review; verify the supplier/source value against the actual workbook field and source.");
     add("AI Register", "Lifecycle stage", profile.lifecycle, "Proposed stage; map to the workbook's controlled list.");
-    add("AI Register", "Approval status", "", "Do not infer or change current approval status. Formal decisions remain in AIG-DEC-03 or authorised native minutes.");
-    add("AI Register", "Operational status", "", "Do not infer or change current operational status; verify the current AIG-INV-04 record.");
+    add("AI Register", "System baseline approval (not use approval)", "", "Do not infer or change current approval status. Formal decisions remain in AIG-DEC-03 or authorised native minutes.");
+    add("AI Register", "System baseline operational status", "", "Do not infer or change current operational status; verify the current AIG-INV-04 record.");
     add("AI Register", "Can it act?", "", "Do not set Yes/No from this triage. Verify actual capability and permissions against AIG-AGT-04 and complete the applicable agent assessment.");
     add("AI Register", "Decision record ref", "", "Only the authorised owner supplies a reference to an actual AIG-DEC-03 or approved native decision record.");
     add("AI Register", "Latest gate Event ID", "", "Only the AIG-DEC-04 owner supplies the ID of an actual dated Gate Event; triage creates none.");
@@ -3294,38 +3298,40 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     const plan = "Gate Plan (prospective)";
     add(plan, "AIR-ID", ret.registerId, identityReview);
     add(plan, "Plan ID", ret.planId, "Never generated here; verify against the existing AIG-DEC-04 Gate Plan.");
-    add(plan, "Gate/forum", ret.forum, "Proposed route only; confirm the authorised forum and delegation.");
-    add(plan, "Trigger/lifecycle", "Retirement / decommission review", "Prospective plan prompt; not an event.");
+    add(plan, "Gate / forum", ret.forum, "Proposed route only; confirm the authorised forum and delegation.");
+    add(plan, "Trigger / stage", "Retirement / decommission review", "Prospective plan prompt; not an event.");
     add(plan, "Requirement", "Review whether retirement should be authorised", "A question for the authorised forum; not an attained decision.");
-    add(plan, "Basis/triage ref", ret.monitoringRef, "Provide verified AIG-OPS-02 / triage source reference; user-entered pointer only.");
+    add(plan, "Basis / triage ref", ret.monitoringRef, "Provide verified AIG-OPS-02 / triage source reference; user-entered pointer only.");
     add(plan, "Target date", ret.decommissionDate, "Proposed target only; not an actual decision or decommission date.");
     add(plan, "Responsible role", "", "Accountable role to be supplied and verified; no assignment or delegation is made.");
     add(plan, "Plan state", "Draft proposal — owner review pending", "Never treated as an actual Gate Event or completed status.");
-    add(plan, "waiver rationale+authority", "", "No waiver proposed or authorised by this handoff.");
+    add(plan, "N-A / waiver rationale and authority ref", "", "No waiver proposed or authorised by this handoff.");
+    add(plan, "UC-ID scope(s) (blank only for explicit system baseline)", "", "Enter each UC-ID being retired. Leave blank only if the whole shared system baseline is being retired.");
+    add(plan, "Decision scope (UC-ID specific / Shared system baseline)", "", "Choose UC-ID specific when retiring named uses; Shared system baseline only when retiring the whole system.");
     add(plan, "Source version", "Review against current AIG-INV-04/AIG-DEC-04 version", "Record actual controlled source version before transfer.");
-    add(plan, "Plan QA", "Pending", "Complete QA in the proposed AIG-DEC-04 workbook.");
 
     const event = "Gate Events (dated; proposed handoff, not an actual event)";
     add(event, "Event ID", ret.eventId, "Never generated here; verify against the current Gate Events sheet before linking.");
     add(event, "AIR-ID", ret.registerId, identityReview);
-    add(event, "Gate/forum", ret.forum, "Verify actual forum and delegated authority.");
-    add(event, "Lifecycle stage at event", "Retirement / decommission (proposed)", "Verify actual lifecycle stage when an authorised event occurs.");
-    add(event, "Decision date", decided ? retFmtDate(ret.eventDate) : "", "User-entered proposal only; actual date belongs to the authoritative event.");
-    add(event, "Decision", decided ? ret.decision : "", "User-entered proposal, not an approved decision or live event.");
+    add(event, "Gate / forum", ret.forum, "Verify actual forum and delegated authority.");
+    add(event, "Event type", decided ? "Decision" : "", "Decision only once an authorised forum has actually decided; otherwise leave blank.");
+    add(event, "Date", decided ? retFmtDate(ret.eventDate) : "", "User-entered proposal only; actual date belongs to the authoritative event.");
+    add(event, "Outcome", decided ? ret.decision : "", "User-entered proposal, not an approved decision or live event.");
     add(event, "Assurance opinion ref", ret.assuranceRef, "Verify actual versioned assurance opinion; blank means evidence pending.");
-    add(event, "Decision-maker/role", ret.decisionMaker, "Verify current authority and record actual decision in AIG-DEC-03 / approved native minutes.");
-    add(event, "Next gate", "Pending authorised forum", "Forum to set; not inferred from triage.");
+    add(event, "Decision-maker / role", ret.decisionMaker, "Verify current authority and record actual decision in AIG-DEC-03 / approved native minutes.");
+    add(event, "Next gate / action", "Pending authorised forum", "Forum to set; not inferred from triage.");
     add(event, "Event notes", ret.rationale, "Proposal context only; not a record of an event that occurred.");
-    add(event, "Decision record/minutes ref", ret.decisionRecordRef, "Reference only; verify against authoritative decision record.");
-    add(event, "Technical snapshot/as-at ref", "", "Capture actual system state and as-at evidence at the event.");
+    add(event, "AIG-DEC-03 / minutes ref", ret.decisionRecordRef, "Reference only; verify against authoritative decision record.");
+    add(event, "Technical snapshot / as-at ref", "", "Capture actual system state and as-at evidence at the event.");
     add(event, "Event record state", "Not recorded — actual event not verified", "Do not mark as actual/complete based on this draft.");
-    add(event, "Recorded by/role", ret.recordedBy, "User-entered prompt only; verify actual recorder/role.");
+    add(event, "Recorded by", ret.recordedBy, "User-entered prompt only; verify actual recorder/role.");
     add(event, "Evidence source/URI", ret.evidenceRefs, "Verify each source and URI; blank means event evidence is pending.");
-    add(event, "Event QA", "Pending", "Complete QA in proposed AIG-DEC-04 after authoritative record entry.");
-    add(event, "Plan ID", ret.planId, "Optional join; verify this existing plan belongs to this AIR-ID and gate.");
+    add(event, "Plan ID (if any)", ret.planId, "Optional join; verify this existing plan belongs to this AIR-ID and gate.");
     add(event, "priority override fields", "", "No override proposed; use controlled override process and authority if applicable.");
+    add(event, "UC-ID(s) covered by this dated event", "", "Enter each UC-ID being retired. Leave blank only if the whole shared system baseline is being retired.");
+    add(event, "Decision scope (UC-ID specific / Shared system baseline)", "", "UC-ID specific is required for a use-level retirement decision; a shared baseline event is not a use decision.");
     add("AI Register", "AIR-ID", ret.registerId, identityReview);
-    add("AI Register", "Operational status", "", `Current status is not changed by this checklist (${readiness.status}). Verify and update through the controlled process.`);
+    add("AI Register", "System baseline operational status", "", `Current status is not changed by this checklist (${readiness.status}). Verify and update through the controlled process.`);
     add("Assessment summary", "As-at date", "", "Update only when the authorised owner verifies the actual AIG-INV-04 assessment summary.");
     add("AI Register", "Assessment / evidence ref", ret.airIdEvidenceRef, "Source pointer only; verify the permanent AIR-ID against AIG-INV-04.");
     add("Assessment summary", "AIG-ASS-02 ref / date", ret.assuranceEvidenceRef, "Source pointer only; verify current AIG-ASS-02 assessment and its actual date against AIG-INV-04; not an approval.");
@@ -3337,29 +3343,29 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
         const target = "AIG-DEC-04 / Gate Conditions (event-linked; proposed action only)";
         add(target, "Condition ID", "", "Never generated here; controlled owner assigns only after an actual event.");
         add(target, "Event ID", ret.eventId, "Verify actual event exists before linking a condition.");
-        add(target, "AIR-ID derived", ret.registerId, "Verify derived relationship in the controlled workbook.");
-        add(target, "Condition/action", condition, "Suggested action only; authorised forum determines whether it is a condition.");
-        add(target, "Action owner/role", "", "Accountable role to be supplied and confirmed by authorised forum.");
+        add(target, "AIR-ID", ret.registerId, "Verify derived relationship in the controlled workbook.");
+        add(target, "Required action / condition", condition, "Suggested action only; authorised forum determines whether it is a condition.");
+        add(target, "Action owner", "", "Accountable role to be supplied and confirmed by authorised forum.");
         add(target, "Due date", ret.conditionDue, "Proposed date only; confirm and record after formal decision.");
-        add(target, "Condition state", "Not recorded — pending decision", "Do not infer an open or completed condition.");
-        add(target, "Resolved/waived on", "", "No resolution or waiver asserted.");
-        add(target, "Resolution evidence/waiver authority ref", "", "Evidence/authority pending; no resolution or waiver asserted.");
-        add(target, "Overdue derived", "Derived by controlled workbook", "Do not calculate or manually assert overdue state.");
-        add(target, "Condition QA", "Pending", "Complete QA in proposed AIG-DEC-04 after actual event-linked record.");
+        add(target, "State", "Not recorded — pending decision", "Do not infer an open or completed condition.");
+        add(target, "Closed / waived on", "", "No resolution or waiver asserted.");
+        add(target, "Evidence / waiver authority ref", "", "Evidence/authority pending; no resolution or waiver asserted.");
+        add(target, "UC-ID scope (blank only if shared system condition)", "", "Enter each UC-ID being retired. Leave blank only if the whole shared system baseline is being retired.");
+        add(target, "Condition scope (UC-ID specific / shared system baseline)", "", "Match the scope of the parent event.");
       });
     } else {
       const target = "AIG-DEC-04 / Gate Conditions (event-linked; proposed action only)";
       add(target, "Condition ID", "", "Never generated here; controlled owner assigns only after an actual event.");
       add(target, "Event ID", ret.eventId, "Verify actual event exists before linking a condition.");
-      add(target, "AIR-ID derived", ret.registerId, "Verify derived relationship in the controlled workbook.");
-      add(target, "Condition/action", "", "No condition supplied; authorised forum decides whether any are needed.");
-      add(target, "Action owner/role", "", "No owner is assigned; authorised forum confirms if needed.");
+      add(target, "AIR-ID", ret.registerId, "Verify derived relationship in the controlled workbook.");
+      add(target, "Required action / condition", "", "No condition supplied; authorised forum decides whether any are needed.");
+      add(target, "Action owner", "", "No owner is assigned; authorised forum confirms if needed.");
       add(target, "Due date", "", "No date proposed; authorised forum confirms if needed.");
-      add(target, "Condition state", "Not recorded — pending decision", "Do not infer an open or completed condition.");
-      add(target, "Resolved/waived on", "", "No resolution or waiver asserted.");
-      add(target, "Resolution evidence/waiver authority ref", "", "Evidence/authority pending; no resolution or waiver asserted.");
-      add(target, "Overdue derived", "Derived by controlled workbook", "Do not calculate or manually assert overdue state.");
-      add(target, "Condition QA", "Pending", "Complete QA in proposed AIG-DEC-04 after actual event-linked record.");
+      add(target, "State", "Not recorded — pending decision", "Do not infer an open or completed condition.");
+      add(target, "Closed / waived on", "", "No resolution or waiver asserted.");
+      add(target, "Evidence / waiver authority ref", "", "Evidence/authority pending; no resolution or waiver asserted.");
+      add(target, "UC-ID scope (blank only if shared system condition)", "", "Enter each UC-ID being retired. Leave blank only if the whole shared system baseline is being retired.");
+      add(target, "Condition scope (UC-ID specific / shared system baseline)", "", "Match the scope of the parent event.");
     }
     return { headers: RETIREMENT_HANDOFF_HEADERS.slice(), rows, readiness };
   }
@@ -4433,7 +4439,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     const rows = [
       ["System / model name", p.systemName],
       ["AIR-ID", p.registerId],
-      ["UC-ID (target: blank only for shared baseline; pending use-specific ID is distinct)", p.ucId],
+      ["UC-ID (blank only for shared baseline)", p.ucId],
       ["Use-case scope / exact outcome assessed", p.usePurpose],
       ["UC-ID entry status (not verification)", p.ucIdStatus],
       ["UC-ID interpretation", p.ucId ? "UC-ID-specific use triage." : "UC-ID-specific provisional use triage; ID pending, not a selected shared system baseline."],
@@ -4476,16 +4482,12 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       (p.actionAuthority && p.actionAuthority !== "None — outputs only") ||
       triggerSet.has("agentic");
 
+    // Rows 1–59 match AIG-ASS-02 Triage Import B5:B63 exactly, in order, so the Value
+    // column can be pasted as one block. Notes after row 59 are context only.
     const rows = [
       ["AIR-ID", p.registerId],
       ["System / Model Name", p.systemName],
       ["Purpose / Description", p.usePurpose || p.purpose],
-      ["UC-ID (target: blank only for explicit system baseline; pending use-specific ID is distinct)", p.ucId],
-      ["UC-ID entry status (not verification)", p.ucIdStatus],
-      ["UC-ID interpretation", p.ucId ? "UC-ID-specific use triage." : "UC-ID-specific provisional use triage; ID pending, not a selected shared system baseline."],
-      ["Triage / assessment scope", "UC-ID-specific"],
-      ["Use-case outcome / scope key", p.usePurpose || p.purpose],
-      ["Risk assessment scope", `This risk triage applies only to UC-ID ${p.ucId || "(pending)"} and the stated use outcome; reassess materially different uses separately. Not approval.`],
       ["Service Area", p.serviceArea],
       ["Service Owner", p.serviceOwner],
       ["Supplier / Developer", p.supplierDeveloper],
@@ -4495,7 +4497,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       ["Systems / Tools Accessed", p.systemsAccessed],
       ["Lifecycle Stage", p.lifecycle],
       ["Personal / Special Category Data", p.dataType],
-      ["Triage export date (not an assessment date)", ""],
+      ["Triage Date", ""],
       ["AGPI Score (0-100)", r.agpiScore],
       ["Raw AGPI Priority", r.rawAgpiPriority || r.priority.label],
       ["Authorised Governance Priority Uplift", ""],
@@ -4539,7 +4541,13 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       ["Agentic Flags", a ? (a.flags.length ? a.flags.join("; ") : "None") : ""],
       ["Agentic Escalations", a ? (a.escalations.length ? a.escalations.join("; ") : "None") : ""],
       ["Agentic Deployment Control", a ? a.deploymentControl : ""],
-      ["Agent Record (ASBOM) Ref", a ? (a.asbomRef || "") : ""]
+      ["Agent Record (ASBOM) Ref", a ? (a.asbomRef || "") : ""],
+      ["UC-ID (blank only for explicit system baseline)", p.ucId],
+      ["Triage / assessment scope", "UC-ID-specific"],
+      ["Note (not imported) — UC-ID entry status (not verification)", p.ucIdStatus],
+      ["Note (not imported) — UC-ID interpretation", p.ucId ? "UC-ID-specific use triage." : "UC-ID-specific provisional use triage; ID pending, not a selected shared system baseline."],
+      ["Note (not imported) — Use-case outcome / scope key", p.usePurpose || p.purpose],
+      ["Note (not imported) — Risk assessment scope", `This risk triage applies only to UC-ID ${p.ucId || "(pending)"} and the stated use outcome; reassess materially different uses separately. Not approval.`]
     ];
     return fieldValueCsv(rows);
   }
@@ -4551,7 +4559,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     const a = latestAgentic;
     const rows = [
       ["AIR-ID", p.registerId],
-      ["UC-ID scope (not authority)", p.ucId],
+      ["UC-ID(s) within this authority envelope (reference only)", p.ucId],
       ["Exact use purpose / outcome", p.usePurpose || p.purpose],
       ["Agent Name", p.systemName],
       ["Approved Purpose (mandate)", ""],
@@ -4603,7 +4611,9 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       ["Compensating Action", ""],
       ["Budget / Transaction Ceiling", ""],
       ["Agent Creation Authority", ""],
-      ["Self-Modification Authority", ""]
+      ["Self-Modification Authority", ""],
+      ["AG-ID", ""],
+      ["Use-specific delegated decision / gate reference(s)", ""]
     ];
     return logic.toCsv(
       ["Target artefact", "Field label / prompt", "Field reference type", "Triage draft value", "Value status", "Review, evidence or authority still required"],
@@ -4631,7 +4641,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     add("Triage scope — applies to following proposed prompts only", "Exact use purpose / outcome", p.usePurpose || p.purpose, "Operator-entered scope; proposal only, not a mandate or approval");
     const risk = "AIG-ASS-02 / Triage Import";
     add(risk, "AIR-ID", p.registerId, "Triage value; assessor confirms");
-    add(risk, "UC-ID / use scope", p.ucId || "", `Scope only; ${p.ucIdStatus || "pending"}; verify independently. Exact outcome: ${p.usePurpose || p.purpose}. Never authority.`);
+    add(risk, "UC-ID (blank only for explicit system baseline)", p.ucId || "", `Scope only; ${p.ucIdStatus || "pending"}; verify independently. Exact outcome: ${p.usePurpose || p.purpose}. Never authority.`);
     add(risk, "Effective Governance Tier", r.effectiveTierName, "Triage value; assessor confirms");
     add(risk, "Assurance Intensity", r.assuranceIntensity, "Triage value; assessor confirms");
     add(risk, "Kill-switch Demonstrated", yesNo(a.killSwitch), "Self-reported at triage; verify evidence");
