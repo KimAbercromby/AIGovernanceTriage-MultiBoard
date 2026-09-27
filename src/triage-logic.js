@@ -265,6 +265,25 @@
     };
   }
 
+  // Playbook §4.4.8 / AIG-ASS-02: a use is tiered on its inherent risk until the
+  // controls credited in its control score are implemented and evidenced, then on
+  // its residual risk; never below the mandatory trigger floor (§4.4.6).
+  const CONTROL_EVIDENCE = ["Not evidenced — planned or unverified", "Implemented and evidenced"];
+  const TIER_ORDER = ["Low", "Medium", "High", "Critical"];
+  function tierNameForScore(score) {
+    return score <= 5 ? "Low" : score <= 10 ? "Medium" : score <= 15 ? "High" : "Critical";
+  }
+  function effectiveRiskTier({ inherentTierName, residualTierName, mandatoryFloorTier = "Low", controlEvidence }) {
+    const controlsEvidenced = controlEvidence === "Implemented and evidenced";
+    const basisTierName = controlsEvidenced ? residualTierName : inherentTierName;
+    const floorRaised = TIER_ORDER.indexOf(mandatoryFloorTier) > TIER_ORDER.indexOf(basisTierName);
+    const effectiveTierName = floorRaised ? mandatoryFloorTier : basisTierName;
+    const basis = controlsEvidenced
+      ? "controls evidenced: residual risk tier"
+      : "controls not yet evidenced: inherent risk tier";
+    return { effectiveTierName, basisTierName, controlsEvidenced, floorRaised, basis };
+  }
+
   function commercialRequired(profile) {
     return (
       profile.procurementRequired === "Yes" ||
@@ -765,6 +784,9 @@
         impactScores: { ...calculation.impactScores },
         likelihood: calculation.results.risk.likelihood,
         controlEffectiveness: calculation.results.risk.control,
+        controlEvidence: calculation.results.controlEvidence || "",
+        mandatoryRiskFloor: calculation.results.mandatoryFloorTier || "",
+        tierBasis: calculation.results.tierBasis || "",
         impact: calculation.results.risk.impact,
         inherentRisk: calculation.results.risk.inherent,
         inherentRiskTier: calculation.results.inherentTierName,
@@ -1543,6 +1565,9 @@
     calculateAgpi,
     priorityFor,
     calculateRisk,
+    CONTROL_EVIDENCE,
+    tierNameForScore,
+    effectiveRiskTier,
     commercialRequired,
     assuranceIntensity,
     assessmentRequirements,
