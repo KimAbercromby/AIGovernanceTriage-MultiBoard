@@ -277,6 +277,8 @@ main {
   font-weight: 700;
 }
 
+.field small.control-status{display:block;margin-top:6px;padding:6px 8px;border-left:3px solid #b7791f;background:#fffaf0;color:#5c3d0e;font-size:12px}
+.field small.control-status:empty{display:none}
 .field small,
 .field span small {
   color: var(--muted);
@@ -1693,15 +1695,16 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
               </select>
             </label>
             <label class="field">
-              <span>Control effectiveness</span>
-              <small>How effectively do controls reduce the risk?</small>
+              <span>Control effectiveness (planned or in place)</span>
+              <small>How much would the controls reduce the risk once they are working? If there are no controls at all, choose 5. Whether they actually exist yet is recorded under Control evidence below.</small>
               <select id="control">
                 <option value="1">1 · Very strong</option>
                 <option value="2">2 · Strong</option>
                 <option value="3" selected>3 · Moderate</option>
                 <option value="4">4 · Weak</option>
-                <option value="5">5 · Ineffective</option>
+                <option value="5">5 · Ineffective or no controls</option>
               </select>
+              <small class="control-status" id="controlStatus" role="note" aria-live="polite"></small>
             </label>
           </div>
 
@@ -4181,6 +4184,17 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       byId("routeBannerWhy").textContent = gRoute.why;
     }
 
+    const controlStatus = byId("controlStatus");
+    if (controlStatus) {
+      const evidenced = results.controlEvidence === "Implemented and evidenced" ||
+        results.controlEvidence === "Implemented, evidenced and independently verified";
+      const highInherent = results.inherentTierName === "High" || results.inherentTierName === "Critical";
+      controlStatus.textContent = !evidenced
+        ? "Not counted yet: controls are not evidenced, so the tier uses the risk before controls. This score only shows what the tier could become once they are in place and evidenced."
+        : highInherent && results.controlEvidence !== "Implemented, evidenced and independently verified"
+          ? "Not counted yet: the risk before controls is High or Critical, so the controls also need independent verification before they can lower the tier."
+          : "Counted: controls are implemented and evidenced, so the tier uses the risk after controls (never below any trigger floor).";
+    }
     byId("agpiScore").textContent = formatNumber(results.agpiScore);
     byId("agpiPriority").textContent =
       `Provisional · ${results.priority.label} · UC-ID ${profile.ucId || "pending"} use-specific`;
