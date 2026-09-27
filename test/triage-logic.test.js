@@ -580,3 +580,14 @@ test("action-capable or triggered Low uses keep the full assessments", () => {
   assert.ok(evT.includes("Responsible AI Assessment"));
   assert.ok(evT.includes("Security Review Checklist"));
 });
+
+test("High and Critical uses with personal data indicate a DPIA (Playbook §4.5.9, AIG-ASS-05)", () => {
+  const high = fixture({ dataType: "Personal data", tier: "High" });
+  assert.match(logic.assessmentRequirements(high.profile, high.results).dpia, /^Potential DPIA/);
+  const crit = fixture({ dataType: "Personal data", tier: "Critical" });
+  assert.match(logic.assessmentRequirements(crit.profile, crit.results).dpia, /^Potential DPIA/);
+  const med = fixture({ dataType: "Personal data", tier: "Medium" });
+  assert.match(logic.assessmentRequirements(med.profile, med.results).dpia, /^Screening required/);
+  const noData = fixture({ dataType: "None", tier: "High" });
+  assert.match(logic.assessmentRequirements(noData.profile, noData.results).dpia, /^Screening required/);
+});
