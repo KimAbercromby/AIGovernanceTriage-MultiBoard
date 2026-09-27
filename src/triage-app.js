@@ -441,7 +441,6 @@
   }
 
   function governanceRoute(profile, results) {
-    const req = logic.assessmentRequirements(profile, results);
     const canAct =
       profile.capability === "Agentic AI" ||
       (profile.actionAuthority && profile.actionAuthority !== "None — outputs only") ||
@@ -451,18 +450,6 @@
       profile.actionAuthority === "Acts within defined bounds — monitored" ||
       profile.actionAuthority === "Fully autonomous" ||
       (results.triggerIds && results.triggerIds.includes("agentic"));
-
-    const anyAssessment =
-      req.dpia.startsWith("Potential DPIA") ||
-      req.eia.startsWith("Potential full assessment") ||
-      req.humanRightsPotential ||
-      req.atrs === "Yes" ||
-      req.supplierDueDiligence;
-    const label = results.priority.label || "";
-    const lowPriority =
-      label.indexOf("Priority 4") === 0 || label.indexOf("Priority 5") === 0;
-    const lowTier = results.effectiveTierName === "Low";
-    const noTriggers = results.triggerIds.length === 0;
 
     if (canAct) {
       return {
@@ -474,7 +461,7 @@
       };
     }
 
-    if (lowPriority && lowTier && noTriggers && !anyAssessment) {
+    if (logic.isLightTouch(profile, results)) {
       return {
         key: "light",
         name: "Light-touch governance pathway",
