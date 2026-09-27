@@ -490,12 +490,12 @@ test("accessible score cards and default calculations stay visibly provisional",
   assert.match(html, /\.scale > label > span \{[\s\S]*?pointer-events: none;/);
   assert.match(html, /\.scale label \{[\s\S]*?display: block;[\s\S]*?cursor: pointer;/);
 });
-test("Risk Assessment pre-fill rows match AIG-ASS-02 Triage Import B5:B63 exactly, in order", () => {
+test("Risk Assessment pre-fill rows match AIG-ASS-02 Triage Import B5:B64 exactly, in order", () => {
   const source = require("node:fs").readFileSync(require("node:path").join(__dirname, "..", "src", "triage-app.js"), "utf8");
   const start = source.indexOf("function riskPrefillCsv");
   const body = source.slice(start, source.indexOf("return fieldValueCsv(rows);", start));
   const labels = [...body.matchAll(/^\s*\[\s*"([^"]+)"\s*,/gm)].map((m) => m[1]);
-  const triageImport = ["AIR-ID", "System / Model Name", "Purpose / Description", "Service Area", "Service Owner", "Supplier / Developer", "Source", "AI Capability", "Automated Action Authority", "Systems / Tools Accessed", "Lifecycle Stage", "Personal / Special Category Data", "Triage Date", "AGPI Score (0-100)", "Raw AGPI Priority", "Authorised Governance Priority Uplift", "Effective Governance Priority", "Resident Impact", "Legal and Regulatory Impact", "Reputational Impact", "Operational Impact", "Financial Impact", "Likelihood", "Control Effectiveness", "Impact Score", "Inherent Risk Score", "Inherent Risk Tier", "Residual Risk Score", "Residual Risk Tier", "Trigger — Special Category Data", "Trigger — Vulnerable Residents", "Trigger — Housing/Care/Homelessness", "Trigger — Novel Deployment", "Trigger — Statutory Decisions", "Trigger — Material Change", "Trigger — Agentic Autonomous Action", "Mandatory Risk Floor", "Effective Governance Tier", "Tier Floor Reason", "Assurance Intensity", "Governance Status", "Is Agent", "Agentic Consequence", "Agentic Autonomy", "Agentic Authority", "Agentic Reach", "Agentic Controllability", "Autonomy Level", "Agency Tier", "Agentic Pathway", "Kill-switch Demonstrated", "Rollback Capability", "Boundaries Tested", "Agentic Flags", "Agentic Escalations", "Agentic Deployment Control", "Agent Record (ASBOM) Ref", "UC-ID (blank only for explicit system baseline)", "Triage / assessment scope"];
+  const triageImport = ["AIR-ID", "System / Model Name", "Purpose / Description", "Service Area", "Service Owner", "Supplier / Developer", "Source", "AI Capability", "Automated Action Authority", "Systems / Tools Accessed", "Lifecycle Stage", "Personal / Special Category Data", "Triage Date", "AGPI Score (0-100)", "Raw AGPI Priority", "Authorised Governance Priority Uplift", "Effective Governance Priority", "Resident Impact", "Legal and Regulatory Impact", "Reputational Impact", "Operational Impact", "Financial Impact", "Likelihood", "Control Effectiveness", "Impact Score", "Inherent Risk Score", "Inherent Risk Tier", "Residual Risk Score", "Residual Risk Tier", "Trigger — Special Category Data", "Trigger — Vulnerable Residents", "Trigger — Housing/Care/Homelessness", "Trigger — Novel Deployment", "Trigger — Statutory Decisions", "Trigger — Material Change", "Trigger — Agentic Autonomous Action", "Mandatory Risk Floor", "Effective Governance Tier", "Tier Floor Reason", "Assurance Intensity", "Governance Status", "Is Agent", "Agentic Consequence", "Agentic Autonomy", "Agentic Authority", "Agentic Reach", "Agentic Controllability", "Autonomy Level", "Agency Tier", "Agentic Pathway", "Kill-switch Demonstrated", "Rollback Capability", "Boundaries Tested", "Agentic Flags", "Agentic Escalations", "Agentic Deployment Control", "Agent Record (ASBOM) Ref", "UC-ID (blank only for explicit system baseline)", "Triage / assessment scope", "Control Evidence Status"];
   assert.deepEqual(labels.slice(0, triageImport.length), triageImport);
   assert.ok(labels.slice(triageImport.length).every((label) => label.startsWith("Note (not imported)")));
 });
@@ -519,4 +519,16 @@ test("retirement is scoped per UC-ID and a whole-system retirement needs every u
   const whole = { retireScope: "Whole system — shared system baseline" };
   assert.ok(logic.retirementReadiness(whole).outstanding.some((item) => /every UC-ID under this AIR-ID/.test(item)));
   assert.ok(!logic.retirementReadiness({ ...whole, allUsesClosed: "Confirmed — every linked UC-ID closed or retired" }).outstanding.some((item) => /every UC-ID under this AIR-ID/.test(item)));
+});
+
+test("risk tier follows inherent risk until controls are implemented and evidenced (Playbook §4.4.8)", () => {
+  const base = { inherentTierName: "Medium", residualTierName: "Low" };
+  assert.equal(logic.effectiveRiskTier({ ...base, controlEvidence: logic.CONTROL_EVIDENCE[0] }).effectiveTierName, "Medium");
+  assert.equal(logic.effectiveRiskTier({ ...base }).effectiveTierName, "Medium");
+  assert.equal(logic.effectiveRiskTier({ ...base, controlEvidence: "Implemented and evidenced" }).effectiveTierName, "Low");
+  const floored = logic.effectiveRiskTier({ ...base, mandatoryFloorTier: "Critical", controlEvidence: "Implemented and evidenced" });
+  assert.equal(floored.effectiveTierName, "Critical");
+  assert.ok(floored.floorRaised);
+  assert.equal(logic.effectiveRiskTier({ inherentTierName: "Critical", residualTierName: "Medium", mandatoryFloorTier: "High", controlEvidence: "Implemented and evidenced" }).effectiveTierName, "High");
+  assert.deepEqual([1, 5, 5.1, 10, 10.1, 15, 15.1, 25].map(logic.tierNameForScore), ["Low", "Low", "Medium", "Medium", "High", "High", "Critical", "Critical"]);
 });

@@ -261,16 +261,11 @@
       byId("likelihood").value,
       byId("control").value,
     );
-    // --- Governance-tier safeguards (QA priorities 1–3) --------------------
-    // Residual math is unchanged. The governance tier is now explicit:
-    // effective tier = highest of inherent tier, residual tier, and any
-    // mandatory governance floor. This prevents strong controls from making
-    // a severe inherent risk appear Low/Medium for governance routing.
-    const TIER_ORDER = ["Low", "Medium", "High", "Critical"];
-    const tierNameForScore = (s) =>
-      s <= 5 ? "Low" : s <= 10 ? "Medium" : s <= 15 ? "High" : "Critical";
+    // --- Governance tier (Playbook §4.4.8; AIG-ASS-02 v1.6) ----------------
+    // Inherent tier until controls are implemented and evidenced, then residual;
+    // never below the mandatory trigger floor (§4.4.6).
     const residualTierName = risk.tier.name;
-    const inherentTierName = tierNameForScore(risk.inherent);
+    const inherentTierName = logic.tierNameForScore(risk.inherent);
     const specialCategoryData =
       profile.dataType === "Special category data";
     const mandatoryFloorApplies = triggerIds.length > 0 || specialCategoryData;
@@ -283,21 +278,20 @@
       : mandatoryFloorApplies
         ? "High"
         : "Low";
-    const effectiveTierName = [
+    const controlEvidence = byId("controlEvidence").value;
+    const tierRule = logic.effectiveRiskTier({
       inherentTierName,
       residualTierName,
       mandatoryFloorTier,
-    ].sort((a, b) => TIER_ORDER.indexOf(b) - TIER_ORDER.indexOf(a))[0];
-    const inherentFloorApplied =
-      TIER_ORDER.indexOf(inherentTierName) > TIER_ORDER.indexOf(residualTierName);
-    const mandatoryFloorApplied =
-      mandatoryFloorApplies &&
-      TIER_ORDER.indexOf(effectiveTierName) === TIER_ORDER.indexOf(mandatoryFloorTier) &&
-      TIER_ORDER.indexOf(residualTierName) < TIER_ORDER.indexOf(mandatoryFloorTier);
+      controlEvidence,
+    });
+    const effectiveTierName = tierRule.effectiveTierName;
     const tierFloored = effectiveTierName !== residualTierName;
     const floorReasons = [];
-    if (inherentFloorApplied) floorReasons.push("inherent risk tier");
-    if (mandatoryFloorApplied) {
+    if (!tierRule.controlsEvidenced && inherentTierName !== residualTierName) {
+      floorReasons.push("controls not yet evidenced, so inherent risk tier");
+    }
+    if (tierRule.floorRaised) {
       floorReasons.push(
         triggerIds.length ? "mandatory trigger" : "special category data",
       );
@@ -320,6 +314,9 @@
       residualTierName,
       inherentTierName,
       effectiveTierName,
+      mandatoryFloorTier,
+      controlEvidence,
+      tierBasis: tierRule.basis,
       tierFloored,
       floorReason,
       governanceStatus: "Triage complete — formal governance approvals pending",
@@ -703,6 +700,7 @@
       `Likelihood: ${results.risk.likelihood}`,
       `Inherent risk: ${results.risk.inherent}`,
       `Control effectiveness: ${results.risk.control}`,
+      `Control evidence: ${results.controlEvidence}`,
       `Residual risk: ${formatNumber(results.risk.residual)}`,
       `Provisional effective triage tier: ${results.effectiveTierName}${results.tierFloored ? ` (governance floor: ${results.floorReason})` : ""}`,
       ...(results.tierFloored
@@ -850,10 +848,8 @@
   }
 
   function mandatoryFloorLabel(results) {
-    if (!results.tierFloored) return "None";
-    if (results.effectiveTierName === "Critical") return "Critical";
-    if (results.effectiveTierName === "High") return "High";
-    return results.effectiveTierName || "None";
+    // AIG-ASS-02 "Mandatory Risk Floor": the trigger floor itself, not the effective tier.
+    return results.mandatoryFloorTier || "Low";
   }
 
   function riskPrefillCsv(calculation) {
@@ -928,6 +924,7 @@
       ["Agent Record (ASBOM) Ref", a ? (a.asbomRef || "") : ""],
       ["UC-ID (blank only for explicit system baseline)", p.ucId],
       ["Triage / assessment scope", "UC-ID-specific"],
+      ["Control Evidence Status", r.controlEvidence || ""],
       ["Note (not imported) — UC-ID entry status (not verification)", p.ucIdStatus],
       ["Note (not imported) — UC-ID interpretation", p.ucId ? "UC-ID-specific use triage." : "UC-ID-specific provisional use triage; ID pending, not a selected shared system baseline."],
       ["Note (not imported) — Use-case outcome / scope key", p.usePurpose || p.purpose],
