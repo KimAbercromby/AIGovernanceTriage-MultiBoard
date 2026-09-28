@@ -210,6 +210,32 @@
     "UC-ID scope (blank only if shared system condition)",
     "Condition scope (UC-ID specific / shared system baseline)",
   ]);
+  // Exact canonical field labels in AIG-ASS-02 "Triage Import" (column A, rows 5-63).
+  const TRIAGE_IMPORT_FIELDS = new Set([
+    "AIR-ID", "System / Model Name", "Purpose / Description", "Service Area", "Service Owner",
+    "Supplier / Developer", "Source", "AI Capability", "Automated Action Authority",
+    "Systems / Tools Accessed", "Lifecycle Stage", "Personal / Special Category Data", "Triage Date",
+    "AGPI Score (0-100)", "Raw AGPI Priority", "Authorised Governance Priority Uplift",
+    "Effective Governance Priority", "Resident Impact", "Legal and Regulatory Impact",
+    "Reputational Impact", "Operational Impact", "Financial Impact", "Likelihood",
+    "Control Effectiveness", "Impact Score", "Inherent Risk Score", "Inherent Risk Tier",
+    "Residual Risk Score", "Residual Risk Tier", "Trigger \u2014 Special Category Data",
+    "Trigger \u2014 Vulnerable Residents", "Trigger \u2014 Housing/Care/Homelessness",
+    "Trigger \u2014 Novel Deployment", "Trigger \u2014 Statutory Decisions", "Trigger \u2014 Material Change",
+    "Trigger \u2014 Agentic Autonomous Action", "Mandatory Risk Floor", "Effective Governance Tier",
+    "Tier Floor Reason", "Assurance Intensity", "Governance Status", "Is Agent", "Agentic Consequence",
+    "Agentic Autonomy", "Agentic Authority", "Agentic Reach", "Agentic Controllability", "Autonomy Level",
+    "Agency Tier", "Agentic Pathway", "Kill-switch Demonstrated", "Rollback Capability",
+    "Boundaries Tested", "Agentic Flags", "Agentic Escalations", "Agentic Deployment Control",
+    "Agent Record (ASBOM) Ref", "UC-ID (blank only for explicit system baseline)", "Triage / assessment scope",
+  ]);
+  // Exact input labels in AIG-ASS-01 "AGPI Triage" (column A).
+  const AGPI_SHEET_FIELDS = new Set([
+    "System / model name", "AIR-ID", "Assessed by / date", "UC-ID (blank only for shared baseline)",
+    "Resident Impact", "Public Trust & Reputation", "Legal & Regulatory Exposure",
+    "Governance Visibility & Accountability", "Strategic Value & Organisational Dependency",
+    "Human Oversight & Decision Authority", "AGPI score (0\u2013100)",
+  ]);
   function fieldReferenceType(sheet, field) {
     const value = String(field || "").trim();
     const exactRegister =
@@ -219,6 +245,12 @@
       (sheet.includes("Gate Plan") && GATE_PLAN_FIELDS.has(value)) ||
       (sheet.includes("Gate Events") && GATE_EVENT_FIELDS.has(value)) ||
       (sheet.includes("Gate Conditions") && GATE_CONDITION_FIELDS.has(value));
+    if (sheet === "Triage Import" && TRIAGE_IMPORT_FIELDS.has(value)) {
+      return "Exact AIG-ASS-02 Triage Import field label — owner verification required";
+    }
+    if (sheet === "AGPI Triage" && AGPI_SHEET_FIELDS.has(value)) {
+      return "Exact AIG-ASS-01 AGPI Triage field label — owner verification required";
+    }
     return exactRegister
       ? "Proposed AIG-INV-04 sheet/field label — owner verification required"
       : exactGateLog
@@ -615,7 +647,12 @@
     add("AI Register", "Service area", profile.serviceArea, "Verify locally against the current record.");
     add("AI Register", "Service Owner", profile.serviceOwner, "Verify the current accountable owner.");
     add("AI Register", "Supplier / source", supplierSource, "Combined from separate intake prompts for review; verify the supplier/source value against the actual workbook field and source.");
-    add("AI Register", "Lifecycle stage", profile.lifecycle, "Proposed stage; map to the workbook's controlled list.");
+    const REGISTER_LIFECYCLE = { Idea: "Idea and Innovation", Retired: "Retirement and Decommissioning" };
+    const registerLifecycle = REGISTER_LIFECYCLE[profile.lifecycle] || "";
+    add("AI Register", "Lifecycle stage", registerLifecycle,
+      registerLifecycle
+        ? `Mapped from the triage lifecycle "${profile.lifecycle}" to the AIG-INV-04 controlled list; verify against the current record.`
+        : `Triage lifecycle is "${profile.lifecycle || "not stated"}", an operational state rather than an AIG-INV-04 governance stage. The owner chooses the stage from the Register's controlled list (Idea and Innovation; Registration and Intake; Risk Assessment and Review; Approval and Assurance; Deployment and Operation; Monitoring and Review; Retirement and Decommissioning).`);
     add("AI Register", "System baseline approval (not use approval)", "", "Do not infer or change current approval status. Formal decisions remain in AIG-DEC-03 or authorised native minutes.");
     add("AI Register", "System baseline operational status", "", "Do not infer or change current operational status; verify the current AIG-INV-04 record.");
     add("AI Register", "Can it act?", "", "Do not set Yes/No from this triage. Verify actual capability and permissions against AIG-AGT-04 and complete the applicable agent assessment.");
@@ -922,7 +959,7 @@
           { label: "Can it act (is an agent)?", value: "Yes" },
           { label: "Agentic triage required?", value: "Yes — complete before routing" },
         ],
-        note: "Run AIG-AGT-03 Agentic Triage: score the five agency dimensions, set the autonomy level and agency tier, test the authority boundary and kill-switch, and open the AIG-AGT-04 Agent Record / ASBOM. The Register carries Is Agent, autonomy and agency tier; the ASBOM holds the full composition and AIG-AGT-05 Authority Graph derives from it. Consequential actions in service are recorded in AIG-AGT-06.",
+        note: "Run AIG-AGT-03 Agentic Triage: score the five agency dimensions, set the autonomy level and agency tier, test the authority boundary and kill-switch, and open the AIG-AGT-04 Agent Record / ASBOM. The AI Register (AIG-INV-04) records Can it act? and its Assessment summary carries the agency tier; the ASBOM holds the full composition and AIG-AGT-05 Authority Graph derives from it. Consequential actions in service are recorded in AIG-AGT-06.",
       });
       items.push({
         artefact: "AIG-AGT-05 Agent Authority Graph",
@@ -956,7 +993,7 @@
 
     items.push({
       artefact: "AIG-ASS-05 Data Protection Impact Assessment",
-      section: "Section 2 \u2014 Screening (is a DPIA required?)",
+      section: "Section 2 \u2014 Screening \u2014 Is a DPIA Required?",
       fields: [
         { label: "Materially affects individuals?", value: yn(profile.affectsIndividuals) },
         { label: "Public / resident facing?", value: yn(profile.publicFacing) },
@@ -966,7 +1003,7 @@
 
     items.push({
         artefact: "AIG-ASS-06 Equality Impact Assessment",
-        section: "Section 2 \u2014 Equality Act 2010 section 149 screening (all tiers)",
+        section: "Section 2 \u2014 Purpose and Affected Groups; Section 149 PSED due-regard evidence",
         fields: [
           { label: "Public / resident facing?", value: yn(profile.publicFacing) },
           { label: "Materially affects individuals?", value: yn(profile.affectsIndividuals) },
@@ -976,7 +1013,7 @@
 
     items.push({
         artefact: "AIG-ASS-07 Human Rights Assessment",
-        section: "Section 3 \u2014 Human Rights Act 1998 section 6 screening (all tiers)",
+        section: "Section 3 \u2014 Convention and Protocol Rights Screening",
         fields: [
           { label: "Materially affects individuals?", value: yn(profile.affectsIndividuals) },
         ],
@@ -1008,7 +1045,7 @@
     ].filter(Boolean);
     items.push({
       artefact: "AIG-ASS-10 ATRS Record",
-      section: "Tier 1 Summary + Section 6 \u2014 Risks, Mitigations and Impact Assessments",
+      section: "Tier 1 \u2014 Summary Information; Section 6 \u2014 Risks, Mitigations and Impact Assessments",
       fields: [
         { label: "ATRS intake indication (not applicability decision)", value: requirements.atrs },
         { label: "Public / resident facing?", value: yn(profile.publicFacing) },
@@ -1030,7 +1067,7 @@
     const procurement = commercialRequired(profile);
     items.push({
       artefact: "AIG-ASS-08 Supplier AI Due Diligence Questionnaire",
-      section: "Procurement / contracting",
+      section: "Sections 1\u20139 (supplier responses); Section 10 \u2014 the Council Evaluation (internal)",
       fields: [
         { label: "Procurement route indicated by intake?", value: procurement ? "Potential route — confirm" : "Not indicated — confirm" },
       ],

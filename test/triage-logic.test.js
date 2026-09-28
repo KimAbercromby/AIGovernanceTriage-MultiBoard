@@ -55,10 +55,11 @@ test("every risk tier carries equality, human-rights and privacy screening", () 
   assert.match(evidence.join("\n"), /Data protection and privacy screening \(all tiers/);
 
   const handoff = logic.buildArtefactHandoff(low.profile, low.results);
+  // Section names are the documents' own headings; the all-tier screening rule is in the note.
   assert.ok(handoff.some((item) => item.artefact.includes("Equality") &&
-    item.section.includes("all tiers")));
+    item.section.includes("Purpose and Affected Groups") && /Screen every system/.test(item.note)));
   assert.ok(handoff.some((item) => item.artefact.includes("Human Rights") &&
-    item.section.includes("all tiers")));
+    item.section.includes("Convention and Protocol Rights Screening") && /Screen every system/.test(item.note)));
   assert.equal(low.results.requirements.dpiaScreening, true);
 });
 
@@ -204,7 +205,8 @@ test("a pending UC-ID is explicit in AIG-INV-05 handoff and does not mint an ide
   assert.match(app, /"UC-ID \(blank only for explicit system baseline\)", p\.ucId/);
   assert.match(app, /Note \(not imported\) — UC-ID interpretation/);
   assert.match(app, /UC-ID-specific provisional use triage; ID pending, not a selected shared system baseline/);
-  assert.match(app, /Triage \/ assessment scope", "UC-ID-specific"/);
+  // Must be a value the AIG-ASS-02 Triage Import B63 dropdown accepts.
+  assert.match(app, /Triage \/ assessment scope", "UC-ID specific"/);
 });
 
 test("materially different uses retain separate triage priorities without writing either to the system summary", () => {
@@ -490,12 +492,12 @@ test("accessible score cards and default calculations stay visibly provisional",
   assert.match(html, /\.scale > label > span \{[\s\S]*?pointer-events: none;/);
   assert.match(html, /\.scale label \{[\s\S]*?display: block;[\s\S]*?cursor: pointer;/);
 });
-test("Risk Assessment pre-fill rows match AIG-ASS-02 Triage Import B5:B64 exactly, in order", () => {
+test("Risk Assessment pre-fill rows match AIG-ASS-02 Triage Import A5:A63 exactly, in order", () => {
   const source = require("node:fs").readFileSync(require("node:path").join(__dirname, "..", "src", "triage-app.js"), "utf8");
   const start = source.indexOf("function riskPrefillCsv");
-  const body = source.slice(start, source.indexOf("return fieldValueCsv(rows);", start));
+  const body = source.slice(start, source.indexOf("return fieldValueCsv(rows", start));
   const labels = [...body.matchAll(/^\s*\[\s*"([^"]+)"\s*,/gm)].map((m) => m[1]);
-  const triageImport = ["AIR-ID", "System / Model Name", "Purpose / Description", "Service Area", "Service Owner", "Supplier / Developer", "Source", "AI Capability", "Automated Action Authority", "Systems / Tools Accessed", "Lifecycle Stage", "Personal / Special Category Data", "Triage Date", "AGPI Score (0-100)", "Raw AGPI Priority", "Authorised Governance Priority Uplift", "Effective Governance Priority", "Resident Impact", "Legal and Regulatory Impact", "Reputational Impact", "Operational Impact", "Financial Impact", "Likelihood", "Control Effectiveness", "Impact Score", "Inherent Risk Score", "Inherent Risk Tier", "Residual Risk Score", "Residual Risk Tier", "Trigger — Special Category Data", "Trigger — Vulnerable Residents", "Trigger — Housing/Care/Homelessness", "Trigger — Novel Deployment", "Trigger — Statutory Decisions", "Trigger — Material Change", "Trigger — Agentic Autonomous Action", "Mandatory Risk Floor", "Effective Governance Tier", "Tier Floor Reason", "Assurance Intensity", "Governance Status", "Is Agent", "Agentic Consequence", "Agentic Autonomy", "Agentic Authority", "Agentic Reach", "Agentic Controllability", "Autonomy Level", "Agency Tier", "Agentic Pathway", "Kill-switch Demonstrated", "Rollback Capability", "Boundaries Tested", "Agentic Flags", "Agentic Escalations", "Agentic Deployment Control", "Agent Record (ASBOM) Ref", "UC-ID (blank only for explicit system baseline)", "Triage / assessment scope", "Control Evidence Status"];
+  const triageImport = ["AIR-ID", "System / Model Name", "Purpose / Description", "Service Area", "Service Owner", "Supplier / Developer", "Source", "AI Capability", "Automated Action Authority", "Systems / Tools Accessed", "Lifecycle Stage", "Personal / Special Category Data", "Triage Date", "AGPI Score (0-100)", "Raw AGPI Priority", "Authorised Governance Priority Uplift", "Effective Governance Priority", "Resident Impact", "Legal and Regulatory Impact", "Reputational Impact", "Operational Impact", "Financial Impact", "Likelihood", "Control Effectiveness", "Impact Score", "Inherent Risk Score", "Inherent Risk Tier", "Residual Risk Score", "Residual Risk Tier", "Trigger — Special Category Data", "Trigger — Vulnerable Residents", "Trigger — Housing/Care/Homelessness", "Trigger — Novel Deployment", "Trigger — Statutory Decisions", "Trigger — Material Change", "Trigger — Agentic Autonomous Action", "Mandatory Risk Floor", "Effective Governance Tier", "Tier Floor Reason", "Assurance Intensity", "Governance Status", "Is Agent", "Agentic Consequence", "Agentic Autonomy", "Agentic Authority", "Agentic Reach", "Agentic Controllability", "Autonomy Level", "Agency Tier", "Agentic Pathway", "Kill-switch Demonstrated", "Rollback Capability", "Boundaries Tested", "Agentic Flags", "Agentic Escalations", "Agentic Deployment Control", "Agent Record (ASBOM) Ref", "UC-ID (blank only for explicit system baseline)", "Triage / assessment scope"];
   assert.deepEqual(labels.slice(0, triageImport.length), triageImport);
   assert.ok(labels.slice(triageImport.length).every((label) => label.startsWith("Note (not imported)")));
 });
