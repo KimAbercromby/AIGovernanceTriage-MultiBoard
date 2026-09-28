@@ -793,7 +793,7 @@
     return value ? "Yes" : "No";
   }
 
-  function fieldValueCsv(rows) {
+  function fieldValueCsv(rows, sheet) {
     return logic.toCsv(
       [
         "Field label / prompt",
@@ -804,7 +804,7 @@
       ],
       rows.map(([field, value]) => [
         field,
-        "Prompt / candidate label — exact controlled field not verified",
+        logic.fieldReferenceType(sheet || "", field),
         value == null ? "" : value,
         "Triage proposal only — owner verification required",
         "Review the current artefact and its controlled field list; do not import as a completed assessment.",
@@ -831,8 +831,7 @@
       ["Priority / score scope", `This AGPI triage applies only to UC-ID ${p.ucId || "(pending)"} and the stated use outcome; reassess materially different uses separately. Not approval.`],
       ["Service area", p.serviceArea],
       ["Service owner", p.serviceOwner],
-      ["Assessed by (owner to complete)", ""],
-      ["Assessment date (actual assessment date; owner to complete)", ""],
+      ["Assessed by / date", ""],
       ["Resident Impact", s.resident],
       ["Public Trust & Reputation", s.trust],
       ["Legal & Regulatory Exposure", s.legal],
@@ -846,7 +845,7 @@
       ["Priority uplift / routing rationale", ""],
       ["Source / completion status", ""] // Formula-owned in AIG-ASS-01; do not paste a status.
     ];
-    return fieldValueCsv(rows);
+    return fieldValueCsv(rows, "AGPI Triage");
   }
 
   function mandatoryFloorLabel(results) {
@@ -925,14 +924,14 @@
       ["Agentic Deployment Control", a ? a.deploymentControl : ""],
       ["Agent Record (ASBOM) Ref", a ? (a.asbomRef || "") : ""],
       ["UC-ID (blank only for explicit system baseline)", p.ucId],
-      ["Triage / assessment scope", "UC-ID-specific"],
-      ["Control Evidence Status", r.controlEvidence || ""],
+      ["Triage / assessment scope", "UC-ID specific"],
+      ["Note (not imported) — Control evidence status (confirm at AIG-ASS-02 Step 2 and record the evidence reference in Step 6)", r.controlEvidence || ""],
       ["Note (not imported) — UC-ID entry status (not verification)", p.ucIdStatus],
       ["Note (not imported) — UC-ID interpretation", p.ucId ? "UC-ID-specific use triage." : "UC-ID-specific provisional use triage; ID pending, not a selected shared system baseline."],
       ["Note (not imported) — Use-case outcome / scope key", p.usePurpose || p.purpose],
       ["Note (not imported) — Risk assessment scope", `This risk triage applies only to UC-ID ${p.ucId || "(pending)"} and the stated use outcome; reassess materially different uses separately. Not approval.`]
     ];
-    return fieldValueCsv(rows);
+    return fieldValueCsv(rows, "Triage Import");
   }
 
   function agentRecordPrefillCsv(calculation) {
