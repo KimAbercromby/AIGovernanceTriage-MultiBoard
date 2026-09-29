@@ -119,10 +119,11 @@ test("Capabilities and System Map handoff proposes UC→CAP without minting IDs 
   assert.ok(handoff.rows.every((row) => row.length === handoff.headers.length));
   assert.equal(handoff.rows.find((row) => row[1] === "UC-ID")[2], "");
   assert.equal(handoff.rows.find((row) => row[1] === "CAP-ID")[2], "");
-  assert.match(handoff.rows.find((row) => row[1] === "From type / ID → relationship → To type / ID")[2], /UC \/ blank \(pending\) → requires → CAP \/ blank/);
+  const rel = (label) => handoff.rows.find((row) => row[0].endsWith("/ Relationships") && row[1] === label);
+  assert.deepEqual(["From type", "From ID", "Relationship", "To type", "To ID"].map((l) => rel(l)[2]), ["UC", "", "requires", "CAP", ""]);
   assert.match(handoff.rows.find((row) => row[1] === "AIR context")[3], /Leave blank for UC → CAP/);
-  assert.match(handoff.rows.find((row) => row[1] === "System entry")[3], /without an existing official AIR-ID/);
-  assert.match(handoff.rows.find((row) => row[1] === "Authority and record boundaries")[3], /AIG-AGT-04 is authoritative.*AIG-AGT-05 is a derived delegation view/);
+  assert.match(handoff.rows.find((row) => row[1] === "Note (not a column) — System entry")[3], /without an existing official AIR-ID/);
+  assert.match(handoff.rows.find((row) => row[1] === "Note (not a column) — Authority and record boundaries")[3], /AIG-AGT-04 is authoritative.*AIG-AGT-05 is a derived delegation view/);
 });
 
 test("AIG-DEC-04 gate-plan output is paste-ready for the Gate plan sheet, not an event row", () => {
@@ -182,7 +183,7 @@ test("use-scoped handoffs carry exact outcome and operator UC-ID without issuing
   assert.equal(map.rows.find((row) => row[1] === "UC-ID")[2], "UC-EXAMPLE");
   assert.match(map.rows.find((row) => row[1] === "UC-ID")[3], /never issues identifiers or verifies an ID/);
   assert.equal(map.rows.find((row) => row[1] === "Outcome-led use case")[2], profile.usePurpose);
-  assert.match(map.rows.find((row) => row[1] === "From type / ID → relationship → To type / ID")[2], /UC \/ UC-EXAMPLE → requires → CAP \/ blank/);
+  assert.equal(map.rows.find((row) => row[0].endsWith("/ Relationships") && row[1] === "From ID")[2], "UC-EXAMPLE");
   assert.ok(map.rows.some((row) => row[0].includes("UC_ID_Risk_Decision_Current_View") &&
     row[1] === "AIG-DEC-04 dated Decision Event ID / date" &&
     row[2] === ""));
@@ -214,7 +215,7 @@ test("a pending UC-ID is explicit in AIG-INV-05 handoff and does not mint an ide
   assert.equal(id[2], "");
   assert.match(id[3], /UC-ID pending by operator choice/);
   assert.match(id[3], /blank does not mean shared system baseline/);
-  assert.match(handoff.rows.find((row) => row[1] === "UC-ID status (operator entry only)")[2], /Pending/);
+  assert.match(handoff.rows.find((row) => row[1] === "Note (not a column) — UC-ID status (operator entry only)")[2], /Pending/);
   const plan = logic.buildGatePlanCsv(profile, logic.buildRoute(profile, results, {}), results);
   assert.match(plan, /Pending — no UC-ID entered; use-specific provisional case, not shared system baseline/);
   assert.match(plan, /UC-ID specific/);
@@ -644,4 +645,70 @@ test("Register lifecycle stage is proposed from the governance position, within 
     assert.match(row[5], /AI Governance Lead confirms/);
     assert.match(row[5], new RegExp(`Operational state entered: ${state}`));
   });
+});
+
+test("AIG-INV-05 handoff has one row per map column, with exact headings and controlled values", () => {
+  const { profile, results } = fixture();
+  const handoff = logic.buildCapabilitiesMapHandoff(profile, results);
+  // Column headings from the AIG-INV-05 workbook (formula check columns excluded), in sheet order.
+  const COLUMNS = {
+    "Use cases": [
+      "UC-ID",
+      "Outcome-led use case",
+      "Service / workflow",
+      "Service Owner",
+      "Canonical AIG-INV-03 / source ref",
+      "AIR-ID (only if issued)",
+      "Confidence",
+      "Verified on",
+      "State",
+      "Use-specific decision / minutes ref (pointer only)",
+      "UC-specific monitoring ref (pointer only)",
+      "Index role (descriptive; not approval)"
+    ],
+    "Capabilities": [
+      "CAP-ID",
+      "Function (verb + noun)",
+      "Inputs",
+      "Outputs",
+      "Boundary / excluded use",
+      "Capability owner",
+      "Definition source ref",
+      "Confidence",
+      "Verified on",
+      "State"
+    ],
+    "Relationships": [
+      "Edge ID",
+      "From type",
+      "From ID",
+      "Relationship",
+      "To type",
+      "To ID",
+      "AIR context",
+      "Meaning / data or action flow",
+      "Link owner",
+      "Evidence / source ref",
+      "Confidence",
+      "Verified on",
+      "State"
+    ]
+  };
+  const LISTS = {
+    Confidence: ["High", "Medium", "Low", "Unknown"],
+    State: ["Proposed", "Confirmed", "Superseded"],
+    "From type": ["UC", "CAP", "AIR", "MOD", "DATA", "IF", "AG", "TOOL"],
+    "To type": ["UC", "CAP", "AIR", "MOD", "DATA", "IF", "AG", "TOOL"],
+    Relationship: ["requires", "provided by", "references", "depends on"],
+  };
+  for (const [sheet, columns] of Object.entries(COLUMNS)) {
+    const rows = handoff.rows.filter((row) => row[0] === `AIG-INV-05 Capabilities and System Map / ${sheet}`);
+    const fields = rows.map((row) => row[1]).filter((label) => !label.startsWith("Note (not a column)"));
+    assert.deepEqual(fields, columns, `${sheet} rows must match the workbook columns in order`);
+    rows.forEach((row) => {
+      if (LISTS[row[1]] && row[2]) assert.ok(LISTS[row[1]].includes(row[2]), `${sheet} / ${row[1]}: "${row[2]}" not in the dropdown`);
+    });
+  }
+  const other = handoff.rows.filter((row) => row[0].startsWith("AIG-INV-05") && !/\/ (Use cases|Capabilities|Relationships)$/.test(row[0]));
+  assert.ok(other.every((row) => row[1].startsWith("Note (not a column)")), "rows for other sheets are notes, not fields");
 });
