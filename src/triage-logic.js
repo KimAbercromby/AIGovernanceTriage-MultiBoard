@@ -617,6 +617,12 @@
     const canAct = profile.actionAuthority && profile.actionAuthority !== "None — outputs only";
     return profile.capability === "Agentic AI" || canAct || (results.triggerIds && results.triggerIds.includes("agentic"));
   }
+  const REGISTER_LIFECYCLE_STAGES = [
+    "Idea and Innovation", "Registration and Intake", "Risk Assessment and Review",
+    "Approval and Assurance", "Deployment and Operation", "Monitoring and Review",
+    "Retirement and Decommissioning",
+  ];
+
   function buildRegisterDraftHandoff(profile, results, agentic) {
     const rows = [];
     const add = (sheet, field, value, review) =>
@@ -647,12 +653,14 @@
     add("AI Register", "Service area", profile.serviceArea, "Verify locally against the current record.");
     add("AI Register", "Service Owner", profile.serviceOwner, "Verify the current accountable owner.");
     add("AI Register", "Supplier / source", supplierSource, "Combined from separate intake prompts for review; verify the supplier/source value against the actual workbook field and source.");
-    const REGISTER_LIFECYCLE = { Idea: "Idea and Innovation", Retired: "Retirement and Decommissioning" };
-    const registerLifecycle = REGISTER_LIFECYCLE[profile.lifecycle] || "";
+    // The Register's "Lifecycle stage" is a governance stage, not the operational state
+    // asked on the form. A case being triaged is at Risk Assessment and Review (intake and
+    // the AIR-ID come before triage, the decision after), except a retired system.
+    const registerLifecycle = profile.lifecycle === "Retired"
+      ? "Retirement and Decommissioning"
+      : "Risk Assessment and Review";
     add("AI Register", "Lifecycle stage", registerLifecycle,
-      registerLifecycle
-        ? `Mapped from the triage lifecycle "${profile.lifecycle}" to the AIG-INV-04 controlled list; verify against the current record.`
-        : `Triage lifecycle is "${profile.lifecycle || "not stated"}", an operational state rather than an AIG-INV-04 governance stage. The owner chooses the stage from the Register's controlled list (Idea and Innovation; Registration and Intake; Risk Assessment and Review; Approval and Assurance; Deployment and Operation; Monitoring and Review; Retirement and Decommissioning).`);
+      `Proposed from where this case sits: it is being triaged${profile.lifecycle === "Retired" ? " as a retired system" : ""}. Operational state entered: ${profile.lifecycle || "not stated"}. The AI Governance Lead confirms the stage against the current AIG-INV-04 record.`);
     add("AI Register", "System baseline approval (not use approval)", "", "Do not infer or change current approval status. Formal decisions remain in AIG-DEC-03 or authorised native minutes.");
     add("AI Register", "System baseline operational status", "", "Do not infer or change current operational status; verify the current AIG-INV-04 record.");
     add("AI Register", "Can it act?", "", "Do not set Yes/No from this triage. Verify actual capability and permissions against AIG-AGT-04 and complete the applicable agent assessment.");
@@ -1692,6 +1700,7 @@
     agenticContextKey,
     currentAgenticAssessment,
     buildGatePlanCsv,
+    REGISTER_LIFECYCLE_STAGES,
     GATE_PLAN_HEADERS,
     buildDecisionReadyHandoff,
     buildCanonicalRecord,
