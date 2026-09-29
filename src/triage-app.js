@@ -1275,8 +1275,8 @@
     if (!validateForExport()) return;
     const calculation = update();
     download(
-      `${safeSlug(calculation.profile.systemName)}-planned-governance-route.csv`,
-      logic.buildGatePlanCsv(calculation.profile, calculation.route),
+      `${safeSlug(calculation.profile.systemName)}-gate-log-plan-rows.csv`,
+      logic.buildGatePlanCsv(calculation.profile, calculation.route, calculation.results),
       "text/csv;charset=utf-8",
     );
   }
