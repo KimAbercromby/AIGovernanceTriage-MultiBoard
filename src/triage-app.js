@@ -679,7 +679,7 @@
       `AI capability: ${profile.capability}`,
       `Automated action authority: ${profile.actionAuthority}`,
       `Systems / tools accessed: ${profile.systemsAccessed || "Not entered"}`,
-      `Lifecycle: ${profile.lifecycle}`,
+      `Operational state: ${profile.lifecycle}`,
       `Data type: ${profile.dataType}`,
       `Commercial route indicated by intake: ${logic.commercialRequired(profile) ? "Potential route — confirm with commercial owner" : "Not indicated — case-specific confirmation required"}`,
       "",
