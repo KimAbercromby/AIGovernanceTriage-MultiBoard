@@ -49,8 +49,11 @@ records and must not be treated as issued authority.
   exact scoped purpose and identifier context. A system-level record, map relationship
   or triage score is not use approval.
 - **AIG-DEC-04:** its proposed draft separates prospective **Gate Plan**, dated **Gate
-  Events**, and event-linked **Gate Conditions**. Exports are planning/review
-  prompts only, not live rows or events.
+  Events**, and event-linked **Gate Conditions**. The "Download Gate Log plan rows"
+  export gives paste-ready rows for the Gate plan sheet only (columns A to L, Plan
+  state Planned; Plan ID, target date and any N/A rationale left blank for the
+  governance steward), followed by guidance columns that are not pasted. It never
+  creates Gate Events or Conditions.
 - **AIG-INV-05 Capabilities and System Map:** a proposed controlled catalogue
   artefact, not approved or adopted. Triage offers a
   clearly labelled proposal for outcome-led use cases, capabilities and a UC →
@@ -87,7 +90,7 @@ evidence.
 - Run agentic triage when a system can act. It proposes a tier and containment
   review; AIG-AGT-04 remains authoritative for permissions and delegations.
 - Download an AIG-INV-04 review handoff, proposed controlled AIG-INV-05 map handoff,
-  AGPI/risk/agentic pre-fills, prospective gate plan, artefact handoff or case
+  AGPI/risk/agentic pre-fills, Gate Log plan rows, artefact handoff or case
   summary, including a AIG-DEC-02 paper-review handoff with blank preparer and
   actual paper date. Outputs are drafts that must be reconciled with current
   records and local owners; they are not directly importable rows. UC-ID and
