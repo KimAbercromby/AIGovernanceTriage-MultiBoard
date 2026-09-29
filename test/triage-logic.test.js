@@ -620,3 +620,28 @@ test("High and Critical uses with personal data indicate a DPIA (Playbook §4.5.
   const noData = fixture({ dataType: "None", tier: "High" });
   assert.match(logic.assessmentRequirements(noData.profile, noData.results).dpia, /^Screening required/);
 });
+
+test("Register lifecycle stage is proposed from the governance position, within the AIG-INV-04 list", () => {
+  assert.deepEqual(logic.REGISTER_LIFECYCLE_STAGES, [
+    "Idea and Innovation", "Registration and Intake", "Risk Assessment and Review",
+    "Approval and Assurance", "Deployment and Operation", "Monitoring and Review",
+    "Retirement and Decommissioning",
+  ]);
+  const expected = {
+    Idea: "Risk Assessment and Review",
+    Pilot: "Risk Assessment and Review",
+    Testing: "Risk Assessment and Review",
+    Live: "Risk Assessment and Review",
+    Retired: "Retirement and Decommissioning",
+  };
+  Object.entries(expected).forEach(([state, stage]) => {
+    const { profile, results } = fixture();
+    profile.lifecycle = state;
+    const row = logic.buildRegisterDraftHandoff(profile, results, null).rows
+      .find((r) => r[0] === "AI Register" && r[1] === "Lifecycle stage");
+    assert.equal(row[3], stage, `operational state ${state}`);
+    assert.ok(logic.REGISTER_LIFECYCLE_STAGES.includes(row[3]));
+    assert.match(row[5], /AI Governance Lead confirms/);
+    assert.match(row[5], new RegExp(`Operational state entered: ${state}`));
+  });
+});
