@@ -1876,7 +1876,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
               <button type="button" id="downloadAgpi" class="secondary"><span class="btn-main">Download AGPI pre-fill</span><span class="btn-ref">AIG-ASS-01 · AGPI Triage</span></button>
               <button type="button" id="downloadRisk" class="secondary"><span class="btn-main">Download Risk Assessment pre-fill</span><span class="btn-ref">AIG-ASS-02 · Risk Assessment</span></button>
               <button type="button" id="downloadGateReady" class="secondary"><span class="btn-main">Download Decision-Ready paper handoff</span><span class="btn-ref">AIG-DEC-02 · blank preparer and actual paper date</span></button>
-              <button type="button" id="downloadGates" class="secondary"><span class="btn-main">Download planned governance route</span><span class="btn-ref">AIG-DEC-04 Gate Plan · AIG-DEC-01 Gate Map context</span></button>
+              <button type="button" id="downloadGates" class="secondary"><span class="btn-main">Download Gate Log plan rows</span><span class="btn-ref">AIG-DEC-04 Gate plan · paste-ready columns A–L</span></button>
               <button type="button" id="downloadHandoff" class="secondary"><span class="btn-main">Download artefact handoff</span><span class="btn-ref">Planning prompts · not a form import</span></button>
               <button type="button" id="downloadAgent" class="secondary"><span class="btn-main">Download Agent Record review handoff</span><span class="btn-ref">AIG-AGT-04 · not an import-ready mandate</span></button>
               <button type="button" id="downloadCapabilities" class="secondary"><span class="btn-main">Download Capability Vector review handoff</span><span class="btn-ref">AIG-AGT-04 · unselected means unknown, not No</span></button>
@@ -2803,39 +2803,59 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     return `\uFEFF${lines.join("\r\n")}\r\n`;
   }
 
-  function buildGatePlanCsv(profile, route) {
-    const headers = [
-      "Handoff target: AIG-DEC-04 Gate Plan / AIG-DEC-01 Gate Map context",
-      "Draft plan: AIR-ID reference (verify in AIG-INV-04)",
-      "System / Model Name (verify)",
-      "Suggested gate order",
-      "Prospective requirement",
-      "Decision question for the authorised forum (not a decision)",
-      "Proposed forum (confirm authority)",
-      "Evidence / screening prompts",
-      "Plan status (proposal only; not an event, condition or approval)",
-      "Handoff note",
-      "UC-ID scope(s) (blank only for explicit system baseline; pending UC-ID remains use-specific, not baseline)",
-      "Decision scope (UC-ID specific / Shared system baseline)",
-      "UC-ID interpretation (pending is not shared system baseline)",
-    ];
+  // AIG-DEC-04 "Gate plan" sheet columns, in workbook order (A to L).
+  const GATE_PLAN_HEADERS = [
+    "Plan ID",
+    "AIR-ID",
+    "Gate / forum",
+    "Trigger / stage",
+    "Requirement",
+    "Basis / triage ref",
+    "Target date",
+    "Responsible role",
+    "Plan state",
+    "N-A / waiver rationale and authority ref",
+    "UC-ID scope(s) (blank only for explicit system baseline)",
+    "Decision scope (UC-ID specific / Shared system baseline)",
+  ];
+  const GATE_PLAN_GUIDANCE_HEADERS = [
+    "Guidance only, do not paste: decision question for the forum",
+    "Guidance only, do not paste: evidence to bring",
+    "Guidance only, do not paste: handoff note",
+  ];
+
+  // Paste-ready rows for the AIG-DEC-04 Gate plan sheet. Columns A to L match the
+  // workbook exactly; a blank spacer column separates the guidance columns, which
+  // are not part of the Gate plan. Plan ID, Target date and any N-A rationale stay
+  // blank for the governance steward: the tool never issues IDs or records N/A.
+  function buildGatePlanCsv(profile, route, results) {
+    const retrospective = profile.lifecycle === "Live";
+    const stage = `${retrospective ? "Retrospective intake (live system)" : "New proposal"} · lifecycle ${profile.lifecycle || "not entered"}`;
+    const basis = results
+      ? `Triage prompt: AGPI ${results.agpiScore} (${results.priority.label}); risk tier ${results.effectiveTierName}. Verify against current AIG-ASS-01 / AIG-ASS-02 before relying on it.`
+      : "Add the AIG-ASS-01 / AIG-ASS-02 reference";
+    const headers = [...GATE_PLAN_HEADERS, "", ...GATE_PLAN_GUIDANCE_HEADERS];
     const rows = route.map((gate) => [
-      "AIG-DEC-04 Gate Plan; AIG-DEC-01 Gate Map is routing context only",
+      "",
       profile.registerId || "",
-      profile.systemName || "",
-      gate.sequence,
-      gate.requirement,
-      gate.decision,
-      gate.forum,
-      gate.evidence.join("; "),
-      `Draft only — ${gate.status}`,
-      `${gate.handoff} UC-ID entry state: ${ucIdEntryStatus(profile)}. Exact scoped purpose/outcome: ${profile.usePurpose || profile.purpose || "(not entered)"}. Prospective requirement only; not a decision, approval or Gate Event.`,
+      `${gate.requirement} · ${gate.forum}`,
+      stage,
+      gate.key === "commercial" ? "Conditional" : "Required",
+      basis,
+      "",
+      "Service Owner",
+      "Planned",
+      "",
       profile.ucId || "",
       "UC-ID specific",
-      `${ucIdEntryStatus(profile)}; this handoff assesses a use-specific case; no shared system baseline selected`,
+      "",
+      gate.decision,
+      gate.evidence.join("; "),
+      `${gate.status}. ${gate.handoff} UC-ID entry state: ${ucIdEntryStatus(profile)}. Exact scoped purpose/outcome: ${profile.usePurpose || profile.purpose || "(not entered)"}. A Gate plan row is a prospective requirement only; not a decision, approval or Gate Event.`,
     ]);
     return toCsv(headers, rows);
   }
+
 
   function buildDecisionReadyHandoff(calculation) {
     const { profile, results, route } = calculation;
@@ -3736,6 +3756,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     agenticContextKey,
     currentAgenticAssessment,
     buildGatePlanCsv,
+    GATE_PLAN_HEADERS,
     buildDecisionReadyHandoff,
     buildCanonicalRecord,
     buildArtefactHandoff,
@@ -5035,8 +5056,8 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     if (!validateForExport()) return;
     const calculation = update();
     download(
-      `${safeSlug(calculation.profile.systemName)}-planned-governance-route.csv`,
-      logic.buildGatePlanCsv(calculation.profile, calculation.route),
+      `${safeSlug(calculation.profile.systemName)}-gate-log-plan-rows.csv`,
+      logic.buildGatePlanCsv(calculation.profile, calculation.route, calculation.results),
       "text/csv;charset=utf-8",
     );
   }
@@ -6351,7 +6372,7 @@ document.addEventListener("DOMContentLoaded", function () {
     summary.innerHTML = '<span>More downloads and utilities</span><small>Case record, routing, agentic outputs and print</small>';
     const contents = document.createElement("div"); contents.className = "advanced-groups";
     const groups = [
-      ["Case and route", ["downloadCanonical","downloadGates","downloadHandoff","downloadSummary"]],
+      ["Case and route", ["downloadCanonical","downloadHandoff","downloadSummary"]],
       ["Agentic records", ["downloadAgent","downloadCapabilities","downloadAgenticGovernance"]],
       ["Utilities", ["copySummary","printResult","copyStatus"]]
     ];

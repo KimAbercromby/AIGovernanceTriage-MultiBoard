@@ -125,13 +125,41 @@ test("Capabilities and System Map handoff proposes UC→CAP without minting IDs 
   assert.match(handoff.rows.find((row) => row[1] === "Authority and record boundaries")[3], /AIG-AGT-04 is authoritative.*AIG-AGT-05 is a derived delegation view/);
 });
 
-test("AIG-DEC-04 gate-plan output is a prospective plan handoff, not an event row", () => {
+test("AIG-DEC-04 gate-plan output is paste-ready for the Gate plan sheet, not an event row", () => {
   const { profile, results } = fixture();
+  profile.registerId = "AIR-EXAMPLE";
   const route = logic.buildRoute(profile, results, {});
-  const csv = logic.buildGatePlanCsv(profile, route);
-  assert.match(csv, /Prospective requirement/);
-  assert.match(csv, /not an event, condition or approval/);
-  assert.match(csv, /Draft only/);
+  const csv = logic.buildGatePlanCsv(profile, route, results);
+  const lines = csv.replace(/^\uFEFF/, "").trim().split("\r\n");
+  const header = lines[0].split('","').map((cell) => cell.replace(/^"|"$/g, ""));
+  // Columns A to L must match the AIG-DEC-04 "Gate plan" sheet exactly, in order.
+  assert.deepEqual(header.slice(0, 12), [
+    "Plan ID", "AIR-ID", "Gate / forum", "Trigger / stage", "Requirement",
+    "Basis / triage ref", "Target date", "Responsible role", "Plan state",
+    "N-A / waiver rationale and authority ref",
+    "UC-ID scope(s) (blank only for explicit system baseline)",
+    "Decision scope (UC-ID specific / Shared system baseline)",
+  ]);
+  assert.deepEqual(header.slice(0, 12), logic.GATE_PLAN_HEADERS);
+  assert.equal(header[12], "", "a blank spacer separates the Gate plan columns from guidance");
+  assert.ok(header.slice(13).every((h) => h.startsWith("Guidance only, do not paste")));
+  assert.equal(lines.length, route.length + 1);
+  const rows = lines.slice(1).map((line) => line.split('","').map((cell) => cell.replace(/^"|"$/g, "")));
+  rows.forEach((row) => {
+    assert.equal(row.length, header.length);
+    assert.equal(row[0], "", "Plan ID is left for the governance steward");
+    assert.equal(row[1], "AIR-EXAMPLE");
+    assert.ok(["Required", "Conditional", "Not applicable"].includes(row[4]));
+    assert.notEqual(row[4], "Not applicable", "the tool never records N/A");
+    assert.equal(row[6], "", "Target date is left blank");
+    assert.equal(row[8], "Planned");
+    assert.ok(["Planned", "Complete", "Superseded", "Cancelled"].includes(row[8]));
+    assert.equal(row[9], "");
+    assert.ok(["UC-ID specific", "Shared system baseline"].includes(row[11]));
+  });
+  assert.equal(rows.find((row) => row[2].startsWith("Procurement"))[4], "Conditional");
+  assert.match(rows[0][5], /AGPI \d+/);
+  assert.match(csv, /not a decision, approval or Gate Event/);
   assert.doesNotMatch(csv, /Event ID/);
 });
 
@@ -187,8 +215,7 @@ test("a pending UC-ID is explicit in AIG-INV-05 handoff and does not mint an ide
   assert.match(id[3], /UC-ID pending by operator choice/);
   assert.match(id[3], /blank does not mean shared system baseline/);
   assert.match(handoff.rows.find((row) => row[1] === "UC-ID status (operator entry only)")[2], /Pending/);
-  const plan = logic.buildGatePlanCsv(profile, logic.buildRoute(profile, results, {}));
-  assert.match(plan, /pending UC-ID remains use-specific, not baseline/);
+  const plan = logic.buildGatePlanCsv(profile, logic.buildRoute(profile, results, {}), results);
   assert.match(plan, /Pending — no UC-ID entered; use-specific provisional case, not shared system baseline/);
   assert.match(plan, /UC-ID specific/);
   const decisionPaper = logic.buildDecisionReadyHandoff({
