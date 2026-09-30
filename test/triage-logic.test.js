@@ -3,9 +3,9 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const logic = require("../src/triage-logic.js");
-// Header rows and controlled lists read from the suite v3.9.1 workbooks
+// Header rows and controlled lists read from the suite v3.9.2 workbooks
 // (regenerate with scripts/extract-suite-fixture.py).
-const contract = require("./fixtures/suite-v3.9.1-contract.json");
+const contract = require("./fixtures/suite-v3.9.2-contract.json");
 const PRIORITY_ASS = "Effective Governance Priority (AIG-ASS-01, after any authorised override)";
 const OPERATIONAL = "Operational Status (system baseline)";
 
@@ -81,7 +81,7 @@ test("AIG-INV-04 export is a draft handoff and never manufactures system identit
   assert.deepEqual([...new Set(draft.rows.map((row) => row[0]))].sort(), Object.keys(supportedFields).sort());
   for (const [sheet, fields] of Object.entries(supportedFields)) {
     assert.deepEqual(draft.rows.filter((row) => row[0] === sheet).map((row) => row[1]), fields,
-      `${sheet}: one row per v3.9.1 workbook column, in order`);
+      `${sheet}: one row per v3.9.2 workbook column, in order`);
   }
   assert.equal(draft.rows.find((row) =>
     row[0] === "Assessment summary" && row[1] === PRIORITY_ASS)[3], "");
@@ -146,14 +146,20 @@ test("AIG-DEC-04 gate-plan output is paste-ready for the Gate plan sheet, not an
     assert.equal(row[0], "", "Plan ID is left for the governance steward");
     assert.equal(row[1], "AIR-EXAMPLE");
     assert.ok(["Required", "Conditional", "Not applicable"].includes(row[4]));
-    assert.notEqual(row[4], "Not applicable", "the tool never records N/A");
+    // v3.9.2: only Gate 4 is proposed N/A, under the AIG-DEC-01 v1.8 rule, and then
+    // with a draft rationale in column J (the DEC-04 row check needs one).
+    if (row[4] === "Not applicable") {
+      assert.equal(row[2], "Gate 4 Procurement");
+      assert.match(row[9], /^N\/A \(built in-house\)|^N\/A — existing contract \/ free tool/);
+    } else {
+      assert.equal(row[9], "");
+    }
     assert.equal(row[6], "", "Target date is left blank");
     assert.equal(row[8], "Planned");
     assert.ok(["Planned", "Complete", "Superseded", "Cancelled"].includes(row[8]));
-    assert.equal(row[9], "");
     assert.ok(["UC-ID specific", "Shared system baseline"].includes(row[11]));
   });
-  assert.equal(rows.find((row) => row[2] === "Gate 4 Procurement")[4], "Conditional");
+  assert.equal(rows.find((row) => row[2] === "Gate 4 Procurement")[4], "Not applicable", "built in-house with no procurement");
   rows.forEach((row) => assert.ok(contract["DEC-04"]["Gate plan"].lists["C4:C353"].includes(row[2]), `Gate / forum "${row[2]}" not in the AIG-DEC-04 list`));
   assert.match(rows[0][5], /AGPI \d+/);
   assert.match(csv, /not a decision, approval or Gate Event/);
@@ -376,7 +382,7 @@ test("AIG-DEC-04 retirement handoff includes the separate plan, event and condit
   for (const sheet of ["Gate plan", "Gate events", "Conditions"]) {
     const spec = contract["DEC-04"][sheet];
     const columns = spec.headers.filter((h, i) => !spec.formulaColumns.includes(String.fromCharCode(65 + i)));
-    assert.deepEqual(fieldsFor(sheet), columns, `${sheet} handoff must list every v3.9.1 column in order`);
+    assert.deepEqual(fieldsFor(sheet), columns, `${sheet} handoff must list every v3.9.2 column in order`);
   }
   assert.ok(handoff.rows.every((row) =>
     (row[2].includes("AIG-DEC-04 contract") || row[2].includes("Proposed AIG-INV-04") || row[2].includes("Prompt")) &&
@@ -454,7 +460,7 @@ test("browser UI collects exact UC scope and rejects contradictory ID status bef
   assert.match(app, /never issues or verifies a UC-ID/);
   assert.match(app, /This AGPI triage applies only to UC-ID/);
   assert.match(app, /This risk triage applies only to UC-ID/);
-  // AIG-AGT-04 v3.9.1 column name; left blank with a caveat, never filled from UC triage.
+  // AIG-AGT-04 v3.9.2 column name; left blank with a caveat, never filled from UC triage.
   assert.match(app, /\["AGPI Priority \(from AIG-INV-04\)", ""\]/);
   assert.match(app, /this UC-specific triage priority is not the system summary/);
 });
@@ -522,7 +528,8 @@ test("Risk Assessment pre-fill rows match AIG-ASS-02 Triage Import A5:A63 exactl
 });
 
 test("retirement decision options are AIG-DEC-04 Gate Events outcomes", () => {
-  const gateLogOutcomes = contract["DEC-04"]["Gate events"].lists["G4:G553"];
+  // "Paused — pending decision" (v3.9.2) belongs to a Precautionary pause event only.
+  const gateLogOutcomes = contract["DEC-04"]["Gate events"].lists["G4:G553"].filter((o) => o !== "Paused — pending decision");
   const field = logic.RETIREMENT_FIELDS.find((f) => f.id === "decision");
   assert.deepEqual(field.options.filter((o) => !o.startsWith("Pending")), gateLogOutcomes);
   const opinion = logic.buildRetirementGateLogRow({ decision: "Opinion only" });
@@ -641,7 +648,7 @@ test("Register lifecycle stage is proposed from the governance position, within 
 test("AIG-INV-05 handoff has one row per map column, with exact headings and controlled values", () => {
   const { profile, results } = fixture();
   const handoff = logic.buildCapabilitiesMapHandoff(profile, results);
-  // Column headings from the v3.9.1 AIG-INV-05 workbook (formula check columns excluded), in sheet order.
+  // Column headings from the v3.9.2 AIG-INV-05 workbook (formula check columns excluded), in sheet order.
   const COLUMNS = Object.fromEntries(["Use cases", "Capabilities", "Relationships"].map((sheet) => {
     const spec = contract["INV-05"][sheet];
     return [sheet, spec.headers.filter((h, i) => !spec.formulaColumns.includes(String.fromCharCode(65 + i)))];
