@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const logic = require("../src/triage-logic.js");
 // Header rows and controlled lists read from the suite v3.9 workbooks
 // (regenerate with scripts/extract-suite-fixture.py).
-const contract = require("./fixtures/suite-v3.9-contract.json");
+const contract = require("./fixtures/suite-v3.9.1-contract.json");
 const PRIORITY_ASS = "Effective Governance Priority (AIG-ASS-01, after any authorised override)";
 const OPERATIONAL = "Operational Status (system baseline)";
 

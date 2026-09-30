@@ -1,7 +1,7 @@
 "use strict";
 
-// Export contract and logic tests against AI governance suite v3.9 (30 September 2026).
-// Expected headers and controlled lists come from test/fixtures/suite-v3.9-contract.json,
+// Export contract and logic tests against AI governance suite v3.9.1 (30 September 2026).
+// Expected headers and controlled lists come from test/fixtures/suite-v3.9.1-contract.json,
 // generated from the workbooks by scripts/extract-suite-fixture.py; each entry records
 // its source file, sheet and header row.
 
@@ -10,7 +10,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const logic = require("../src/triage-logic.js");
-const contract = require("./fixtures/suite-v3.9-contract.json");
+const contract = require("./fixtures/suite-v3.9.1-contract.json");
 
 const app = fs.readFileSync(path.join(__dirname, "..", "src", "triage-app.js"), "utf8");
 const html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
@@ -50,10 +50,10 @@ function triage({ profile = {}, agpi = ones(), impact = impacts(), likelihood = 
   return { profile: p, results: logic.calculateTriage({ profile: p, agpiScores: agpi, impactScores: impact, likelihood, control, controlEvidence: evidence, triggerIds: triggers, agentic }) };
 }
 
-// ---- Export headers equal the v3.9 workbooks ---------------------------------
+// ---- Export headers equal the v3.9.1 workbooks ---------------------------------
 
 test("fixture records its v3.9 source for every export target", () => {
-  assert.match(contract.suite, /^v3\.9/);
+  assert.match(contract.suite, /^v3\.9\.1 /);
   for (const [key, spec] of [
     ["INV-04 AI Register", contract["INV-04"]["AI Register"]],
     ["DEC-04 Gate plan", contract["DEC-04"]["Gate plan"]],
@@ -225,8 +225,8 @@ test("AIG-DEC-02 decision paper handoff uses the template's own field labels, in
   assert.equal(first[10], "Enhanced / Agentic");
 });
 
-test("stated suite and artefact versions match the v3.9 Artefact Index (AIG-GOV-03)", () => {
-  assert.equal(logic.SUITE.release, "v3.9");
+test("stated suite and artefact versions match the v3.9.1 Artefact Index (AIG-GOV-03)", () => {
+  assert.equal(logic.SUITE.release, "v3.9.1");
   const index = contract.versions;
   const byId = {
     "AIG-GOV-02 Playbook": "AIG-GOV-02", "AIG-GOV-03 Artefact Index": "AIG-GOV-03",
@@ -236,12 +236,14 @@ test("stated suite and artefact versions match the v3.9 Artefact Index (AIG-GOV-
     "AIG-DEC-02 Decision-Ready Paper": "AIG-DEC-02", "AIG-DEC-03 Governance Decision Record": "AIG-DEC-03",
     "AIG-DEC-04 Gate Log": "AIG-DEC-04", "AIG-AGT-02 Agentic Classification Reference": "AIG-AGT-02",
     "AIG-AGT-03 Agentic Triage": "AIG-AGT-03", "AIG-AGT-04 Agent Record (ASBOM)": "AIG-AGT-04",
-    "AIG-AGT-06 Agentic Action / Decision Record": "AIG-AGT-06", "AIG-OPS-02 Monitoring and Review Log": "AIG-OPS-02",
+    "AIG-AGT-06 Agentic Action / Decision Record": "AIG-AGT-06", "AIG-OPS-01 Deployment and Rollout Plan": "AIG-OPS-01",
+    "AIG-OPS-02 Monitoring and Review Log": "AIG-OPS-02",
   };
   for (const [name, id] of Object.entries(byId)) {
     assert.ok(index[id].startsWith(`v${logic.SUITE.versions[name]}`), `${name}: tool ${logic.SUITE.versions[name]}, index ${index[id]}`);
   }
-  assert.match(html, /Aligned to AI governance suite v3\.9 \(30 September 2026\): Playbook 19\.9\.10/);
+  assert.equal(Object.keys(byId).length, Object.keys(logic.SUITE.versions).length - 1); // all but the UC-ID view (not indexed)
+  assert.match(html, /Aligned to AI governance suite v3\.9\.1 \(30 September 2026\): Playbook 19\.9\.11/);
 });
 
 // ---- v3.8 / v3.9 logic rules ---------------------------------------------------
@@ -447,4 +449,51 @@ test("agency tier follows AIG-AGT-02 Tables A and B: the Table C calibration exa
   assert.equal(run({}, ["Self-modification"]).tierNum, 5);
   assert.equal(logic.computeAgentic({ dimensions: {}, multipliers: [], killSwitch: false }).tierNum, 5);
   assert.equal(run({}, []).tierLabel, "T0 informational");
+});
+
+// ---- v3.9.1 --------------------------------------------------------------------
+
+// Evaluate the AIG-ASS-02 Risk Assessment C82 agentic-floor formula (read from the v3.9.1 workbook)
+// for one agency tier label (C73) and pathway (C74), with Step 5 complete and no C56 conflict.
+function ass02C82(formula, tierLabel, pathway) {
+  const f = formula.replace(/^=/, "");
+  const branches = [...f.matchAll(/IF\(OR\(((?:LEFT\(C73,2\)="T\d"|ISNUMBER\(SEARCH\("[A-Za-z]+",C74\)\)|,)+)\),"(Critical|High|Medium)"/g)];
+  assert.ok(branches.length >= 3, "C82 tier branches found");
+  for (const [, terms, result] of branches) {
+    const tiers = [...terms.matchAll(/LEFT\(C73,2\)="(T\d)"/g)].map((m) => m[1]);
+    const words = [...terms.matchAll(/SEARCH\("([A-Za-z]+)",C74\)/g)].map((m) => m[1].toLowerCase());
+    if (tiers.includes(tierLabel.slice(0, 2)) || words.some((wd) => pathway.toLowerCase().includes(wd))) return result;
+  }
+  return "None";
+}
+
+test("v3.9.1: agency minimum equals the AIG-ASS-02 C82 agentic floor for every tier, T2 included (no carve-outs)", () => {
+  const { C82, C43 } = contract["ASS-02"]["Risk Assessment"].formulas;
+  assert.match(C82, /LEFT\(C73,2\)="T2"/, "workbook applies the T2 minimum");
+  assert.match(C43, /IF\(C82="Medium",2/, "governing tier ranks a Medium agentic floor");
+  const perAction = { actionAuthority: "Human approves each action" };
+  for (let n = 0; n <= 5; n++) {
+    const ag = logic.computeAgentic({ dimensions: {}, multipliers: [], killSwitch: true, rollback: true, boundariesTested: true });
+    const agentic = { ...ag, tierNum: n, tierLabel: logic.AGENCY_TIERS[n], pathway: logic.AGENCY_PATHWAYS[n] };
+    const workbook = ass02C82(C82, logic.AGENCY_TIERS[n], agentic.pathway || "");
+    // per-action review evidenced, so T4 stays High (the C56 floor makes it Critical otherwise)
+    assert.equal(logic.agencyMinimumTier(n, true) || "None", workbook, `T${n}`);
+    const r = triage({ profile: perAction, agentic }).results;
+    assert.equal(r.effectiveTierName, workbook === "None" ? "Low" : workbook, `T${n} governing tier from a Low risk tier`);
+  }
+});
+
+test("v3.9.1: Gate 6 evidence carries the AIG-OPS-01 section 8 business continuity link exactly", () => {
+  const rows = contract["OPS-01"].rows;
+  const bc = rows.find((r) => r[0].startsWith("Business continuity link"));
+  assert.ok(bc, "section 8 row present in AIG-OPS-01 v1.6");
+  assert.equal(bc[0], "Business continuity link (Proposed — for Council confirmation)");
+  assert.ok(logic.BUSINESS_CONTINUITY_LINK.includes(bc[0]), "label quoted exactly");
+  assert.ok(logic.BUSINESS_CONTINUITY_LINK.includes(bc[1]), "question quoted exactly");
+  for (const t of [triage(), triage({ profile: { actionAuthority: "Human approves each action" } })]) {
+    const gate6 = logic.buildRoute(t.profile, t.results, {}).find((g) => g.gateNumber === 6);
+    assert.ok(gate6.evidence.includes(logic.BUSINESS_CONTINUITY_LINK));
+  }
+  // the new row follows the existing section 8 rows
+  assert.deepEqual(rows.map((r) => r[0]).slice(0, 3), ["Safe-withdrawal / rollback procedure", "Who can invoke suspension", "Fallback process if the system is unavailable"]);
 });
