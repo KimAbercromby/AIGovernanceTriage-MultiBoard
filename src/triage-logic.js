@@ -6,27 +6,28 @@
   "use strict";
 
   // Suite release this tool is aligned to, with the artefact versions it relies on
-  // (from the AIG-GOV-03 Artefact Index, suite release v3.9, 30 September 2026).
+  // (from the AIG-GOV-03 Artefact Index, suite release v3.9.1, 30 September 2026).
   const SUITE = {
-    release: "v3.9",
+    release: "v3.9.1",
     date: "30 September 2026",
     status: "Proposed — for Council confirmation; not approved or adopted",
     versions: {
-      "AIG-GOV-02 Playbook": "19.9.10 draft",
-      "AIG-GOV-03 Artefact Index": "1.25 draft",
+      "AIG-GOV-02 Playbook": "19.9.11 draft",
+      "AIG-GOV-03 Artefact Index": "1.26 draft",
       "AIG-INV-04 AI Register": "1.0 draft",
       "AIG-INV-05 Capabilities and System Map": "0.3 proposed design draft",
       "AIG-ASS-01 AGPI Triage Tool": "1.3 draft",
-      "AIG-ASS-02 AI Risk Assessment Worksheet": "1.8 draft",
-      "AIG-ASS-11 AI Security Review Checklist": "1.5 draft",
-      "AIG-DEC-01 Gate Map": "1.6 draft",
-      "AIG-DEC-02 Decision-Ready Paper": "1.2 draft",
-      "AIG-DEC-03 Governance Decision Record": "1.5 draft",
+      "AIG-ASS-02 AI Risk Assessment Worksheet": "1.9 draft",
+      "AIG-ASS-11 AI Security Review Checklist": "1.6 draft",
+      "AIG-DEC-01 Gate Map": "1.7 draft",
+      "AIG-DEC-02 Decision-Ready Paper": "1.3 draft",
+      "AIG-DEC-03 Governance Decision Record": "1.6 draft",
       "AIG-DEC-04 Gate Log": "1.0 draft",
-      "AIG-AGT-02 Agentic Classification Reference": "1.3 draft",
-      "AIG-AGT-03 Agentic Triage": "1.2 draft",
+      "AIG-AGT-02 Agentic Classification Reference": "1.4 draft",
+      "AIG-AGT-03 Agentic Triage": "1.3 draft",
       "AIG-AGT-04 Agent Record (ASBOM)": "0.3 working draft",
-      "AIG-AGT-06 Agentic Action / Decision Record": "1.2 draft",
+      "AIG-AGT-06 Agentic Action / Decision Record": "1.3 draft",
+      "AIG-OPS-01 Deployment and Rollout Plan": "1.6 draft",
       "AIG-OPS-02 Monitoring and Review Log": "1.5 draft",
       "UC_ID_Risk_Decision_Current_View": "1.0 draft",
     },
@@ -459,7 +460,7 @@
     );
   }
 
-  // Agency-tier minimum pathway (AIG-DEC-01 v1.6 Agentic pathway; AIG-AGT-03 §6;
+  // Agency-tier minimum pathway (AIG-DEC-01 v1.7 Agentic pathway; AIG-AGT-03 §6;
   // Playbook F.2). Applies to action-capable uses only. T0/T1 none, T2 Medium,
   // T3 High, T4 High (Critical where actions run without evidenced per-action human
   // review), T5 Critical. Proposed — for Council confirmation.
@@ -787,6 +788,12 @@
     return [...new Set(evidence)];
   }
 
+  // v3.9.1 (Proposed — for Council confirmation): AIG-OPS-01 section 8 "Rollback and Contingency" adds the
+  // business continuity link (Civil Contingencies Act 2004; AIG-AIMS-05 REQ-054); the label and question are
+  // quoted exactly from AIG-OPS-01 v1.6 and are evidenced at Gate 6 (go-live).
+  const BUSINESS_CONTINUITY_LINK =
+    "AIG-OPS-01 section 8, Business continuity link (Proposed — for Council confirmation): Is this service a prioritised activity in the Council's business continuity plan? Yes / No / Not known. If yes, give the plan reference and confirm the fallback above is consistent with it.";
+
   const ADVERSARIAL_TEST =
     "Adversarial test for resident-facing generative AI (AIG-ASS-11 Section 7) before go-live (Gate 6) (Proposed — for Council confirmation)";
 
@@ -801,7 +808,7 @@
     return match ? Number(match[1]) : null;
   }
 
-  // Prospective gate route (AIG-DEC-01 v1.6 Gate Map, gates 1 to 6), with the AI
+  // Prospective gate route (AIG-DEC-01 v1.7 Gate Map, gates 1 to 6), with the AI
   // Assurance Board's assurance input shown as a separate, non-deciding step. The
   // governing tier sets which gates apply; the AGPI priority sets urgency only.
   // Gate 2 and Gate 6 are mandatory for every action-capable use (R1, R2); Gate 4
@@ -981,6 +988,7 @@
           "Approval conditions closed or formally accepted",
           "Monitoring plan and thresholds (AIG-OPS-02)",
           "Incident, rollback and suspension arrangements",
+          BUSINESS_CONTINUITY_LINK,
           "Final Model Card and Evidence Index",
           ...(atLeast("High") || canAct ? ["Security Review (AIG-ASS-11) outcome confirmed"] : []),
           ...(isResidentFacingGenerativeMedium(profile, results) ? [ADVERSARIAL_TEST] : []),
@@ -2239,6 +2247,7 @@
     AGENCY_TABLE_A,
     D1_TRIGGERS,
     ADVERSARIAL_TEST,
+    BUSINESS_CONTINUITY_LINK,
     governancePriority,
     agencyMinimumTier,
     governingTier,
