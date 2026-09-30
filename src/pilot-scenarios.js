@@ -4,7 +4,8 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
   // FICTIONAL DEMONSTRATION DATA ONLY. These eleven uses of one made-up system
-  // show every AGPI priority, risk tier and agency tier. They are not Council
+  // show every AGPI priority and risk tier, and agency tiers T1 to T5 (under the
+  // suite v3.9 tier-assignment table none of them reaches T0). They are not Council
   // records, the identifiers are not Council-issued, and nothing here is stored,
   // exported or sent anywhere. Loading a scenario blocks every export.
   const SYSTEM = {
@@ -246,8 +247,9 @@
         "priority": "Priority 5 – Observe",
         "effectiveTier": "Low",
         "pathway": "Light-touch governance pathway",
-        "agencyTier": "T0 informational"
+        "agencyTier": "T1 assisted"
       },
+      "outcomeChange": "Suite v3.9: the agency tier now follows the AIG-AGT-02 / AIG-AGT-03 tier-assignment table (Table A: Consequence 1 sets a T1 floor), so this scenario's agency tier moved from T0 informational to T1 assisted. Its scores are unchanged; priority, risk tier and pathway are unchanged.",
       "agentic": {
         "dimensions": {
           "consequence": 1,
