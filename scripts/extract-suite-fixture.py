@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Regenerate test/fixtures/suite-v3.9-contract.json from the suite workbooks.
+"""Regenerate test/fixtures/suite-v3.9.1-contract.json from the suite workbooks and documents.
 
-Usage: python3 scripts/extract-suite-fixture.py <folder with the v3.9 .xlsx/.docx sources>
+Usage: python3 scripts/extract-suite-fixture.py <folder with the v3.9.1 .xlsx/.docx sources>
 
 The fixture records, for every workbook sheet or form the tool's exports
 target, the exact header row (file, sheet, row) and the controlled lists
@@ -17,7 +17,7 @@ import openpyxl
 from openpyxl.utils import get_column_letter
 
 SRC = Path(sys.argv[1])
-SUITE = "v3.9 (30 September 2026)"
+SUITE = "v3.9.1 (30 September 2026)"
 
 
 def header(file, sheet, row):
@@ -61,6 +61,11 @@ def lists(file, sheet):
         for rng in str(dv.sqref).split():
             out[rng] = values
     return out
+
+
+def formulas(file, sheet, cells):
+    ws = openpyxl.load_workbook(SRC / file)[sheet]
+    return {c: ws[c].value for c in cells}
 
 
 def list_column(file, sheet, col, first, last):
@@ -112,6 +117,18 @@ def agt06_fields():
     raise SystemExit("AGT-06 Controlled fields table not found")
 
 
+def ops01_section8():
+    """AIG-OPS-01 section 8 Rollback and Contingency: [field label, prompt] per row."""
+    d = docx.Document(SRC / "AIG-OPS-01_AI_Deployment_and_Rollout_Plan.docx")
+    for t in d.tables:
+        if t.rows[0].cells[0].text == "Safe-withdrawal / rollback procedure":
+            return {
+                "source": {"file": "AIG-OPS-01_AI_Deployment_and_Rollout_Plan.docx", "section": "8. Rollback and Contingency"},
+                "rows": [[r.cells[0].text, r.cells[1].text] for r in t.rows],
+            }
+    raise SystemExit("OPS-01 section 8 table not found")
+
+
 INV04 = "AIG-INV-04_AI_Register_Proposed.xlsx"
 DEC04 = "AIG-DEC-04_Gate_Log_Proposed.xlsx"
 ASS01 = "AIG-ASS-01_AGPI_Triage_Tool_Proposed.xlsx"
@@ -149,7 +166,11 @@ fixture = {
             **column_a(ASS02, "Triage Import", list(range(5, 64))),
             "lists": lists(ASS02, "Triage Import"),
         },
-        "Risk Assessment": {"source": {"file": ASS02, "sheet": "Risk Assessment"}, "lists": lists(ASS02, "Risk Assessment")},
+        "Risk Assessment": {
+            "source": {"file": ASS02, "sheet": "Risk Assessment"},
+            "lists": lists(ASS02, "Risk Assessment"),
+            "formulas": formulas(ASS02, "Risk Assessment", ["C43", "C82"]),
+        },
     },
     "AGT-04": {
         "Agent Record": {**header(AGT04, "Agent Record", 4), "lists": lists(AGT04, "Agent Record")},
@@ -165,8 +186,9 @@ fixture = {
     "OPS-02": {"Monitoring Log": {**header(OPS02, "Monitoring Log", 4), "lists": lists(OPS02, "Monitoring Log")}},
     "DEC-02": dec02_labels(),
     "AGT-06": agt06_fields(),
+    "OPS-01": ops01_section8(),
 }
 
-out = Path(__file__).resolve().parent.parent / "test" / "fixtures" / "suite-v3.9-contract.json"
+out = Path(__file__).resolve().parent.parent / "test" / "fixtures" / "suite-v3.9.1-contract.json"
 out.write_text(json.dumps(fixture, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 print(f"Wrote {out}")
