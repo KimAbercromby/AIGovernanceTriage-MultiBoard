@@ -1,44 +1,44 @@
 {
-  "suite": "v3.9.1 (30 September 2026)",
+  "suite": "v3.9.2 (30 September 2026)",
   "generatedBy": "scripts/extract-suite-fixture.py",
   "versions": {
-    "AIG-GOV-01": "v1.26 draft",
-    "AIG-GOV-02": "v19.9.11 draft",
-    "AIG-GOV-03": "v1.26 draft",
+    "AIG-GOV-01": "v1.27 draft",
+    "AIG-GOV-02": "v19.9.12 draft",
+    "AIG-GOV-03": "v1.27 draft",
     "AIG-GOV-04": "v1.2 draft",
     "AIG-GOV-05": "v1.2 draft",
-    "AIG-GOV-06": "v1.6 draft",
+    "AIG-GOV-06": "v1.7 draft",
     "AIG-INV-01": "v1.4 draft",
     "AIG-INV-02": "v1.5 draft",
     "AIG-INV-03": "v1.5 draft",
     "AIG-INV-04": "v1.0 draft (first controlled version)",
     "AIG-INV-05": "v0.3 proposed design draft",
-    "AIG-ASS-01": "v1.3 draft",
-    "AIG-ASS-02": "v1.9 draft",
-    "AIG-ASS-03": "v1.5 draft",
+    "AIG-ASS-01": "v1.4 draft",
+    "AIG-ASS-02": "v1.10 draft",
+    "AIG-ASS-03": "v1.6 draft",
     "AIG-ASS-04": "v1.3 draft",
     "AIG-ASS-05": "v1.3 draft",
     "AIG-ASS-06": "v1.3 draft",
     "AIG-ASS-07": "v1.2 draft",
-    "AIG-ASS-08": "v1.4 draft",
+    "AIG-ASS-08": "v1.5 draft",
     "AIG-ASS-09": "v1.3 draft",
     "AIG-ASS-10": "v1.4 draft",
     "AIG-ASS-11": "v1.6 draft",
     "AIG-ASS-12": "v1.2 draft",
-    "AIG-DEC-01": "v1.7 draft",
+    "AIG-DEC-01": "v1.8 draft",
     "AIG-DEC-02": "v1.3 draft",
     "AIG-DEC-03": "v1.6 draft",
-    "AIG-DEC-04": "v1.0 draft (first controlled version)",
-    "AIG-OPS-01": "v1.6 draft",
-    "AIG-OPS-02": "v1.5 draft",
-    "AIG-OPS-03": "v1.5 draft",
+    "AIG-DEC-04": "v1.1 draft",
+    "AIG-OPS-01": "v1.7 draft",
+    "AIG-OPS-02": "v1.6 draft",
+    "AIG-OPS-03": "v1.6 draft",
     "AIG-OPS-04": "v1.3 draft",
     "AIG-OPS-05": "v1.5 draft",
     "AIG-OPS-06": "v1.4 draft",
     "AIG-AGT-01": "v1.2 draft",
     "AIG-AGT-02": "v1.4 draft",
     "AIG-AGT-03": "v1.3 draft",
-    "AIG-AGT-04": "v0.3 working draft",
+    "AIG-AGT-04": "v0.4 working draft",
     "AIG-AGT-05": "v1.2 draft",
     "AIG-AGT-06": "v1.3 draft",
     "AIG-AIMS-01": "v1.3 draft",
@@ -299,7 +299,9 @@
         "Time (hh:mm)",
         "Source (minutes / decision record / system)",
         "Evidence ID(s) (AIG-INV-04 Evidence index)",
-        "Event-time lifecycle stage"
+        "Event-time lifecycle stage",
+        "Incident ref (AIG-OPS-03), precautionary pause",
+        "Follow-up decision due date (precautionary pause)"
       ],
       "formulaColumns": [
         "N",
@@ -311,7 +313,8 @@
           "Assurance opinion",
           "Review only",
           "Priority override",
-          "Intake / registration"
+          "Intake / registration",
+          "Precautionary pause (containment)"
         ],
         "G4:G553": [
           "Progress",
@@ -323,7 +326,8 @@
           "Decommission",
           "Re-authorise",
           "Opinion only",
-          "No decision"
+          "No decision",
+          "Paused — pending decision"
         ],
         "P4:P553": [
           "UC-ID specific",
@@ -403,7 +407,7 @@
         "file": "AIG-ASS-01_AGPI_Triage_Tool_Proposed.xlsx",
         "sheet": "AGPI Triage",
         "column": "A",
-        "rows": "4-22"
+        "rows": "4-24"
       },
       "labels": {
         "4": "System being assessed",
@@ -424,7 +428,9 @@
         "19": "Governance Investigation Required? (Yes / No)",
         "20": "Weight check (controlled weights total 100%)",
         "21": "Priority floor: Resident Impact or Legal & Regulatory Exposure = 5 (Proposed — for Council confirmation)",
-        "22": "Typical governance attention for this priority (urgency)"
+        "22": "Typical governance attention for this priority (urgency)",
+        "23": "Mandatory escalation trigger applies (Playbook §4.4.6)? (Yes / No / Unsure)",
+        "24": "Trigger floor: a §4.4.6 trigger use is at least Priority 4 (Proposed — for Council confirmation)"
       },
       "lists": {
         "B18": [
@@ -434,6 +440,11 @@
         "B19": [
           "Yes",
           "No"
+        ],
+        "B23": [
+          "Yes",
+          "No",
+          "Unsure"
         ]
       },
       "priorityAttention": {
@@ -590,7 +601,14 @@
       },
       "formulas": {
         "C43": "=IF(OR(C82=\"AGENTIC TRIGGER CONFLICT\",C82=\"Incomplete\",C38=\"\",C41=\"\",C42=\"Incomplete\"),\"Incomplete\",INDEX({\"Low\",\"Medium\",\"High\",\"Critical\"},MAX(MATCH(IF(E41=\"Yes\",C41,C38),{\"Low\",\"Medium\",\"High\",\"Critical\"},0),MATCH(C42,{\"Low\",\"Medium\",\"High\",\"Critical\"},0),IF(C82=\"Critical\",4,IF(C82=\"High\",3,IF(C82=\"Medium\",2,1))),IF(C28=5,2,1))))",
-        "C82": "=IF(C66<>\"Yes\",\"\",IF(COUNT(C67:C71)<5,\"Incomplete\",IF(AND(C56=\"No\",OR(C68>=2,ISNUMBER(SEARCH(\"Critical\",C74)))),\"AGENTIC TRIGGER CONFLICT\",IF(OR(ISNUMBER(SEARCH(\"Critical\",C74)),ISNUMBER(SEARCH(\"Executive\",C74)),LEFT(C73,2)=\"T5\"),\"Critical\",IF(OR(LEFT(C73,2)=\"T4\",LEFT(C73,2)=\"T3\",ISNUMBER(SEARCH(\"High\",C74))),\"High\",IF(OR(LEFT(C73,2)=\"T2\",ISNUMBER(SEARCH(\"Medium\",C74))),\"Medium\",\"None\"))))))"
+        "C82": "=IF(C66<>\"Yes\",\"\",IF(COUNT(C67:C71)<5,\"Incomplete\",IF(AND(C56=\"No\",OR(C68>=2,IF(ISNUMBER(MATCH(LEFT(C73,2),{\"T0\",\"T1\",\"T2\",\"T3\",\"T4\",\"T5\"},0)),INDEX({\"None\",\"None\",\"Medium\",\"High\",\"High\",\"Critical\"},MATCH(LEFT(C73,2),{\"T0\",\"T1\",\"T2\",\"T3\",\"T4\",\"T5\"},0)),IF(OR(LEFT(C74,9)=\"Executive\",LEFT(C74,8)=\"Critical\",ISNUMBER(SEARCH(\"minimum pathway Critical\",C74))),\"Critical\",IF(OR(LEFT(C74,4)=\"High\",ISNUMBER(SEARCH(\"minimum pathway High\",C74)),ISNUMBER(SEARCH(\"(higher gate)\",C74))),\"High\",IF(OR(LEFT(C74,6)=\"Medium\",LEFT(C74,23)=\"Agentic controls review\",ISNUMBER(SEARCH(\"minimum pathway Medium\",C74))),\"Medium\",\"None\"))))=\"Critical\")),\"AGENTIC TRIGGER CONFLICT\",IF(ISNUMBER(MATCH(LEFT(C73,2),{\"T0\",\"T1\",\"T2\",\"T3\",\"T4\",\"T5\"},0)),INDEX({\"None\",\"None\",\"Medium\",\"High\",\"High\",\"Critical\"},MATCH(LEFT(C73,2),{\"T0\",\"T1\",\"T2\",\"T3\",\"T4\",\"T5\"},0)),IF(OR(LEFT(C74,9)=\"Executive\",LEFT(C74,8)=\"Critical\",ISNUMBER(SEARCH(\"minimum pathway Critical\",C74))),\"Critical\",IF(OR(LEFT(C74,4)=\"High\",ISNUMBER(SEARCH(\"minimum pathway High\",C74)),ISNUMBER(SEARCH(\"(higher gate)\",C74))),\"High\",IF(OR(LEFT(C74,6)=\"Medium\",LEFT(C74,23)=\"Agentic controls review\",ISNUMBER(SEARCH(\"minimum pathway Medium\",C74))),\"Medium\",\"None\")))))))",
+        "E41": "=IF(AND(E37=\"Yes\",E38<>\"\",OR(AND(C38<>\"High\",C38<>\"Critical\"),AND(E39=\"Yes\",E40<>\"\"))),\"Yes\",\"No\")"
+      },
+      "evidenceLabels": {
+        "D37": "Controls evidenced?",
+        "D38": "Control evidence ref",
+        "D39": "Independent check?",
+        "D40": "Verification ref"
       }
     }
   },
@@ -1191,7 +1209,9 @@
         "Minimum sample (derived)",
         "Reassessment trigger (Appendix E.4)",
         "Reassessment / consideration ref (AIG-ASS-02)",
-        "AIG-DEC-04 Condition ID (if monitoring a condition)"
+        "AIG-DEC-04 Condition ID (if monitoring a condition)",
+        "Review type (§6.4.4: operational / performance / formal)",
+        "Agentic cadence raise applied? (action-capable uses)"
       ],
       "formulaColumns": [
         "AH",
@@ -1277,6 +1297,16 @@
           "Adverse human-override trend",
           "Control failure",
           "Legal / regulatory change"
+        ],
+        "AO5:AO2000": [
+          "Operational monitoring",
+          "Performance review",
+          "Formal review"
+        ],
+        "AP5:AP2000": [
+          "Raised per Monitoring and Review Plan",
+          "Not action-capable",
+          "Action-capable: raise not yet set"
         ]
       }
     }

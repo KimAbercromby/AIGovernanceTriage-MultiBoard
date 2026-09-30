@@ -33,10 +33,10 @@ outcome, and that every export control the tool wires up is blocked in demo mode
 ## Suite alignment and status
 
 This tool is aligned as a review aid to proposed, separate AI governance
-workbook drafts: **AI governance suite v3.9.1 (30 September 2026)**, Playbook 19.9.11,
-Gate Map AIG-DEC-01 1.7, AGPI Triage AIG-ASS-01 1.3, Risk Worksheet AIG-ASS-02 1.9,
-Deployment and Rollout Plan AIG-OPS-01 1.6, Register AIG-INV-04 1.0, Gate Log
-AIG-DEC-04 1.0, Agent Record AIG-AGT-04 0.3 and Capabilities and System Map
+workbook drafts: **AI governance suite v3.9.2 (30 September 2026)**, Playbook 19.9.12,
+Gate Map AIG-DEC-01 1.8, AGPI Triage AIG-ASS-01 1.4, Risk Worksheet AIG-ASS-02 1.10,
+Deployment and Rollout Plan AIG-OPS-01 1.7, Monitoring Log AIG-OPS-02 1.6, Register
+AIG-INV-04 1.0, Gate Log AIG-DEC-04 1.1, Agent Record AIG-AGT-04 0.4 and Capabilities and System Map
 AIG-INV-05 0.3. They are **proposed and unapproved**,
 not an approved or live policy, process or record. This public tool does not read
 or write controlled records and must not be treated as issued authority.
@@ -45,7 +45,12 @@ Rules applied (Proposed — for Council confirmation):
 
 - **Priority is urgency only.** AGPI bands per AIG-ASS-01; a Resident Impact or Legal &
   Regulatory Exposure score of 5 sets at least Priority 2; a use with a §4.4.6 trigger
-  cannot be Priority 5. The priority does not set the route or assurance depth.
+  (AIG-ASS-01 row 23 Yes or Unsure) cannot be Priority 5 and becomes at least Priority 4
+  (trigger floor, row 24). Governance Investigation Required? (B19) Yes routes to
+  discovery. The priority does not set the route or assurance depth.
+- **What's happening?** New use, change to a use in governance, found already in use,
+  or already approved. AI found already in use always gets full retrospective intake,
+  never light-touch; a change re-enters intake on the same AIR-ID.
 - **Governing tier sets the route:** the highest of the risk tier (inherent until
   controls are evidenced; High/Critical reductions need independent verification),
   the §4.4.6 trigger floor, the impact floor (any confirmed Impact 5 → at least
@@ -53,15 +58,29 @@ Rules applied (Proposed — for Council confirmation):
   Medium, T3 High, T4 High or Critical without evidenced per-action review, T5
   Critical). "Can it act?" Unsure counts as Yes; per-action review Unsure counts as
   No (Critical floor).
-- **Gates (AIG-DEC-01 v1.7):** Gate 2 and Gate 6 are mandatory for every
+- **Gates (AIG-DEC-01 v1.8):** Gate 2 and Gate 6 are mandatory for every
   action-capable use (T0 included) and Gate 6 grants the permitted autonomy level;
-  Gate 4 applies when procured; Gate 5 from Medium; resident-facing generative AI at
+  Gate 4 applies wherever a procurement, new contract, licence change or contract
+  variation is needed; for an existing contract or licence, or a free public tool, it
+  is "N/A — existing contract / free tool" with the rationale and the supplier checks
+  that still apply (data processing terms; AIG-ASS-08 sections 5 and 8); in-house
+  builds are N/A; Gate 5 from Medium; resident-facing generative AI at
   Medium needs the AIG-ASS-11 Section 7 adversarial test before Gate 6; the Gate 6
-  evidence list carries the AIG-OPS-01 section 8 business continuity link (v3.9.1:
+  evidence list carries the AIG-OPS-01 section 8 business continuity link (since v3.9.1:
   prioritised activity in the business continuity plan? Yes / No / Not known). The AI
   Assurance Board advises and never decides.
 - **Agency tier:** the AIG-AGT-02 / AIG-AGT-03 tier-assignment table (Tables A and B,
   highest floor wins; a kill-switch that is not demonstrated is a rule D1 trigger).
+  Autonomy 0 with every action human-approved is valid, so a T0 agent can be assessed.
+- **Control evidence:** controls count only when evidenced with a reference (and, for a
+  High or Critical inherent tier, independently verified with a reference), exactly as
+  AIG-ASS-02 E37:E41; the risk pre-fill exports those four fields for Risk Assessment
+  E37:E40 so the pasted worksheet recomputes the same governing tier.
+- **Monitoring minimum:** the summary states the Playbook §6.4.4 cadence (operational,
+  performance, formal) and the AIG-OPS-02 minimum sample for the governing tier, and
+  that action-capable uses have a raised cadence (size set by the Council).
+- **Retirement:** every Appendix E.7 closure question is asked for every retirement;
+  the current priority sets urgency only.
 
 - **AIG-INV-04:** permanent Council-issued AIR-ID and current assurance state. Look up and
   verify an existing AIR-ID in the current controlled workbook; this tool never
@@ -81,8 +100,9 @@ Rules applied (Proposed — for Council confirmation):
   Events**, and event-linked **Gate Conditions**. The "Download Gate Log plan rows"
   export gives paste-ready rows for the Gate plan sheet only: one row per AIG-DEC-01
   decision gate 1 to 6, columns A to L, with Gate / forum from the workbook's gate
-  list, Requirement Required or Conditional and Plan state Planned (Plan ID, target
-  date and any N/A rationale left blank for the governance steward), followed by
+  list, Requirement Required or Conditional (Gate 4 Not applicable under the AIG-DEC-01
+  v1.8 rule, with a draft rationale for the steward to confirm) and Plan state Planned
+  (Plan ID and target date left blank for the governance steward), followed by
   guidance columns that are not pasted. It never creates Gate Events or Conditions.
 - **AIG-INV-05 Capabilities and System Map:** a proposed controlled catalogue
   artefact, not approved or adopted. Triage offers a
@@ -156,10 +176,11 @@ node scripts/build.js --check
 node --test test/*.test.js
 ```
 
-`test/suite-v3.9.1-contract.test.js` checks every export's field labels, order and
-controlled values against `test/fixtures/suite-v3.9.1-contract.json`, which records the
+`test/suite-v3.9.2-contract.test.js` checks every export's field labels, order and
+controlled values against `test/fixtures/suite-v3.9.2-contract.json`, which records the
 header rows and dropdown lists read from the suite workbooks (file, sheet and row).
-Regenerate it for a new suite release with
+`test/v392-findings.test.js` has one test for each v3.9.2 pilot-readiness fix.
+Regenerate the fixture for a new suite release with
 `python3 scripts/extract-suite-fixture.py <folder of suite .xlsx/.docx files>`.
 
 Publish `index.html` from the repository root with GitHub Pages. The build

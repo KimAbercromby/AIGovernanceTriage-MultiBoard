@@ -97,11 +97,10 @@
     identityIds.forEach((id) => {
       ret[id] = byId("ret-" + id).value.trim();
     });
-    // Only emit fields in scope for the current priority. Higher-priority
-    // answers stay in retState (so they return if the priority is raised
-    // again) but must not leak into the record of a system classified lower.
+    // v3.9.2 (T-02): every Appendix E.7 closure item applies to every retirement,
+    // whatever the priority, so every answer is emitted.
     logic.RETIREMENT_FIELDS.forEach((f) => {
-      ret[f.id] = level <= f.showAtOrAbove ? retState[f.id] || "" : "";
+      ret[f.id] = retState[f.id] || "";
     });
     return ret;
   }
@@ -110,13 +109,10 @@
     const level = currentLevel();
     const label = byId("ret-priority").value;
     const n = logic.retirementFieldsFor(level).length;
-    let extra = "the full decommission gate while current priority is unverified";
-    if (level <= 1) extra = "the full decommission gate, including board-level assurance";
-    else if (level <= 2) extra = "records, accountability and notification checks on top of the base set";
-    else if (level <= 3) extra = "continuity and dependency checks on top of the base set";
+    const urgency = level <= 2 ? "treat it as urgent and early in the queue" : "take it in normal order";
     byId("retireScaleNote").textContent = label
-      ? `${label}: the gate asks ${extra} (${n} fields). Verify this against the system's current AIG-INV-04 value.`
-      : `Current AIG-INV-04 priority not selected: full-depth prompts are shown (${n} fields). Select the system's verified current priority to adjust review depth.`;
+      ? `${label}: every Appendix E.7 closure question is asked for every retirement (${n} fields). The priority sets urgency only (${urgency}); verify it against the system's current AIG-INV-04 value.`
+      : `Current AIG-INV-04 priority not selected: every Appendix E.7 closure question is asked for every retirement (${n} fields). The priority sets urgency only.`;
   }
 
   function renderOutputs() {

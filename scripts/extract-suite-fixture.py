@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Regenerate test/fixtures/suite-v3.9.1-contract.json from the suite workbooks and documents.
+"""Regenerate test/fixtures/suite-v3.9.2-contract.json from the suite workbooks and documents.
 
-Usage: python3 scripts/extract-suite-fixture.py <folder with the v3.9.1 .xlsx/.docx sources>
+Usage: python3 scripts/extract-suite-fixture.py <folder with the v3.9.2 .xlsx/.docx sources>
 
 The fixture records, for every workbook sheet or form the tool's exports
 target, the exact header row (file, sheet, row) and the controlled lists
@@ -17,7 +17,7 @@ import openpyxl
 from openpyxl.utils import get_column_letter
 
 SRC = Path(sys.argv[1])
-SUITE = "v3.9.1 (30 September 2026)"
+SUITE = "v3.9.2 (30 September 2026)"
 
 
 def header(file, sheet, row):
@@ -153,7 +153,7 @@ fixture = {
     },
     "ASS-01": {
         "AGPI Triage": {
-            **column_a(ASS01, "AGPI Triage", list(range(4, 23))),
+            **column_a(ASS01, "AGPI Triage", list(range(4, 25))),
             "lists": lists(ASS01, "AGPI Triage"),
             "priorityAttention": {
                 "source": {"file": ASS01, "sheet": "AGPI Triage", "column": "B", "rows": "34-38"},
@@ -169,7 +169,8 @@ fixture = {
         "Risk Assessment": {
             "source": {"file": ASS02, "sheet": "Risk Assessment"},
             "lists": lists(ASS02, "Risk Assessment"),
-            "formulas": formulas(ASS02, "Risk Assessment", ["C43", "C82"]),
+            "formulas": formulas(ASS02, "Risk Assessment", ["C43", "C82", "E41"]),
+            "evidenceLabels": {c: openpyxl.load_workbook(SRC / ASS02)["Risk Assessment"][c].value for c in ["D37", "D38", "D39", "D40"]},
         },
     },
     "AGT-04": {
@@ -189,6 +190,6 @@ fixture = {
     "OPS-01": ops01_section8(),
 }
 
-out = Path(__file__).resolve().parent.parent / "test" / "fixtures" / "suite-v3.9.1-contract.json"
+out = Path(__file__).resolve().parent.parent / "test" / "fixtures" / "suite-v3.9.2-contract.json"
 out.write_text(json.dumps(fixture, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 print(f"Wrote {out}")

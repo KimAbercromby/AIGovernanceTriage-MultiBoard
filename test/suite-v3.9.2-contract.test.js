@@ -1,7 +1,7 @@
 "use strict";
 
-// Export contract and logic tests against AI governance suite v3.9.1 (30 September 2026).
-// Expected headers and controlled lists come from test/fixtures/suite-v3.9.1-contract.json,
+// Export contract and logic tests against AI governance suite v3.9.2 (30 September 2026).
+// Expected headers and controlled lists come from test/fixtures/suite-v3.9.2-contract.json,
 // generated from the workbooks by scripts/extract-suite-fixture.py; each entry records
 // its source file, sheet and header row.
 
@@ -10,7 +10,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const logic = require("../src/triage-logic.js");
-const contract = require("./fixtures/suite-v3.9.1-contract.json");
+const contract = require("./fixtures/suite-v3.9.2-contract.json");
 
 const app = fs.readFileSync(path.join(__dirname, "..", "src", "triage-app.js"), "utf8");
 const html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
@@ -53,7 +53,7 @@ function triage({ profile = {}, agpi = ones(), impact = impacts(), likelihood = 
 // ---- Export headers equal the v3.9.1 workbooks ---------------------------------
 
 test("fixture records its v3.9 source for every export target", () => {
-  assert.match(contract.suite, /^v3\.9\.1 /);
+  assert.match(contract.suite, /^v3\.9\.2 /);
   for (const [key, spec] of [
     ["INV-04 AI Register", contract["INV-04"]["AI Register"]],
     ["DEC-04 Gate plan", contract["DEC-04"]["Gate plan"]],
@@ -126,15 +126,20 @@ test("AIG-DEC-04 retirement handoff uses the v3.9 sheet names, columns and lists
   const outcome = handoff.rows.find((r) => r[1] === "Outcome");
   assert.equal(outcome[3], "Decommission");
   assert.match(outcome[5], /AIG-DEC-03 outcome for the UC-ID: Retired/);
+  // v3.9.2: "Paused — pending decision" is only for a Precautionary pause (containment)
+  // event, never a retirement decision, so the Gate 8 options are the rest of the list.
   const decisionOptions = logic.RETIREMENT_FIELDS.find((f) => f.id === "decision").options.filter((o) => !o.startsWith("Pending"));
-  assert.deepEqual(decisionOptions, contract["DEC-04"]["Gate events"].lists["G4:G553"]);
+  const outcomes = contract["DEC-04"]["Gate events"].lists["G4:G553"];
+  assert.ok(outcomes.includes("Paused — pending decision"));
+  assert.deepEqual(decisionOptions, outcomes.filter((o) => o !== "Paused — pending decision"));
   assert.deepEqual(logic.RETIREMENT_PRIORITIES.map((p) => p.label), contract["INV-04"]["Assessment summary"].lists["B4:B206"]);
 });
 
 test("AIG-ASS-01 AGPI pre-fill: exact column A labels in sheet order, then notes", () => {
   const labels = labelsIn("agpiPrefillCsv", "return fieldValueCsv(rows");
   const ass01 = contract["ASS-01"]["AGPI Triage"].labels;
-  const expected = [5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22].map((r) => ass01[String(r)]);
+  // v3.9.2 (W-05): rows 23 (§4.4.6 trigger input) and 24 (trigger floor check) added.
+  const expected = [5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24].map((r) => ass01[String(r)]);
   assert.deepEqual(labels.slice(0, expected.length), expected);
   assert.ok(labels.slice(expected.length).every((l) => l.startsWith("Note (not a field)")));
   assert.match(app, /\["Assessment scope \(UC-ID specific \/ Shared system baseline\)", "UC-ID specific"\]/);
@@ -225,8 +230,8 @@ test("AIG-DEC-02 decision paper handoff uses the template's own field labels, in
   assert.equal(first[10], "Enhanced / Agentic");
 });
 
-test("stated suite and artefact versions match the v3.9.1 Artefact Index (AIG-GOV-03)", () => {
-  assert.equal(logic.SUITE.release, "v3.9.1");
+test("stated suite and artefact versions match the v3.9.2 Artefact Index (AIG-GOV-03)", () => {
+  assert.equal(logic.SUITE.release, "v3.9.2");
   const index = contract.versions;
   const byId = {
     "AIG-GOV-02 Playbook": "AIG-GOV-02", "AIG-GOV-03 Artefact Index": "AIG-GOV-03",
@@ -243,44 +248,86 @@ test("stated suite and artefact versions match the v3.9.1 Artefact Index (AIG-GO
     assert.ok(index[id].startsWith(`v${logic.SUITE.versions[name]}`), `${name}: tool ${logic.SUITE.versions[name]}, index ${index[id]}`);
   }
   assert.equal(Object.keys(byId).length, Object.keys(logic.SUITE.versions).length - 1); // all but the UC-ID view (not indexed)
-  assert.match(html, /Aligned to AI governance suite v3\.9\.1 \(30 September 2026\): Playbook 19\.9\.11/);
+  assert.match(html, /Aligned to AI governance suite v3\.9\.2 \(30 September 2026\): Playbook 19\.9\.12, Gate Map AIG-DEC-01 1\.8, AGPI AIG-ASS-01 1\.4, Risk Worksheet AIG-ASS-02 1\.10/);
 });
 
 // ---- v3.8 / v3.9 logic rules ---------------------------------------------------
 
-// AIG-ASS-01 B17 reimplemented from the workbook formula (valid, complete inputs).
-function ass01B17(c) {
+// AIG-ASS-01 v1.4 B17 and B24 reimplemented from the workbook formulas (valid, complete
+// inputs; B23 is the §4.4.6 trigger answer Yes / No / Unsure; B19 Governance Investigation).
+function ass01D16(c) {
   const w = [0.25, 0.2, 0.2, 0.15, 0.1, 0.1];
-  const d16 = c.reduce((sum, v, i) => sum + ((v - 1) / 4) * w[i] * 100, 0);
+  return c.reduce((sum, v, i) => sum + ((v - 1) / 4) * w[i] * 100, 0);
+}
+function ass01B17(c, b23 = "No", b19 = "No") {
+  if (b19 === "Yes") return "Governance Investigation Required — route to discovery";
+  const d16 = ass01D16(c);
   if (d16 >= 80) return "Priority 1 – Critical";
   if (d16 >= 60 || c[0] === 5 || c[2] === 5) return "Priority 2 – High";
   if (d16 >= 40) return "Priority 3 – Standard";
-  if (d16 >= 20) return "Priority 4 – Routine";
+  if (d16 >= 20 || b23 === "Yes" || b23 === "Unsure") return "Priority 4 – Routine";
   return "Priority 5 – Observe";
 }
+function ass01B24(c, b23) {
+  const b17 = ass01B17(c, b23);
+  if (!b17.startsWith("Priority")) return "";
+  if (b23 === "Yes" || b23 === "Unsure") {
+    return ass01D16(c) < 20
+      ? "Trigger floor applied: §4.4.6 trigger use raised from Priority 5 – Observe to Priority 4 – Routine"
+      : "No trigger-floor effect (AGPI band already Priority 4 or higher)";
+  }
+  return "No trigger floor (no §4.4.6 trigger)";
+}
 
-test("AGPI priority equals AIG-ASS-01 B17 (with the Resident/Legal floor) for all 15,625 score sets", () => {
+test("the reimplemented B17 / B24 match the v3.9.2 AIG-ASS-01 rows read from the workbook", () => {
+  const spec = contract["ASS-01"]["AGPI Triage"];
+  assert.equal(spec.labels["23"], "Mandatory escalation trigger applies (Playbook §4.4.6)? (Yes / No / Unsure)");
+  assert.deepEqual(spec.lists.B23, ["Yes", "No", "Unsure"]);
+  assert.equal(spec.labels["24"], "Trigger floor: a §4.4.6 trigger use is at least Priority 4 (Proposed — for Council confirmation)");
+});
+
+test("W-05: AGPI priority equals AIG-ASS-01 v1.4 B17 for all 15,625 score sets × trigger Yes / No / Unsure", () => {
   const ids = logic.DIMENSIONS.map((d) => d.id);
+  const triggerIdsFor = { No: [], Yes: ["novel"], Unsure: ["agentic"] };
   let checked = 0;
+  let floorApplied = 0;
   const walk = (i, acc) => {
     if (i === 6) {
       const scores = Object.fromEntries(ids.map((id, k) => [id, acc[k]]));
-      const p = logic.governancePriority(logic.calculateAgpi(scores), scores, []);
-      assert.equal(p.ass01Label, ass01B17(acc));
-      assert.equal(p.label, ass01B17(acc));
-      checked += 1;
+      for (const b23 of ["No", "Yes", "Unsure"]) {
+        const p = logic.governancePriority(logic.calculateAgpi(scores), scores, triggerIdsFor[b23]);
+        assert.equal(p.ass01Label, ass01B17(acc, b23), `${acc} trigger ${b23}`);
+        assert.equal(p.label, ass01B17(acc, b23));
+        assert.equal(p.triggerFloorNote, ass01B24(acc, b23));
+        if (p.overrideApplied) floorApplied += 1;
+        checked += 1;
+      }
       return;
     }
     for (let v = 1; v <= 5; v += 1) walk(i + 1, [...acc, v]);
   };
   walk(0, []);
-  assert.equal(checked, 15625);
+  assert.equal(checked, 46875);
+  assert.ok(floorApplied > 0, "the trigger floor is exercised");
+});
+
+test("T-09: Governance Investigation Required = Yes gives the AIG-ASS-01 B17 investigation route", () => {
+  const scores = { ...ones(4), resident: 5 };
+  const p = logic.governancePriority(logic.calculateAgpi(scores), scores, [], "Yes");
+  assert.equal(p.ass01Label, ass01B17(Object.values(scores), "No", "Yes"));
+  assert.equal(p.ass01Label, logic.INVESTIGATION_LABEL);
+  const t = triage({ agpi: scores });
+  const r = logic.calculateTriage({ profile: t.profile, agpiScores: scores, impactScores: impacts(), likelihood: 1, control: 3, controlEvidence: "Implemented and evidenced", triggerIds: [], governanceInvestigation: "Yes" });
+  assert.equal(r.rawAgpiPriority, logic.INVESTIGATION_LABEL);
+  assert.equal(r.effectiveGovernancePriority, logic.INVESTIGATION_LABEL);
+  assert.equal(logic.isLightTouch(t.profile, r), false);
 });
 
 test("a use with a §4.4.6 trigger cannot be Priority 5; the floor note matches AIG-ASS-01 B21", () => {
   const p = logic.governancePriority(0, ones(), ["novel"]);
   assert.equal(p.label, "Priority 4 – Routine");
-  assert.equal(p.ass01Label, "Priority 5 – Observe");
+  assert.equal(p.ass01Label, "Priority 4 – Routine", "AIG-ASS-01 v1.4 B17 applies the trigger floor itself");
+  assert.equal(p.triggerFloorNote, "Trigger floor applied: §4.4.6 trigger use raised from Priority 5 – Observe to Priority 4 – Routine");
   assert.ok(p.overrideApplied);
   const floored = logic.governancePriority(logic.calculateAgpi({ ...ones(), resident: 5 }), { ...ones(), resident: 5 }, []);
   assert.equal(floored.label, "Priority 2 – High");
@@ -380,7 +427,7 @@ test("assurance intensity follows the governing tier and triggers only (AIG-ASS-
   assert.doesNotMatch(app + JSON.stringify(logic.buildRoute(baseProfile({}), high, {})), /higher of the priority route/i);
 });
 
-test("gates follow DEC-01 v1.6: Gate 2 and Gate 6 for every action-capable use (T0 included), Gate 5 from Medium, Gate 4 if procured", () => {
+test("gates follow DEC-01 v1.8: Gate 2 and Gate 6 for every action-capable use (T0 included), Gate 5 from Medium, Gate 4 per the procurement rule", () => {
   const t0 = triage({ profile: { actionAuthority: "Human approves each action" }, agentic: { tierNum: 0, tierLabel: logic.AGENCY_TIERS[0] } });
   const route = logic.buildRoute(t0.profile, t0.results, {});
   const gate = (r, n) => r.find((g) => g.gateNumber === n);
@@ -389,10 +436,10 @@ test("gates follow DEC-01 v1.6: Gate 2 and Gate 6 for every action-capable use (
   assert.equal(gate(route, 6).applicability, "Required");
   assert.match(gate(route, 6).decision, /grants the permitted autonomy level/);
   assert.equal(gate(route, 5).applicability, "Conditional");
-  assert.equal(gate(route, 4).applicability, "Conditional");
+  assert.equal(gate(route, 4).applicability, "Not applicable", "built in-house: Gate 4 N/A");
   const low = triage();
   assert.equal(gate(logic.buildRoute(low.profile, low.results, {}), 2).applicability, "Conditional");
-  const medium = triage({ impact: { ...impacts(1), residentImpact: 3 }, likelihood: 3, evidence: "Not evidenced — planned or unverified", profile: { source: "Procured" } });
+  const medium = triage({ impact: { ...impacts(1), residentImpact: 3 }, likelihood: 3, evidence: "Not evidenced — planned or unverified", profile: { source: "Procured", procurementRoute: "New contract, licence change or contract variation" } });
   assert.equal(medium.results.effectiveTierName, "Medium");
   const mRoute = logic.buildRoute(medium.profile, medium.results, {});
   assert.equal(gate(mRoute, 5).applicability, "Required");
@@ -453,23 +500,28 @@ test("agency tier follows AIG-AGT-02 Tables A and B: the Table C calibration exa
 
 // ---- v3.9.1 --------------------------------------------------------------------
 
-// Evaluate the AIG-ASS-02 Risk Assessment C82 agentic-floor formula (read from the v3.9.1 workbook)
-// for one agency tier label (C73) and pathway (C74), with Step 5 complete and no C56 conflict.
+// Evaluate the AIG-ASS-02 v1.10 Risk Assessment C82 agentic floor (read from the v3.9.2
+// workbook) for one agency tier label (C73) and pathway (C74), Step 5 complete, no C56
+// conflict. v1.10 reads the tier token T0–T5 by exact match (INDEX/MATCH arrays taken
+// from the formula); the controlled pathway wording is used only when C73 has no token.
 function ass02C82(formula, tierLabel, pathway) {
   const f = formula.replace(/^=/, "");
-  const branches = [...f.matchAll(/IF\(OR\(((?:LEFT\(C73,2\)="T\d"|ISNUMBER\(SEARCH\("[A-Za-z]+",C74\)\)|,)+)\),"(Critical|High|Medium)"/g)];
-  assert.ok(branches.length >= 3, "C82 tier branches found");
-  for (const [, terms, result] of branches) {
-    const tiers = [...terms.matchAll(/LEFT\(C73,2\)="(T\d)"/g)].map((m) => m[1]);
-    const words = [...terms.matchAll(/SEARCH\("([A-Za-z]+)",C74\)/g)].map((m) => m[1].toLowerCase());
-    if (tiers.includes(tierLabel.slice(0, 2)) || words.some((wd) => pathway.toLowerCase().includes(wd))) return result;
-  }
+  const tokens = /MATCH\(LEFT\(C73,2\),\{([^}]+)\},0\)/.exec(f)[1].split(",").map((t) => t.replace(/"/g, ""));
+  const floors = /INDEX\(\{([^}]+)\},MATCH/.exec(f)[1].split(",").map((t) => t.replace(/"/g, ""));
+  assert.deepEqual(tokens, ["T0", "T1", "T2", "T3", "T4", "T5"]);
+  const i = tokens.indexOf(String(tierLabel).slice(0, 2));
+  if (i >= 0) return floors[i];
+  const c74 = String(pathway);
+  if (c74.startsWith("Executive") || c74.startsWith("Critical") || /minimum pathway critical/i.test(c74)) return "Critical";
+  if (c74.startsWith("High") || /minimum pathway high/i.test(c74) || /\(higher gate\)/i.test(c74)) return "High";
+  if (c74.startsWith("Medium") || c74.startsWith("Agentic controls review") || /minimum pathway medium/i.test(c74)) return "Medium";
   return "None";
 }
 
-test("v3.9.1: agency minimum equals the AIG-ASS-02 C82 agentic floor for every tier, T2 included (no carve-outs)", () => {
+test("W-09: agency minimum equals the AIG-ASS-02 v1.10 C82 agentic floor (exact tier token) for every tier", () => {
   const { C82, C43 } = contract["ASS-02"]["Risk Assessment"].formulas;
-  assert.match(C82, /LEFT\(C73,2\)="T2"/, "workbook applies the T2 minimum");
+  assert.match(C82, /INDEX\(\{"None","None","Medium","High","High","Critical"\}/, "workbook reads the tier token by exact match");
+  assert.doesNotMatch(C82, /SEARCH\("Critical",C74\)/, "no free-text search for Critical");
   assert.match(C43, /IF\(C82="Medium",2/, "governing tier ranks a Medium agentic floor");
   const perAction = { actionAuthority: "Human approves each action" };
   for (let n = 0; n <= 5; n++) {
@@ -481,6 +533,9 @@ test("v3.9.1: agency minimum equals the AIG-ASS-02 C82 agentic floor for every t
     const r = triage({ profile: perAction, agentic }).results;
     assert.equal(r.effectiveTierName, workbook === "None" ? "Low" : workbook, `T${n} governing tier from a Low risk tier`);
   }
+  // W-09: the controlled T4 wording "High (Critical where …)" no longer reads as Critical.
+  assert.equal(ass02C82(C82, "T4 high-agency", "High (Critical where actions run without evidenced per-action human review)"), "High");
+  assert.equal(ass02C82(C82, "T4 high-agency", logic.AGENCY_PATHWAYS[4]), "High");
 });
 
 test("v3.9.1: Gate 6 evidence carries the AIG-OPS-01 section 8 business continuity link exactly", () => {

@@ -5,7 +5,8 @@
   "use strict";
   // FICTIONAL DEMONSTRATION DATA ONLY. These eleven uses of one made-up system
   // show every AGPI priority and risk tier, and agency tiers T1 to T5 (under the
-  // suite v3.9 tier-assignment table none of them reaches T0). They are not Council
+  // suite v3.9 tier-assignment table none of them reaches T0; since v3.9.2 a T0
+  // profile can be assessed, but the demo scores were left unchanged). They are not Council
   // records, the identifiers are not Council-issued, and nothing here is stored,
   // exported or sent anywhere. Loading a scenario blocks every export.
   const SYSTEM = {
@@ -16,7 +17,8 @@
     serviceOwner: "Fictional demo owner",
     supplierDeveloper: "Fictional in-house team",
     source: "Internally developed",
-    procurementRequired: "No",
+    procurementRoute: "Built in-house",
+    situation: "New use",
     lifecycle: "Pilot",
     ucIdStatus: "Provisional — operator-entered, unverified",
   };
