@@ -33,10 +33,11 @@ outcome, and that every export control the tool wires up is blocked in demo mode
 ## Suite alignment and status
 
 This tool is aligned as a review aid to proposed, separate AI governance
-workbook drafts: **AI governance suite v3.9 (30 September 2026)**, Playbook 19.9.10,
-Gate Map AIG-DEC-01 1.6, AGPI Triage AIG-ASS-01 1.3, Risk Worksheet AIG-ASS-02 1.8,
-Register AIG-INV-04 1.0, Gate Log AIG-DEC-04 1.0, Agent Record AIG-AGT-04 0.3 and
-Capabilities and System Map AIG-INV-05 0.3. They are **proposed and unapproved**,
+workbook drafts: **AI governance suite v3.9.1 (30 September 2026)**, Playbook 19.9.11,
+Gate Map AIG-DEC-01 1.7, AGPI Triage AIG-ASS-01 1.3, Risk Worksheet AIG-ASS-02 1.9,
+Deployment and Rollout Plan AIG-OPS-01 1.6, Register AIG-INV-04 1.0, Gate Log
+AIG-DEC-04 1.0, Agent Record AIG-AGT-04 0.3 and Capabilities and System Map
+AIG-INV-05 0.3. They are **proposed and unapproved**,
 not an approved or live policy, process or record. This public tool does not read
 or write controlled records and must not be treated as issued authority.
 
@@ -52,10 +53,12 @@ Rules applied (Proposed — for Council confirmation):
   Medium, T3 High, T4 High or Critical without evidenced per-action review, T5
   Critical). "Can it act?" Unsure counts as Yes; per-action review Unsure counts as
   No (Critical floor).
-- **Gates (AIG-DEC-01 v1.6):** Gate 2 and Gate 6 are mandatory for every
+- **Gates (AIG-DEC-01 v1.7):** Gate 2 and Gate 6 are mandatory for every
   action-capable use (T0 included) and Gate 6 grants the permitted autonomy level;
   Gate 4 applies when procured; Gate 5 from Medium; resident-facing generative AI at
-  Medium needs the AIG-ASS-11 Section 7 adversarial test before Gate 6. The AI
+  Medium needs the AIG-ASS-11 Section 7 adversarial test before Gate 6; the Gate 6
+  evidence list carries the AIG-OPS-01 section 8 business continuity link (v3.9.1:
+  prioritised activity in the business continuity plan? Yes / No / Not known). The AI
   Assurance Board advises and never decides.
 - **Agency tier:** the AIG-AGT-02 / AIG-AGT-03 tier-assignment table (Tables A and B,
   highest floor wins; a kill-switch that is not demonstrated is a rule D1 trigger).
@@ -153,8 +156,8 @@ node scripts/build.js --check
 node --test test/*.test.js
 ```
 
-`test/suite-v3.9-contract.test.js` checks every export's field labels, order and
-controlled values against `test/fixtures/suite-v3.9-contract.json`, which records the
+`test/suite-v3.9.1-contract.test.js` checks every export's field labels, order and
+controlled values against `test/fixtures/suite-v3.9.1-contract.json`, which records the
 header rows and dropdown lists read from the suite workbooks (file, sheet and row).
 Regenerate it for a new suite release with
 `python3 scripts/extract-suite-fixture.py <folder of suite .xlsx/.docx files>`.
