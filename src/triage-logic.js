@@ -6,29 +6,29 @@
   "use strict";
 
   // Suite release this tool is aligned to, with the artefact versions it relies on
-  // (from the AIG-GOV-03 Artefact Index, suite release v3.9.1, 30 September 2026).
+  // (from the AIG-GOV-03 Artefact Index, suite release v3.9.2, 30 September 2026).
   const SUITE = {
-    release: "v3.9.1",
+    release: "v3.9.2",
     date: "30 September 2026",
     status: "Proposed — for Council confirmation; not approved or adopted",
     versions: {
-      "AIG-GOV-02 Playbook": "19.9.11 draft",
-      "AIG-GOV-03 Artefact Index": "1.26 draft",
+      "AIG-GOV-02 Playbook": "19.9.12 draft",
+      "AIG-GOV-03 Artefact Index": "1.27 draft",
       "AIG-INV-04 AI Register": "1.0 draft",
       "AIG-INV-05 Capabilities and System Map": "0.3 proposed design draft",
-      "AIG-ASS-01 AGPI Triage Tool": "1.3 draft",
-      "AIG-ASS-02 AI Risk Assessment Worksheet": "1.9 draft",
+      "AIG-ASS-01 AGPI Triage Tool": "1.4 draft",
+      "AIG-ASS-02 AI Risk Assessment Worksheet": "1.10 draft",
       "AIG-ASS-11 AI Security Review Checklist": "1.6 draft",
-      "AIG-DEC-01 Gate Map": "1.7 draft",
+      "AIG-DEC-01 Gate Map": "1.8 draft",
       "AIG-DEC-02 Decision-Ready Paper": "1.3 draft",
       "AIG-DEC-03 Governance Decision Record": "1.6 draft",
-      "AIG-DEC-04 Gate Log": "1.0 draft",
+      "AIG-DEC-04 Gate Log": "1.1 draft",
       "AIG-AGT-02 Agentic Classification Reference": "1.4 draft",
       "AIG-AGT-03 Agentic Triage": "1.3 draft",
-      "AIG-AGT-04 Agent Record (ASBOM)": "0.3 working draft",
+      "AIG-AGT-04 Agent Record (ASBOM)": "0.4 working draft",
       "AIG-AGT-06 Agentic Action / Decision Record": "1.3 draft",
-      "AIG-OPS-01 Deployment and Rollout Plan": "1.6 draft",
-      "AIG-OPS-02 Monitoring and Review Log": "1.5 draft",
+      "AIG-OPS-01 Deployment and Rollout Plan": "1.7 draft",
+      "AIG-OPS-02 Monitoring and Review Log": "1.6 draft",
       "UC_ID_Risk_Decision_Current_View": "1.0 draft",
     },
   };
@@ -231,6 +231,129 @@
     unsure: "Unsure — not yet confirmed",
   };
 
+  // "What's happening?" (as in the Route Finder, step 1). AI found already in use
+  // always goes through full retrospective intake, never Fast Track or light-touch;
+  // a change to a use already in governance re-enters intake on the same AIR-ID
+  // (Playbook §3.8; AIG-INV-02; AIG-DEC-01 Gate 7). v3.9.2 (T-01).
+  const SITUATIONS = {
+    new: "New use",
+    change: "Change to a use in governance",
+    found: "Found already in use",
+    approved: "Already approved",
+  };
+  function situationOf(profile) {
+    const value = profile && profile.situation;
+    return Object.values(SITUATIONS).includes(value) ? value : SITUATIONS.new;
+  }
+  // Found already in use, or a "new" use whose operational state is already Live.
+  function isFoundInUse(profile) {
+    const situation = situationOf(profile);
+    return situation === SITUATIONS.found || (situation === SITUATIONS.new && !!profile && profile.lifecycle === "Live");
+  }
+  function isReentry(profile) {
+    const situation = situationOf(profile);
+    return situation === SITUATIONS.change || situation === SITUATIONS.approved;
+  }
+
+  // Procurement question (AIG-DEC-01 v1.8 Gate 4 rule; Playbook §5.5.1; AIG-ASS-08 v1.5;
+  // Proposed — for Council confirmation). v3.9.2 (T-07, T-08).
+  const PROCUREMENT = {
+    unknown: "Not yet known",
+    new: "New contract, licence change or contract variation",
+    existing: "Existing contract or licence",
+    free: "Free public tool",
+    inhouse: "Built in-house",
+  };
+  // Profiles saved before v3.9.2 answered "External procurement or contract approval
+  // needed?" (Yes / No) instead; No is read with the Source answer.
+  function procurementRouteOf(profile) {
+    const value = profile && profile.procurementRoute;
+    if (Object.values(PROCUREMENT).includes(value)) return value;
+    if (profile && profile.procurementRequired === "Yes") return PROCUREMENT.new;
+    if (profile && profile.procurementRequired === "No") {
+      return {
+        "Internally developed": PROCUREMENT.inhouse,
+        "Free / public tool": PROCUREMENT.free,
+        Procured: PROCUREMENT.existing,
+        "Embedded in platform / supplier feature": PROCUREMENT.existing,
+      }[profile.source] || PROCUREMENT.unknown;
+    }
+    return PROCUREMENT.unknown;
+  }
+  const SUPPLIER_CHECKS =
+    "the data processing terms and the Supplier AI Due Diligence Questionnaire (AIG-ASS-08) section 5 (data protection and security) and section 8 (business continuity and exit)";
+  const GATE4_NA_EXISTING = "N/A — existing contract / free tool";
+  // Gate 4 applies wherever a procurement, new contract, licence change or contract
+  // variation is needed. An AI feature enabled under an existing contract or licence,
+  // or a free public tool, records Gate 4 "N/A — existing contract / free tool" with
+  // the rationale, and the supplier checks that still apply are completed.
+  function gate4Rule(profile) {
+    const route = procurementRouteOf(profile);
+    if (route === PROCUREMENT.new) {
+      return {
+        route, applies: true, planRequirement: "Required", naRationale: "", supplierChecks: "full",
+        label: "Applies (new contract, licence change or variation)",
+        note: "Supplier due diligence (AIG-ASS-08) and AI contract terms; the Procurement board decides within its delegated remit.",
+      };
+    }
+    if (route === PROCUREMENT.existing || route === PROCUREMENT.free) {
+      const why = route === PROCUREMENT.existing
+        ? "AI feature enabled under an existing contract or licence; no procurement, new contract, licence change or contract variation is needed"
+        : "free public tool with no contract; no procurement, new contract, licence change or contract variation is needed";
+      return {
+        route, applies: false, planRequirement: "Not applicable", supplierChecks: "partial",
+        naRationale: `${GATE4_NA_EXISTING}: ${why} (AIG-DEC-01 Gate 4 rule). Supplier checks that still apply: ${SUPPLIER_CHECKS}. Governance steward confirms and adds the authority ref.`,
+        label: GATE4_NA_EXISTING,
+        note: route === PROCUREMENT.existing
+          ? `Record Gate 4 as N/A in the Gate Plan with the reason. Still complete ${SUPPLIER_CHECKS}. If switching it on needs a licence change or contract variation, Gate 4 applies.`
+          : `Record Gate 4 as N/A in the Gate Plan with the reason. Still complete ${SUPPLIER_CHECKS}, answered from the published terms, with any gaps recorded.`,
+      };
+    }
+    if (route === PROCUREMENT.inhouse) {
+      return {
+        route, applies: false, planRequirement: "Not applicable", supplierChecks: "none",
+        naRationale: "N/A (built in-house): no procurement, contract or licence (AIG-DEC-01 Gate 4). Governance steward confirms and adds the authority ref.",
+        label: "N/A (built in-house)",
+        note: "Built in-house: mark Gate 4 N/A in the Gate Plan with the reason.",
+      };
+    }
+    return {
+      route, applies: null, planRequirement: "Conditional", naRationale: "", supplierChecks: "confirm",
+      label: "If a procurement, new contract, licence change or contract variation is needed",
+      note: "Answer the procurement question. Gate 4 applies wherever a procurement, new contract, licence change or contract variation is needed; for an existing contract or licence, or a free public tool, it is N/A with the reason, and the remaining supplier checks are completed.",
+    };
+  }
+
+  // Monitoring minimum for the governing tier (Playbook §6.4.4 controlled minimum
+  // cadence table; AIG-OPS-02 v1.6 Sampling Method), as the Route Finder states it.
+  // For action-capable uses the Monitoring and Review Plan raises the cadence; the size
+  // of the raise is a Council decision (AIG-OPS-02 column AP). v3.9.2 (T-12, W-08).
+  const MONITORING_MINIMUM = {
+    Low: ["routine operational monitoring by the Service Owner", "performance review annual", "formal review annual", "minimum sample 10 per review (census if 10 or fewer)"],
+    Medium: ["operational monitoring monthly", "performance review quarterly", "formal review annual (AI Governance Working Group)", "minimum sample 20 per review (census if 20 or fewer)"],
+    High: ["operational monitoring continuous (logged at least monthly)", "performance review monthly", "formal review quarterly, reported to the AI Assurance Board", "minimum sample the greater of 30 or 5% of the window\u2019s population (census if at or below the minimum)"],
+    Critical: ["operational monitoring continuous (logged at least monthly)", "performance review at least monthly", "continuous monitoring with a formal review at least monthly, reported to each AI Assurance Board meeting", "minimum sample the greater of 30 or 5% of the window\u2019s population, plus 100% of adverse or fully automated decisions"],
+  };
+  const OPS02_REVIEW_TYPES = ["Operational monitoring", "Performance review", "Formal review"];
+  const OPS02_AGENTIC_RAISE = ["Raised per Monitoring and Review Plan", "Not action-capable", "Action-capable: raise not yet set"];
+  function monitoringMinimum(tierName, actionCapable) {
+    const lines = MONITORING_MINIMUM[tierName];
+    if (!lines) return "";
+    return `Monitoring minimum for the ${tierName} governing tier (Playbook §6.4.4; AIG-OPS-02 Sampling Method): ${lines.join("; ")}. Record the review type (operational, performance or formal) on each Monitoring Log row.` +
+      (actionCapable ? " Action-capable: the Monitoring and Review Plan raises (never lowers) this cadence; the size of the raise is to be set by the Council (AIG-OPS-02 column AP)." : "");
+  }
+
+  // Autonomy scores allowed for each "Can it act?" answer (AIG-AGT-02: autonomy 0 acts
+  // only when a person triggers each individual action). Human-approved actions allow
+  // 0 or 1, so a T0 agent can be assessed (v3.9.2, T-03); 2 or more conflicts with
+  // per-action review (AIG-ASS-02 row 82).
+  function autonomyRangeFor(actionAuthority) {
+    if (actionAuthority === "Fully autonomous") return { min: 3, max: 5 };
+    if (actionAuthority === "Acts within defined bounds — monitored") return { min: 2, max: 5 };
+    if (actionAuthority === "Human approves each action") return { min: 0, max: 1 };
+    return { min: 0, max: 5 };
+  }
+
   // Exports deliberately use a handoff schema, never an import-ready row.
   const DRAFT_HANDOFF_HEADERS = [
     "Target artefact / sheet",
@@ -277,6 +400,8 @@
     "Decision scope (UC-ID specific / Shared system baseline)",
     "Time (hh:mm)", "Source (minutes / decision record / system)",
     "Evidence ID(s) (AIG-INV-04 Evidence index)", "Event-time lifecycle stage",
+    "Incident ref (AIG-OPS-03), precautionary pause",
+    "Follow-up decision due date (precautionary pause)",
   ];
   const GATE_CONDITION_HEADERS = [
     "Condition ID", "Event ID", "AIR-ID", "Required action / condition",
@@ -308,7 +433,7 @@
     "Boundaries Tested", "Agentic Flags", "Agentic Escalations", "Agentic Deployment Control",
     "Agent Record (ASBOM) Ref", "UC-ID (blank only for explicit system baseline)", "Triage / assessment scope",
   ]);
-  // Exact labels in AIG-ASS-01 "AGPI Triage" column A (rows 5-8, 10-19, 21-22).
+  // Exact labels in AIG-ASS-01 "AGPI Triage" column A (rows 5-8, 10-19, 21-24).
   const AGPI_SHEET_FIELDS = new Set([
     "System / model name", "AIR-ID", "Assessed by / date",
     "UC-ID (required when scope is UC-ID specific)",
@@ -319,7 +444,17 @@
     "Governance Investigation Required? (Yes / No)",
     "Priority floor: Resident Impact or Legal & Regulatory Exposure = 5 (Proposed \u2014 for Council confirmation)",
     "Typical governance attention for this priority (urgency)",
+    "Mandatory escalation trigger applies (Playbook \u00a74.4.6)? (Yes / No / Unsure)",
+    "Trigger floor: a \u00a74.4.6 trigger use is at least Priority 4 (Proposed \u2014 for Council confirmation)",
   ]);
+  // AIG-ASS-02 "Risk Assessment" D37:D40 labels for the assessor control-evidence
+  // inputs E37:E40, which C41/E41 read to allow an evidenced-control reduction.
+  const RISK_ASSESSMENT_EVIDENCE_FIELDS = {
+    "Controls evidenced?": "E37",
+    "Control evidence ref": "E38",
+    "Independent check?": "E39",
+    "Verification ref": "E40",
+  };
   function fieldReferenceType(sheet, field) {
     const value = String(field || "").trim();
     const exactRegister =
@@ -331,6 +466,9 @@
       (sheet.includes("Conditions") && GATE_CONDITION_FIELDS.has(value));
     if (sheet === "Triage Import" && TRIAGE_IMPORT_FIELDS.has(value)) {
       return "Exact AIG-ASS-02 Triage Import field label — owner verification required";
+    }
+    if (sheet === "Risk Assessment" && RISK_ASSESSMENT_EVIDENCE_FIELDS[value]) {
+      return `Exact AIG-ASS-02 Risk Assessment ${RISK_ASSESSMENT_EVIDENCE_FIELDS[value]} assessor input (paste into Risk Assessment ${RISK_ASSESSMENT_EVIDENCE_FIELDS[value]}, not Triage Import) \u2014 owner verification required`;
     }
     if (sheet === "AGPI Triage" && AGPI_SHEET_FIELDS.has(value)) {
       return "Exact AIG-ASS-01 AGPI Triage field label — owner verification required";
@@ -370,9 +508,13 @@
   //  - AGPI band from the weighted score;
   //  - priority floor (v3.8): Resident Impact = 5 or Legal & Regulatory Exposure = 5
   //    makes the priority at least Priority 2 – High;
-  //  - override rule: a use with a §4.4.6 mandatory trigger cannot be Priority 5.
-  // Where both apply, the higher priority results. The priority sets urgency only.
-  function governancePriority(score, agpiScores, triggerIds) {
+  //  - trigger floor (v3.9.2, AIG-ASS-01 v1.4 rows 23-24): a use with a §4.4.6
+  //    mandatory trigger (Yes or Unsure) cannot be Priority 5; it is at least Priority 4.
+  //  - Governance Investigation Required (B19 = Yes) replaces the priority with
+  //    "Governance Investigation Required — route to discovery" (B17).
+  // Where both floors apply, the higher priority results. The priority sets urgency only.
+  const INVESTIGATION_LABEL = "Governance Investigation Required \u2014 route to discovery";
+  function governancePriority(score, agpiScores, triggerIds, governanceInvestigation) {
     const band = priorityFor(score);
     const scores = agpiScores || {};
     const residentOrLegalFive = clampScore(scores.resident) === 5 || clampScore(scores.legal) === 5;
@@ -383,25 +525,34 @@
       level = 2;
       floorApplied = true;
     }
-    // AIG-ASS-01 shows this result in B17; the §4.4.6 override is applied on top.
-    const ass01 = priorityByLevel(level);
-    if ((triggerIds || []).length && level === 5) {
+    const triggered = (triggerIds || []).length > 0;
+    if (triggered && level === 5) {
       level = 4;
       overrideApplied = true;
     }
     const priority = priorityByLevel(level);
-    const floorNote = floorApplied
+    const investigation = governanceInvestigation === "Yes";
+    const floorNote = investigation ? "" : floorApplied
       ? `Priority floor applied: Resident/Legal = 5 (AGPI band ${band.label} raised to Priority 2 – High)`
       : "No floor effect";
+    // AIG-ASS-01 B24, reproduced from the workbook formula (it reads the AGPI score).
+    const triggerFloorNote = investigation ? "" : triggered
+      ? (Number(score) < 20
+        ? "Trigger floor applied: \u00a74.4.6 trigger use raised from Priority 5 \u2013 Observe to Priority 4 \u2013 Routine"
+        : "No trigger-floor effect (AGPI band already Priority 4 or higher)")
+      : "No trigger floor (no \u00a74.4.6 trigger)";
     return {
       ...priority,
       band,
-      ass01Label: ass01.label,
+      // AIG-ASS-01 v1.4 B17 applies both floors, or shows the investigation route.
+      ass01Label: investigation ? INVESTIGATION_LABEL : priority.label,
+      governanceInvestigation: investigation,
       floorApplied,
       floorNote,
       overrideApplied,
+      triggerFloorNote,
       overrideNote: overrideApplied
-        ? "Override rule (Playbook §3.9.6): a use with a §4.4.6 mandatory trigger cannot be Priority 5 – Observe, so it is Priority 4 – Routine."
+        ? "Trigger floor applied (Playbook \u00a73.9.6; AIG-ASS-01 row 24): a use with a \u00a74.4.6 mandatory trigger cannot be Priority 5 \u2013 Observe, so it is Priority 4 \u2013 Routine."
         : "",
     };
   }
@@ -436,10 +587,18 @@
   function tierNameForScore(score) {
     return score <= 5 ? "Low" : score <= 10 ? "Medium" : score <= 15 ? "High" : "Critical";
   }
-  function effectiveRiskTier({ inherentTierName, residualTierName, mandatoryFloorTier = "Low", controlEvidence }) {
+  // v3.9.2 (T-04): as in AIG-ASS-02 E41, a reduction also needs the control evidence
+  // reference (E38) and, for a High/Critical inherent tier, the verification reference
+  // (E40). A reference left undefined (callers that do not track references) is taken
+  // as supplied; an empty string is not.
+  function effectiveRiskTier({ inherentTierName, residualTierName, mandatoryFloorTier = "Low", controlEvidence, controlEvidenceRef, verificationRef }) {
+    const given = (ref) => ref === undefined || String(ref).trim() !== "";
     const highInherent = inherentTierName === "High" || inherentTierName === "Critical";
-    const verified = controlEvidence === "Implemented, evidenced and independently verified";
-    const evidenced = verified || controlEvidence === "Implemented and evidenced";
+    const statedVerified = controlEvidence === "Implemented, evidenced and independently verified";
+    const statedEvidenced = statedVerified || controlEvidence === "Implemented and evidenced";
+    const evidenced = statedEvidenced && given(controlEvidenceRef);
+    const verified = statedVerified && given(verificationRef);
+    const refMissing = (statedEvidenced && !given(controlEvidenceRef)) || (highInherent && statedVerified && !given(verificationRef));
     const verificationNeeded = evidenced && !verified && highInherent;
     const controlsEvidenced = evidenced && !verificationNeeded;
     const basisTierName = controlsEvidenced ? residualTierName : inherentTierName;
@@ -447,10 +606,12 @@
     const effectiveTierName = floorRaised ? mandatoryFloorTier : basisTierName;
     const basis = controlsEvidenced
       ? "controls evidenced: residual risk tier"
-      : verificationNeeded
-        ? "independent verification needed to lower a High/Critical inherent tier"
-        : "controls not yet evidenced: inherent risk tier";
-    return { effectiveTierName, basisTierName, controlsEvidenced, verificationNeeded, floorRaised, basis };
+      : refMissing
+        ? "evidence reference missing (AIG-ASS-02 E38 / E40): inherent risk tier"
+        : verificationNeeded
+          ? "independent verification needed to lower a High/Critical inherent tier"
+          : "controls not yet evidenced: inherent risk tier";
+    return { effectiveTierName, basisTierName, controlsEvidenced, verificationNeeded, refMissing, floorRaised, basis };
   }
 
   function maxTier(...names) {
@@ -460,7 +621,7 @@
     );
   }
 
-  // Agency-tier minimum pathway (AIG-DEC-01 v1.7 Agentic pathway; AIG-AGT-03 §6;
+  // Agency-tier minimum pathway (AIG-DEC-01 v1.8 Agentic pathway; AIG-AGT-03 §6;
   // Playbook F.2). Applies to action-capable uses only. T0/T1 none, T2 Medium,
   // T3 High, T4 High (Critical where actions run without evidenced per-action human
   // review), T5 Critical. Proposed — for Council confirmation.
@@ -482,12 +643,14 @@
     residualTierName,
     mandatoryFloorTier = "Low",
     controlEvidence,
+    controlEvidenceRef,
+    verificationRef,
     impact,
     actionCapable = false,
     agencyTierNum = null,
     perActionReviewEvidenced = false,
   }) {
-    const risk = effectiveRiskTier({ inherentTierName, residualTierName, mandatoryFloorTier, controlEvidence });
+    const risk = effectiveRiskTier({ inherentTierName, residualTierName, mandatoryFloorTier, controlEvidence, controlEvidenceRef, verificationRef });
     const impactFloorTier = Number(impact) === 5 ? "Medium" : null;
     const agencyAssessed = actionCapable && agencyTierNum !== null && agencyTierNum !== undefined && agencyTierNum !== "";
     const agencyMinTier = agencyAssessed ? agencyMinimumTier(agencyTierNum, perActionReviewEvidenced) : null;
@@ -518,12 +681,11 @@
     };
   }
 
+  // Gate 4 and the full Supplier DDQ apply only where a procurement, new contract,
+  // licence change or contract variation is needed (AIG-DEC-01 v1.8), not from the
+  // Source answer alone (v3.9.2, T-07).
   function commercialRequired(profile) {
-    return (
-      profile.procurementRequired === "Yes" ||
-      profile.source === "Procured" ||
-      profile.source === "Embedded in platform / supplier feature"
-    );
+    return procurementRouteOf(profile) === PROCUREMENT.new;
   }
 
   // AIG-ASS-02 Risk Assessment C45: indicative assurance depth from the governing
@@ -587,10 +749,10 @@
 
   // One calculation used by the page and the tests. Returns the results object the
   // exports read.
-  function calculateTriage({ profile, agpiScores, impactScores, likelihood, control, controlEvidence, triggerIds, agentic }) {
+  function calculateTriage({ profile, agpiScores, impactScores, likelihood, control, controlEvidence, controlEvidenceRef, verificationRef, triggerIds, agentic, governanceInvestigation }) {
     const ids = normaliseTriggerIds(profile, triggerIds);
     const agpiScore = calculateAgpi(agpiScores || {});
-    const priority = governancePriority(agpiScore, agpiScores, ids);
+    const priority = governancePriority(agpiScore, agpiScores, ids, governanceInvestigation);
     const risk = calculateRisk(impactScores || {}, likelihood, control);
     const inherentTierName = tierNameForScore(risk.inherent);
     const residualTierName = risk.tier.name;
@@ -602,6 +764,8 @@
       residualTierName,
       mandatoryFloorTier,
       controlEvidence,
+      controlEvidenceRef,
+      verificationRef,
       impact: risk.impact,
       actionCapable,
       agencyTierNum: agentic ? agentic.tierNum : null,
@@ -613,8 +777,13 @@
     const results = {
       agpiScore,
       priority,
-      rawAgpiPriority: priority.label,
-      effectiveGovernancePriority: priority.label,
+      // AIG-ASS-01 B17 (both floors, or the Governance Investigation route).
+      rawAgpiPriority: priority.ass01Label,
+      effectiveGovernancePriority: priority.ass01Label,
+      governanceInvestigation: priority.governanceInvestigation,
+      // AIG-ASS-01 B23: a §4.4.6 trigger applies? Unsure where the only trigger is an
+      // unconfirmed per-action review (Unsure counts as Yes).
+      triggerAnswer: !ids.length ? "No" : (ids.length === 1 && ids[0] === "agentic" && perActionReview(profile) === "Unsure") ? "Unsure" : "Yes",
       risk,
       triggerIds: ids,
       residualTierName,
@@ -631,6 +800,9 @@
       actionCapable,
       perActionReview: review,
       controlEvidence,
+      controlEvidenceRef: controlEvidenceRef === undefined ? "" : String(controlEvidenceRef).trim(),
+      verificationRef: verificationRef === undefined ? "" : String(verificationRef).trim(),
+      evidenceRefMissing: !!tier.refMissing,
       tierBasis: tier.basis,
       tierFloored: tier.effectiveTierName !== residualTierName,
       floorReason: tier.reasons.join(" + "),
@@ -638,8 +810,25 @@
       decisionRoute: decisionRouteFor(tier.effectiveTierName),
       governanceStatus: "Triage complete — formal governance approvals pending",
     };
+    results.monitoringMinimum = monitoringMinimum(tier.effectiveTierName, actionCapable);
+    results.situation = situationOf(profile);
+    results.gate4 = gate4Rule(profile);
     results.requirements = assessmentRequirements(profile, results);
     return results;
+  }
+
+  // AIG-ASS-02 Risk Assessment E37:E40 values for the control-evidence state the
+  // triage used, so a pasted pre-fill reproduces the same C41/C43 reduction (T-04).
+  function controlEvidenceFields(results) {
+    const stated = results.controlEvidence || "";
+    const verified = stated === "Implemented, evidenced and independently verified";
+    const evidenced = verified || stated === "Implemented and evidenced";
+    return [
+      ["Controls evidenced?", evidenced ? "Yes" : "No"],
+      ["Control evidence ref", evidenced ? results.controlEvidenceRef || "" : ""],
+      ["Independent check?", verified ? "Yes" : "No"],
+      ["Verification ref", verified ? results.verificationRef || "" : ""],
+    ];
   }
 
   function assessmentRequirements(profile, results) {
@@ -688,8 +877,10 @@
         ? "Potential applicability — owner confirmation pending"
         : "Not indicated by intake — owner applicability confirmation pending";
     const supplierDueDiligence = commercialRequired(profile);
+    const gate4 = gate4Rule(profile);
 
     return {
+      supplierChecks: gate4.supplierChecks,
       dpia,
       eia,
       humanRights,
@@ -715,7 +906,10 @@
       req.eia.startsWith("Potential full assessment") ||
       req.humanRightsPotential ||
       req.supplierDueDiligence;
-    return lowPriority && results.effectiveTierName === "Low" &&
+    // v3.9.2 (T-01): only a new use can take the light-touch route. AI found already
+    // in use goes through full retrospective intake; a changed use re-enters intake.
+    const newUse = situationOf(profile) === SITUATIONS.new && !isFoundInUse(profile);
+    return newUse && !results.governanceInvestigation && lowPriority && results.effectiveTierName === "Low" &&
       !(results.triggerIds || []).length && !anyAssessment && !isAgentSystem(profile, results);
   }
 
@@ -765,12 +959,18 @@
     }
     if (requirements.supplierDueDiligence) {
       evidence.push("Supplier AI Due Diligence Questionnaire");
+    } else if (requirements.supplierChecks === "partial") {
+      evidence.push(`Supplier checks that still apply (Gate 4 ${GATE4_NA_EXISTING}): ${SUPPLIER_CHECKS}`);
+    } else if (requirements.supplierChecks === "confirm") {
+      evidence.push("Procurement route to confirm: Gate 4 and the Supplier AI Due Diligence Questionnaire (AIG-ASS-08) apply if a procurement, new contract, licence change or contract variation is needed");
     }
-    if (
-      results.effectiveTierName === "High" ||
-      results.effectiveTierName === "Critical" ||
-      results.triggerIds.length
-    ) {
+    // Playbook §3.10.1 / §3.10.2 (v3.9.2, W-11): High needs an independent assurance
+    // review (§4.5.3, §4.5.9); Critical needs independent challenge as well.
+    if (results.effectiveTierName === "Critical") {
+      evidence.push("Independent challenge and independent assurance (Playbook \u00a73.10.2)");
+    } else if (results.effectiveTierName === "High") {
+      evidence.push("Independent assurance review (Playbook \u00a74.5.3, \u00a74.5.9)");
+    } else if (results.triggerIds.length) {
       evidence.push("Independent or enhanced assurance evidence");
     }
     // v3.9 (Proposed — for Council confirmation): resident-facing generative AI at
@@ -790,7 +990,7 @@
 
   // v3.9.1 (Proposed — for Council confirmation): AIG-OPS-01 section 8 "Rollback and Contingency" adds the
   // business continuity link (Civil Contingencies Act 2004; AIG-AIMS-05 REQ-054); the label and question are
-  // quoted exactly from AIG-OPS-01 v1.6 and are evidenced at Gate 6 (go-live).
+  // quoted exactly from AIG-OPS-01 v1.7 (unchanged from v1.6) and are evidenced at Gate 6 (go-live).
   const BUSINESS_CONTINUITY_LINK =
     "AIG-OPS-01 section 8, Business continuity link (Proposed — for Council confirmation): Is this service a prioritised activity in the Council's business continuity plan? Yes / No / Not known. If yes, give the plan reference and confirm the fallback above is consistent with it.";
 
@@ -808,7 +1008,7 @@
     return match ? Number(match[1]) : null;
   }
 
-  // Prospective gate route (AIG-DEC-01 v1.7 Gate Map, gates 1 to 6), with the AI
+  // Prospective gate route (AIG-DEC-01 v1.8 Gate Map, gates 1 to 6), with the AI
   // Assurance Board's assurance input shown as a separate, non-deciding step. The
   // governing tier sets which gates apply; the AGPI priority sets urgency only.
   // Gate 2 and Gate 6 are mandatory for every action-capable use (R1, R2); Gate 4
@@ -817,8 +1017,9 @@
   // marks a gate N/A in the Gate Plan.
   function buildRoute(profile, results, forums) {
     const configured = { ...DEFAULT_FORUMS, ...(forums || {}) };
-    const commercial = commercialRequired(profile);
-    const retrospective = profile.lifecycle === "Live";
+    const gate4 = gate4Rule(profile);
+    const retrospective = isFoundInUse(profile);
+    const reentry = isReentry(profile);
     const assuranceEvidence = buildEvidenceList(profile, results);
     const tier = results.effectiveTierName;
     const atLeast = (name) => TIER_ORDER.indexOf(tier) >= TIER_ORDER.indexOf(name);
@@ -848,7 +1049,9 @@
         forum: configured.strategic,
         decision: retrospective
           ? "Does the purpose, ownership and continued strategic fit support retaining this live system? (Invest in discovery, or reject.)"
-          : "Is the proposal aligned, sufficiently defined and worth progressing to the next gate? (Invest in discovery, or reject.)",
+          : reentry
+            ? "Re-entry for a change to a use already in governance: is the changed use still aligned and worth progressing on the same AIR-ID? (Invest in discovery, or reject.)"
+            : "Is the proposal aligned, sufficiently defined and worth progressing to the next gate? (Invest in discovery, or reject.)",
         evidence: [
           "AI Intake Form (AIG-INV-03) and AIR-ID",
           "Named Service Owner",
@@ -931,20 +1134,28 @@
         gate: DEC04_GATES[4],
         gateNumber: 4,
         requirement: "Gate 4 · Procurement",
-        applicability: commercial ? "Required" : "Conditional",
+        applicability: gate4.applies === true ? "Required" : gate4.applies === false ? "Not applicable" : "Conditional",
+        planRequirement: gate4.planRequirement,
+        naRationale: gate4.naRationale,
         forum: configured.commercial,
         decision:
-          "Funding, tendering and contract award: is the procurement route, supplier and contract acceptable under the relevant delegated authority? (N/A if built in-house.)",
-        evidence: [
-          "Supplier AI Due Diligence Questionnaire (AIG-ASS-08)",
-          "Third-party information-security questionnaire",
-          "AI-specific contract terms, audit and change-notification rights",
-          "Versioned AI assurance opinion",
-        ],
-        status: commercial ? "Draft candidate — procured; confirm with commercial owner" : "Conditional — not indicated by intake; commercial owner confirms before N/A is recorded",
-        handoff: commercial
-          ? "Confirm the relevant commercial authority and record its decision and conditions."
-          : "Confirm case-specific procurement applicability with the commercial owner before the steward records N/A.",
+          "Funding, tendering and contract award: is the procurement route, supplier and contract acceptable under the relevant delegated authority? Gate 4 applies wherever a procurement, new contract, licence change or contract variation is needed (AIG-DEC-01 v1.8; Proposed \u2014 for Council confirmation).",
+        evidence: gate4.applies === true || gate4.applies === null
+          ? [
+            "Supplier AI Due Diligence Questionnaire (AIG-ASS-08)",
+            "Third-party information-security questionnaire",
+            "AI-specific contract terms, audit and change-notification rights",
+            "Versioned AI assurance opinion",
+          ]
+          : gate4.supplierChecks === "partial"
+            ? [`Supplier checks that still apply: ${SUPPLIER_CHECKS}`, "Gate Plan N/A rationale and authority ref"]
+            : ["Gate Plan N/A rationale and authority ref"],
+        status: gate4.applies === true
+          ? (retrospective ? "Draft plan — required (retrospective)" : "Draft plan — required") + " · new contract, licence change or variation"
+          : gate4.applies === false
+            ? `${gate4.label} · governance steward confirms the N/A rationale and authority ref`
+            : "Conditional: procurement route not yet known; answer the procurement question",
+        handoff: `Procurement route: ${gate4.route}. ${gate4.note}`,
       },
       {
         sequence: 6,
@@ -1097,7 +1308,10 @@
     add(reg, "Monitoring in place?", "", "Set from the actual AIG-OPS-02 record; not asserted by triage.");
     add(reg, "Last review date", "", "Set when an actual review is recorded.");
     add(reg, "Route / pathway", "To be determined", `System-level route follows the highest applicable UC-ID. This UC-ID triage indicates ${isLightTouch(profile, results) ? "Light-touch" : results.effectiveTierName}${results.agencyPending ? " (at least; agency tier not yet assessed)" : ""}; the AI Governance Lead confirms.`);
-    add(reg, "Intake type", profile.lifecycle === "Live" ? "Retrospective" : "New", "Proposed from the operational state entered (Live → Retrospective); use Aggregated only for an aggregated tool-level entry.");
+    add(reg, "Intake type", isFoundInUse(profile) ? "Retrospective" : isReentry(profile) ? "" : "New",
+      isReentry(profile)
+        ? `${situationOf(profile)}: keep the Intake type already on the AIG-INV-04 row for this AIR-ID; the change re-enters intake and triage on the same AIR-ID.`
+        : "Proposed from \u201cWhat's happening?\u201d and the operational state (found already in use or Live \u2192 Retrospective); use Aggregated only for an aggregated tool-level entry.");
 
     const sum = "Assessment summary";
     add(sum, "AIR-ID", profile.registerId, identityReview);
@@ -1243,14 +1457,21 @@
   // Paste-ready rows for the AIG-DEC-04 Gate plan sheet, one per applicable
   // AIG-DEC-01 decision gate (1 to 6). Columns A to L match the workbook exactly and
   // every controlled column holds a value from its dropdown: Gate / forum from the
-  // Lists sheet, Requirement Required/Conditional, Plan state Planned, Decision scope
-  // UC-ID specific. A blank spacer column separates the guidance columns, which are
-  // not part of the Gate plan. Plan ID, Target date and any N-A rationale stay blank
-  // for the governance steward: the tool never issues IDs or records N/A. The AI
+  // Lists sheet, Requirement Required/Conditional (Not applicable for Gate 4 under the
+  // AIG-DEC-01 v1.8 rule, with a draft rationale in column J for the steward to confirm),
+  // Plan state Planned, Decision scope UC-ID specific. A blank spacer column separates
+  // the guidance columns, which are not part of the Gate plan. Plan ID and Target date
+  // stay blank for the governance steward: the tool never issues IDs. The AI
   // Assurance Board's assurance input is not a decision gate and has no plan row.
   function buildGatePlanCsv(profile, route, results) {
-    const retrospective = profile.lifecycle === "Live";
-    const stage = `${retrospective ? "Retrospective intake (live system)" : "New proposal"} · lifecycle ${profile.lifecycle || "not entered"}`;
+    const situation = situationOf(profile);
+    const stage = `${isFoundInUse(profile)
+      ? "Retrospective intake (found already in use)"
+      : situation === SITUATIONS.change
+        ? "Re-entry: change to a use in governance"
+        : situation === SITUATIONS.approved
+          ? "Re-entry: use of an approved system outside the approval"
+          : "New proposal"} · lifecycle ${profile.lifecycle || "not entered"}`;
     const basis = results
       ? `Triage prompt: AGPI ${results.agpiScore} (${results.priority.label}; urgency only); governing tier ${results.effectiveTierName}${results.agencyPending ? " (at least; agency tier not yet assessed)" : ""}. Verify against current AIG-ASS-01 / AIG-ASS-02 before relying on it.`
       : "Add the AIG-ASS-01 / AIG-ASS-02 reference";
@@ -1260,12 +1481,12 @@
       profile.registerId || "",
       gate.gate,
       stage,
-      gate.applicability === "Required" ? "Required" : "Conditional",
+      gate.planRequirement || (gate.applicability === "Required" ? "Required" : "Conditional"),
       basis,
       "",
       "Service Owner",
       "Planned",
-      "",
+      gate.naRationale || "",
       profile.ucId || "",
       "UC-ID specific",
       "",
@@ -1613,16 +1834,17 @@
       note: `${requirements.atrs}. Applicability owner: pending. Evidence reference: pending. Status: screening not completed. The case-specific/legal owner confirms whether ATRS applies, any publication duty and timing; do not record legal N/A from an unselected intake response.`,
     });
 
-    const procurement = commercialRequired(profile);
+    const gate4 = gate4Rule(profile);
     items.push({
       artefact: "AIG-ASS-08 Supplier AI Due Diligence Questionnaire",
-      section: "Sections 1\u20139 (supplier responses); Section 10 \u2014 Council Evaluation (internal)",
+      section: gate4.supplierChecks === "partial"
+        ? "Section 5 (data protection and security) and Section 8 (business continuity and exit); data processing terms"
+        : "Sections 1\u20139 (supplier responses); Section 10 \u2014 Council Evaluation (internal)",
       fields: [
-        { label: "Procurement route indicated by intake?", value: procurement ? "Potential route — confirm" : "Not indicated — confirm" },
+        { label: "Procurement route (intake answer)", value: gate4.route },
+        { label: "Gate 4 (AIG-DEC-01 v1.8 rule)", value: gate4.label },
       ],
-      note: procurement
-        ? "Potential route only; commercial owner confirms whether procurement and a delegated commercial decision are required."
-        : "No route indicated by intake; commercial owner confirms case-specific need before N/A is recorded.",
+      note: `${gate4.note} The commercial owner confirms the procurement position. (Proposed \u2014 for Council confirmation.)`,
     });
 
     const screeningPrompts = [
@@ -1696,11 +1918,9 @@
 
   // ---- Retirement / decommission gate ---------------------------------
   // Retirement is a post-deployment gate EVENT, not a triage. It does not use
-  // AGPI or the forward deployment route. The question set is scaled by the
-  // system's CURRENT governance priority (read from the Register), so a routine
-  // tool is a short formality and a critical resident-facing system gets the
-  // full decommission gate. showAtOrAbove is the least-critical priority NUMBER
-  // at which a field first appears: a field shows when priorityLevel <= it.
+  // AGPI or the forward deployment route. Every Appendix E.7 closure question is
+  // asked for every retirement (v3.9.2, T-02); the system's CURRENT governance
+  // priority (read from the Register) sets urgency only.
   const RETIREMENT_PRIORITIES = [
     { level: 1, label: "Priority 1 – Critical" },
     { level: 2, label: "Priority 2 – High" },
@@ -1720,53 +1940,53 @@
   ];
 
   const RETIREMENT_FIELDS = [
-    { id: "retireScope", group: "Decision", showAtOrAbove: 5, type: "select", label: "What is being retired?", options: ["Not stated", "Named use(s) only — UC-ID specific", "Whole system — shared system baseline"] },
-    { id: "ucIds", group: "Decision", showAtOrAbove: 5, type: "text", label: "UC-ID(s) being retired (leave blank only for a whole-system retirement)", placeholder: "UC-XXXX; UC-YYYY" },
-    { id: "allUsesClosed", group: "Decision", showAtOrAbove: 5, type: "select", label: "Whole-system retirement only: are all other uses under this AIR-ID closed or retired?", options: ["Not applicable — named uses only", "Not yet confirmed", "Confirmed — every linked UC-ID closed or retired"] },
-    { id: "reason", group: "Decision", showAtOrAbove: 5, type: "select", label: "Reason for retirement", options: RETIREMENT_REASONS },
-    { id: "rationale", group: "Decision", showAtOrAbove: 5, type: "textarea", label: "Rationale (why retire, options considered)" },
-    { id: "monitoringRef", group: "Decision", showAtOrAbove: 5, type: "text", label: "Prompted by a monitoring finding? Ref in the Post-Deployment Monitoring Log (AIG-OPS-02), if any", placeholder: "AIG-OPS-02 row / review ref" },
-    { id: "hasSuccessor", group: "Decision", showAtOrAbove: 5, type: "select", label: "Replacement or successor system?", options: ["No", "Yes"] },
-    { id: "successorId", group: "Decision", showAtOrAbove: 5, type: "text", label: "Successor AIR-ID (if any)", placeholder: "AIR-XXXX" },
-    { id: "decommissionDate", group: "Decision", showAtOrAbove: 5, type: "date", label: "Planned decommission date" },
+    { id: "retireScope", group: "Decision", type: "select", label: "What is being retired?", options: ["Not stated", "Named use(s) only — UC-ID specific", "Whole system — shared system baseline"] },
+    { id: "ucIds", group: "Decision", type: "text", label: "UC-ID(s) being retired (leave blank only for a whole-system retirement)", placeholder: "UC-XXXX; UC-YYYY" },
+    { id: "allUsesClosed", group: "Decision", type: "select", label: "Whole-system retirement only: are all other uses under this AIR-ID closed or retired?", options: ["Not applicable — named uses only", "Not yet confirmed", "Confirmed — every linked UC-ID closed or retired"] },
+    { id: "reason", group: "Decision", type: "select", label: "Reason for retirement", options: RETIREMENT_REASONS },
+    { id: "rationale", group: "Decision", type: "textarea", label: "Rationale (why retire, options considered)" },
+    { id: "monitoringRef", group: "Decision", type: "text", label: "Prompted by a monitoring finding? Ref in the Post-Deployment Monitoring Log (AIG-OPS-02), if any", placeholder: "AIG-OPS-02 row / review ref" },
+    { id: "hasSuccessor", group: "Decision", type: "select", label: "Replacement or successor system?", options: ["No", "Yes"] },
+    { id: "successorId", group: "Decision", type: "text", label: "Successor AIR-ID (if any)", placeholder: "AIR-XXXX" },
+    { id: "decommissionDate", group: "Decision", type: "date", label: "Planned decommission date" },
 
-    { id: "dataDisposition", group: "Data and access", showAtOrAbove: 5, type: "select", label: "Data and logs disposition", options: ["Retain in place", "Archive", "Dispose / delete", "Return to supplier or data subject"] },
-    { id: "dataBasis", group: "Data and access", showAtOrAbove: 5, type: "text", label: "Retention or disposal basis", placeholder: "Statute, policy or contract reference" },
-    { id: "accessTeardown", group: "Data and access", showAtOrAbove: 5, type: "select", label: "Accounts, API keys and agentic action scopes revoked?", options: ["Not yet", "Scheduled", "Confirmed revoked"] },
+    { id: "dataDisposition", group: "Data and access", type: "select", label: "Data and logs disposition", options: ["Retain in place", "Archive", "Dispose / delete", "Return to supplier or data subject"] },
+    { id: "dataBasis", group: "Data and access", type: "text", label: "Retention or disposal basis", placeholder: "Statute, policy or contract reference" },
+    { id: "accessTeardown", group: "Data and access", type: "select", label: "Accounts, API keys and agentic action scopes revoked?", options: ["Not yet", "Scheduled", "Confirmed revoked"] },
 
-    { id: "dependencies", group: "Continuity", showAtOrAbove: 3, type: "textarea", label: "Downstream dependencies (what consumes its outputs)" },
-    { id: "fallback", group: "Continuity", showAtOrAbove: 3, type: "select", label: "Fallback or transition arrangement before switch-off?", options: ["Not needed", "Planned", "Confirmed in place"] },
-    { id: "affectedStaff", group: "Continuity", showAtOrAbove: 3, type: "textarea", label: "Affected staff: process change or retraining" },
-    { id: "monitoringClosure", group: "Continuity", showAtOrAbove: 3, type: "select", label: "Post-Deployment Monitoring Log (AIG-OPS-02) closure", options: ["Not applicable - no active monitoring", "To be closed", "Closed"] },
+    { id: "dependencies", group: "Continuity", type: "textarea", label: "Downstream dependencies (what consumes its outputs)" },
+    { id: "fallback", group: "Continuity", type: "select", label: "Fallback or transition arrangement before switch-off?", options: ["Not needed", "Planned", "Confirmed in place"] },
+    { id: "affectedStaff", group: "Continuity", type: "textarea", label: "Affected staff: process change or retraining" },
+    { id: "monitoringClosure", group: "Continuity", type: "select", label: "Post-Deployment Monitoring Log (AIG-OPS-02) closure", options: ["Not applicable - no active monitoring", "To be closed", "Closed"] },
 
-    { id: "atrsAction", group: "Records and accountability", showAtOrAbove: 2, type: "select", label: "ATRS record action", options: ["No ATRS record exists", "Withdraw", "Update / mark retired"] },
-    { id: "residualOwner", group: "Records and accountability", showAtOrAbove: 2, type: "text", label: "Residual accountability owner (complaints, appeals, subject access, audit)" },
-    { id: "residualDuration", group: "Records and accountability", showAtOrAbove: 2, type: "text", label: "For how long is that owner accountable?", placeholder: "e.g. 6 years" },
-    { id: "recordsRetention", group: "Records and accountability", showAtOrAbove: 2, type: "text", label: "Records retention period for outputs it produced", placeholder: "Statutory / FOI / audit retention" },
-    { id: "supplierExit", group: "Records and accountability", showAtOrAbove: 2, type: "select", label: "Supplier exit (contract closure, data return or destruction)", options: ["Not applicable", "In progress", "Completed"] },
-    { id: "residentNotify", group: "Records and accountability", showAtOrAbove: 2, type: "select", label: "Resident or service-user notification required?", options: ["Not required", "Required: planned", "Required: completed"] },
-    { id: "riskOfRetiring", group: "Records and accountability", showAtOrAbove: 2, type: "textarea", label: "Risk of retiring (gap, fallback)" },
-    { id: "riskOfNotRetiring", group: "Records and accountability", showAtOrAbove: 2, type: "textarea", label: "Risk of not retiring" },
+    { id: "atrsAction", group: "Records and accountability", type: "select", label: "ATRS record action", options: ["No ATRS record exists", "Withdraw", "Update / mark retired"] },
+    { id: "residualOwner", group: "Records and accountability", type: "text", label: "Residual accountability owner (complaints, appeals, subject access, audit)" },
+    { id: "residualDuration", group: "Records and accountability", type: "text", label: "For how long is that owner accountable?", placeholder: "e.g. 6 years" },
+    { id: "recordsRetention", group: "Records and accountability", type: "text", label: "Records retention period for outputs it produced", placeholder: "Statutory / FOI / audit retention" },
+    { id: "supplierExit", group: "Records and accountability", type: "select", label: "Supplier exit (contract closure, data return or destruction)", options: ["Not applicable", "In progress", "Completed"] },
+    { id: "residentNotify", group: "Records and accountability", type: "select", label: "Resident or service-user notification required?", options: ["Not required", "Required: planned", "Required: completed"] },
+    { id: "riskOfRetiring", group: "Records and accountability", type: "textarea", label: "Risk of retiring (gap, fallback)" },
+    { id: "riskOfNotRetiring", group: "Records and accountability", type: "textarea", label: "Risk of not retiring" },
 
-    { id: "boardDecision", group: "Decision authority", showAtOrAbove: 1, type: "select", label: "Decommission authorised by the relevant Council authority under confirmed delegation?", options: ["No", "Yes"] },
-    { id: "conditionsClosed", group: "Critical assurance", showAtOrAbove: 1, type: "select", label: "All open conditions and incidents closed or formally transferred?", options: ["No", "Yes"] },
-    { id: "postReview", group: "Critical assurance", showAtOrAbove: 1, type: "select", label: "Post-retirement / lessons-learned review scheduled?", options: ["No", "Yes: date recorded"] },
-    { id: "notifyLive", group: "Critical assurance", showAtOrAbove: 1, type: "select", label: "Resident notification and appeal handling live before switch-off?", options: ["No", "Yes"] },
+    { id: "boardDecision", group: "Decision authority", type: "select", label: "Decommission authorised by the relevant Council authority under confirmed delegation?", options: ["No", "Yes"] },
+    { id: "conditionsClosed", group: "Closure assurance", type: "select", label: "All open conditions and incidents closed or formally transferred?", options: ["No", "Yes"] },
+    { id: "postReview", group: "Closure assurance", type: "select", label: "Post-retirement / lessons-learned review scheduled?", options: ["No", "Yes: date recorded"] },
+    { id: "notifyLive", group: "Closure assurance", type: "select", label: "Resident notification and appeal handling live before switch-off?", options: ["No", "Yes"] },
 
-    { id: "planId", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Existing Gate Plan ID (verify in AIG-DEC-04; do not invent)", placeholder: "Existing plan ID only" },
-    { id: "eventId", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Existing Event ID (verify in AIG-DEC-04; do not invent)", placeholder: "Existing event ID only" },
-    { id: "forum", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Retirement decision-maker: officer or forum with confirmed retirement delegation (Gate 8; recorded in Decision-maker / role)" },
-    { id: "decision", group: "Gate event record", showAtOrAbove: 5, type: "select", label: "Gate 8 outcome (AIG-DEC-04; Decommission = Retired in AIG-DEC-03, Suspend = Suspended, Stop = Rejected)", options: ["Pending: not yet decided", "Progress", "Progress with condition", "Return for evidence", "Pause", "Stop", "Suspend", "Decommission", "Re-authorise", "Opinion only", "No decision"] },
-    { id: "eventDate", group: "Gate event record", showAtOrAbove: 5, type: "date", label: "Date of decision (leave blank until decided)" },
-    { id: "decisionMaker", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Decision-maker and role" },
-    { id: "conditionDue", group: "Gate event record", showAtOrAbove: 3, type: "date", label: "Condition due date (if any)" },
-    { id: "assuranceRef", group: "Gate event record", showAtOrAbove: 2, type: "text", label: "Assurance opinion reference" },
-    { id: "evidenceRefs", group: "Gate event record", showAtOrAbove: 3, type: "text", label: "Evidence references (recorded in Notes)", placeholder: "Disposal record, ATRS update log, notification plan" },
-    { id: "decisionRecordRef", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Existing AIG-DEC-03 / approved minutes reference (verify)", placeholder: "Existing authorised decision reference" },
-    { id: "recordedBy", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Recorded by (recorded in Notes)" },
-    { id: "airIdEvidenceRef", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "AIR-ID evidence reference in AIG-INV-04", placeholder: "AIG-INV-04 record / source URI" },
-    { id: "assuranceEvidenceRef", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Current 05 assurance-state evidence reference", placeholder: "Current 05 snapshot / source URI" },
-    { id: "authorityEvidenceRef", group: "Gate event record", showAtOrAbove: 5, type: "text", label: "Decision authority / delegation evidence reference", placeholder: "Delegation record / source URI" },
+    { id: "planId", group: "Gate event record", type: "text", label: "Existing Gate Plan ID (verify in AIG-DEC-04; do not invent)", placeholder: "Existing plan ID only" },
+    { id: "eventId", group: "Gate event record", type: "text", label: "Existing Event ID (verify in AIG-DEC-04; do not invent)", placeholder: "Existing event ID only" },
+    { id: "forum", group: "Gate event record", type: "text", label: "Retirement decision-maker: officer or forum with confirmed retirement delegation (Gate 8; recorded in Decision-maker / role)" },
+    { id: "decision", group: "Gate event record", type: "select", label: "Gate 8 outcome (AIG-DEC-04; Decommission = Retired in AIG-DEC-03, Suspend = Suspended, Stop = Rejected)", options: ["Pending: not yet decided", "Progress", "Progress with condition", "Return for evidence", "Pause", "Stop", "Suspend", "Decommission", "Re-authorise", "Opinion only", "No decision"] },
+    { id: "eventDate", group: "Gate event record", type: "date", label: "Date of decision (leave blank until decided)" },
+    { id: "decisionMaker", group: "Gate event record", type: "text", label: "Decision-maker and role" },
+    { id: "conditionDue", group: "Gate event record", type: "date", label: "Condition due date (if any)" },
+    { id: "assuranceRef", group: "Gate event record", type: "text", label: "Assurance opinion reference" },
+    { id: "evidenceRefs", group: "Gate event record", type: "text", label: "Evidence references (recorded in Notes)", placeholder: "Disposal record, ATRS update log, notification plan" },
+    { id: "decisionRecordRef", group: "Gate event record", type: "text", label: "Existing AIG-DEC-03 / approved minutes reference (verify)", placeholder: "Existing authorised decision reference" },
+    { id: "recordedBy", group: "Gate event record", type: "text", label: "Recorded by (recorded in Notes)" },
+    { id: "airIdEvidenceRef", group: "Gate event record", type: "text", label: "AIR-ID evidence reference in AIG-INV-04", placeholder: "AIG-INV-04 record / source URI" },
+    { id: "assuranceEvidenceRef", group: "Gate event record", type: "text", label: "Current 05 assurance-state evidence reference", placeholder: "Current 05 snapshot / source URI" },
+    { id: "authorityEvidenceRef", group: "Gate event record", type: "text", label: "Decision authority / delegation evidence reference", placeholder: "Delegation record / source URI" },
   ];
 
   const RETIREMENT_GROUP_ORDER = [
@@ -1774,7 +1994,8 @@
     "Data and access",
     "Continuity",
     "Records and accountability",
-    "Critical assurance",
+    "Decision authority",
+    "Closure assurance",
     "Gate event record",
   ];
 
@@ -1785,9 +2006,10 @@
     return found ? found.level : 1;
   }
 
-  function retirementFieldsFor(level) {
-    const n = Number(level) || 5;
-    return RETIREMENT_FIELDS.filter((f) => n <= f.showAtOrAbove);
+  // v3.9.2 (T-02): every Appendix E.7 closure item applies to every retirement. The
+  // current priority sets urgency only; it no longer hides any question.
+  function retirementFieldsFor() {
+    return RETIREMENT_FIELDS.slice();
   }
 
   function retFmtDate(value) {
@@ -1840,7 +2062,6 @@
   }
 
   function retirementReadiness(ret) {
-    const level = Number(ret.priorityLevel) || 1;
     const decided = retirementDecided(ret);
     const outstanding = [];
     if (!ret.priorityLabel) outstanding.push("Current AIG-INV-04 governance priority not verified; full-depth prompts are shown until it is.");
@@ -1863,18 +2084,16 @@
     if (!ret.decommissionDate) outstanding.push("Planned decommission date not set.");
     if (ret.accessTeardown !== "Confirmed revoked") outstanding.push("Access, keys and action scopes not yet confirmed revoked.");
     if (ret.dataDisposition && !ret.dataBasis) outstanding.push("Data retention or disposal basis not stated.");
-    if (level <= 3 && ret.fallback === "Planned") outstanding.push("Fallback arrangement planned but not confirmed in place.");
-    if (level <= 3 && ret.monitoringClosure === "To be closed") outstanding.push("Post-Deployment Monitoring Log (AIG-OPS-02) not yet closed.");
-    if (level <= 2) {
-      if (!ret.residualOwner) outstanding.push("Residual accountability owner not named.");
-      if (ret.residentNotify === "Required: planned") outstanding.push("Required resident notification not yet completed.");
-      if (ret.supplierExit === "In progress") outstanding.push("Supplier exit (data return or destruction) not yet completed.");
-    }
-    if (level <= 1) {
-      if (ret.boardDecision !== "Yes") outstanding.push("Delegated Council decommission decision not confirmed.");
-      if (ret.conditionsClosed !== "Yes") outstanding.push("Open conditions or incidents not closed or transferred.");
-      if (ret.notifyLive !== "Yes") outstanding.push("Resident notification and appeal handling not confirmed live before switch-off.");
-    }
+    // Every Appendix E.7 closure check applies whatever the priority (v3.9.2, T-02).
+    if (ret.fallback === "Planned") outstanding.push("Fallback arrangement planned but not confirmed in place.");
+    if (ret.monitoringClosure === "To be closed") outstanding.push("Post-Deployment Monitoring Log (AIG-OPS-02) not yet closed.");
+    if (!ret.residualOwner) outstanding.push("Residual accountability owner not named.");
+    if (ret.residentNotify === "Required: planned") outstanding.push("Required resident notification not yet completed.");
+    if (ret.supplierExit === "In progress") outstanding.push("Supplier exit (data return or destruction) not yet completed.");
+    if (ret.boardDecision !== "Yes") outstanding.push("Delegated Council decommission decision not confirmed.");
+    if (ret.conditionsClosed !== "Yes") outstanding.push("Open conditions or incidents not closed or transferred.");
+    if (ret.notifyLive !== "Yes" && ret.residentNotify !== "Not required") outstanding.push("Resident notification and appeal handling not confirmed live before switch-off.");
+    if (ret.postReview !== "Yes: date recorded") outstanding.push("Post-retirement / lessons-learned review not yet scheduled.");
     // Checklist answers and references are self-reported prompts, not verified
     // evidence or authorised decisions; the application cannot assert readiness.
     const complete = false;
@@ -1971,6 +2190,8 @@
     add(event, "Source (minutes / decision record / system)", "", "Name the actual source of the event record.");
     add(event, "Evidence ID(s) (AIG-INV-04 Evidence index)", "", `Only existing Evidence index IDs. User-entered evidence references (not IDs): ${ret.evidenceRefs || "none"}.`);
     add(event, "Event-time lifecycle stage", decided ? "Retirement and Decommissioning" : "", "Controlled value once the event is recorded.");
+    add(event, "Incident ref (AIG-OPS-03), precautionary pause", "", "Precautionary pause (containment) events only; blank for a retirement decision.");
+    add(event, "Follow-up decision due date (precautionary pause)", "", "Precautionary pause (containment) events only; blank for a retirement decision.");
     add(event, "Note (not a column) — Rationale", ret.rationale, "Proposal context only; not a record of an event that occurred.");
 
     const conditionRows = conditions.length ? conditions : [""];
@@ -2274,6 +2495,22 @@
     tierNameForScore,
     effectiveRiskTier,
     commercialRequired,
+    SITUATIONS,
+    situationOf,
+    isFoundInUse,
+    isReentry,
+    PROCUREMENT,
+    procurementRouteOf,
+    gate4Rule,
+    SUPPLIER_CHECKS,
+    MONITORING_MINIMUM,
+    OPS02_REVIEW_TYPES,
+    OPS02_AGENTIC_RAISE,
+    monitoringMinimum,
+    autonomyRangeFor,
+    controlEvidenceFields,
+    INVESTIGATION_LABEL,
+    GATE_EVENT_HEADERS,
     assuranceIntensity,
     assessmentRequirements,
     buildEvidenceList,
