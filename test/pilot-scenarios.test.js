@@ -10,19 +10,31 @@ const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const triageApp = fs.readFileSync(path.join(root, "src", "triage-app.js"), "utf8");
 const demo = fs.readFileSync(path.join(root, "src", "pilot-demo.js"), "utf8");
 
-// Mirrors calculateAll() and governanceRoute() in src/triage-app.js.
+// Uses the same calculation as calculateAll() in src/triage-app.js
+// (logic.calculateTriage), with the agentic assessment the demo runs.
 function run(s) {
-  const autonomous = ["Acts within defined bounds — monitored", "Fully autonomous"].includes(s.profile.actionAuthority);
-  const triggerIds = [...s.triggers, ...(autonomous ? ["agentic"] : [])];
-  const agpiScore = logic.calculateAgpi(s.agpi);
-  const priority = logic.priorityFor(agpiScore);
-  const risk = logic.calculateRisk(s.impacts, s.likelihood, s.control);
-  const inherentTierName = logic.tierNameForScore(risk.inherent);
-  const critical = triggerIds.includes("statutory") || triggerIds.includes("agentic");
-  const floor = critical ? "Critical" : (triggerIds.length || s.profile.dataType === "Special category data") ? "High" : "Low";
-  const tier = logic.effectiveRiskTier({ inherentTierName, residualTierName: risk.tier.name, mandatoryFloorTier: floor, controlEvidence: s.controlEvidence });
+  const profile = { ...SYSTEM, ...s.profile };
   const agentic = s.agentic ? logic.computeAgentic(s.agentic) : null;
-  return { agpiScore, priority: priority.label, tier: tier.effectiveTierName, agencyTier: agentic && agentic.tierLabel };
+  const canAct = logic.isActionCapable(profile, s.triggers);
+  const results = logic.calculateTriage({
+    profile,
+    agpiScores: s.agpi,
+    impactScores: s.impacts,
+    likelihood: s.likelihood,
+    control: s.control,
+    controlEvidence: s.controlEvidence,
+    triggerIds: s.triggers,
+    agentic: canAct ? agentic : null,
+  });
+  const pathway = canAct ? "Agentic governance pathway"
+    : logic.isLightTouch(profile, results) ? "Light-touch governance pathway" : "Non-agentic governance pathway";
+  return {
+    agpiScore: results.agpiScore,
+    priority: results.priority.label,
+    tier: results.effectiveTierName,
+    pathway,
+    agencyTier: agentic && agentic.tierLabel,
+  };
 }
 
 test("the pilot uses one fictional AIR-ID and eleven fictional UC-IDs", () => {
@@ -39,15 +51,21 @@ for (const s of SCENARIOS) {
     assert.equal(r.agpiScore, s.expected.agpiScore);
     assert.equal(r.priority, s.expected.priority);
     assert.equal(r.tier, s.expected.effectiveTier);
+    assert.equal(r.pathway, s.expected.pathway);
     if (s.expected.agencyTier) assert.equal(r.agencyTier, s.expected.agencyTier);
   });
 }
 
-test("together the scenarios cover every priority, risk tier and agency tier", () => {
+test("together the scenarios cover every priority and risk tier, and agency tiers T1 to T5", () => {
   const results = SCENARIOS.map(run);
   logic.PRIORITIES.forEach((p) => assert.ok(results.some((r) => r.priority === p.label), p.label));
   ["Low", "Medium", "High", "Critical"].forEach((t) => assert.ok(results.some((r) => r.tier === t), t));
-  ["T0", "T1", "T2", "T3", "T4", "T5"].forEach((t) => assert.ok(results.some((r) => r.agencyTier && r.agencyTier.startsWith(t)), t));
+  ["T1", "T2", "T3", "T4", "T5"].forEach((t) => assert.ok(results.some((r) => r.agencyTier && r.agencyTier.startsWith(t)), t));
+  // Suite v3.9 tier-assignment table: UC-DEMO-06 (Consequence 1) is T1, so no scenario is T0.
+  assert.ok(!results.some((r) => r.agencyTier && r.agencyTier.startsWith("T0")));
+  const moved = SCENARIOS.find((s) => s.id === "UC-DEMO-06");
+  assert.equal(moved.expected.agencyTier, "T1 assisted");
+  assert.match(moved.outcomeChange, /T0 informational to T1 assisted/);
 });
 
 test("agentic scenarios respect the tool's autonomy minimum for their action authority", () => {

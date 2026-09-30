@@ -49,9 +49,10 @@
     strategic: "Strategic prioritisation forum",
     technical: "Technical design authority",
     assurance: "AI assurance authority",
-    digital: "Digital portfolio authority",
-    commercial: "Commercial authority",
-    release: "Deployment / release authority",
+    digital: "Case for change / strategic alignment forum",
+    commercial: "Procurement / commercial authority",
+    ethics: "Ethics decision owner",
+    release: "Go-live decision-maker",
   };
 
   function appendTextElement(parent, tag, className, text) {
@@ -218,34 +219,43 @@
     );
   }
 
-  function getTriggerIds() {
-    const agenticTrigger = form.querySelector('[data-trigger="agentic"]');
-    const authorityEl = byId("actionAuthority");
-    const actionAuthority = authorityEl ? authorityEl.value : "";
-    const autonomousWithoutPerActionReview =
-      actionAuthority === "Acts within defined bounds — monitored" ||
-      actionAuthority === "Fully autonomous";
-
-    if (agenticTrigger) {
-      if (autonomousWithoutPerActionReview) {
-        if (!agenticTrigger.checked) agenticTrigger.dataset.autoChecked = "true";
-        agenticTrigger.checked = true;
-        agenticTrigger.disabled = true;
-        agenticTrigger.title =
-          "Automatically selected because the system can execute actions without human review of each individual action.";
-      } else {
-        agenticTrigger.disabled = false;
-        agenticTrigger.removeAttribute("title");
-        if (agenticTrigger.dataset.autoChecked === "true") {
-          agenticTrigger.checked = false;
-          delete agenticTrigger.dataset.autoChecked;
-        }
+  // Triggers implied by the profile are ticked and locked: actions without evidenced
+  // per-action human review (Unsure counts as No) and special category data.
+  function syncImpliedTrigger(id, implied, reason) {
+    const box = form.querySelector(`[data-trigger="${id}"]`);
+    if (!box) return;
+    if (implied) {
+      if (!box.checked) box.dataset.autoChecked = "true";
+      box.checked = true;
+      box.disabled = true;
+      box.title = reason;
+    } else {
+      box.disabled = false;
+      box.removeAttribute("title");
+      if (box.dataset.autoChecked === "true") {
+        box.checked = false;
+        delete box.dataset.autoChecked;
       }
     }
+  }
 
-    return Array.from(form.querySelectorAll("[data-trigger]:checked")).map(
+  function getTriggerIds() {
+    const profile = getProfile();
+    const review = logic.perActionReview(profile);
+    syncImpliedTrigger("agentic", review === "No" || review === "Unsure",
+      review === "Unsure"
+        ? "Automatically selected: per-action human review is Unsure, which is treated as No (Playbook §4.4.6)."
+        : "Automatically selected because the system can execute actions without human review of each individual action.");
+    syncImpliedTrigger("specialData", profile.dataType === "Special category data",
+      "Automatically selected because the data type is special category data.");
+    return logic.normaliseTriggerIds(profile, Array.from(form.querySelectorAll("[data-trigger]:checked")).map(
       (input) => input.dataset.trigger,
-    );
+    ));
+  }
+
+  function currentAgentic() {
+    if (!latestAgentic) return null;
+    return logic.currentAgenticAssessment(latestAgentic, latestAgenticContextKey, getProfile(), readAgentic());
   }
 
   function calculateAll() {
@@ -254,78 +264,19 @@
     const agpiScores = getAgpiScores();
     const impactScores = getImpactScores();
     const triggerIds = getTriggerIds();
-    const agpiScore = logic.calculateAgpi(agpiScores);
-    const priority = logic.priorityFor(agpiScore);
-    const risk = logic.calculateRisk(
+    // Governance priority (urgency) and governing tier (route): Playbook §3.9.6,
+    // §3.10.1 and §4.4; AIG-ASS-01 B17; AIG-ASS-02 Risk Assessment C43. The agency-tier
+    // minimum applies once a current agentic assessment exists.
+    const results = logic.calculateTriage({
+      profile,
+      agpiScores,
       impactScores,
-      byId("likelihood").value,
-      byId("control").value,
-    );
-    // --- Governance tier (Playbook §4.4.8; AIG-ASS-02 Steps 2-3) -----------
-    // Inherent tier until controls are implemented and evidenced, then residual;
-    // never below the mandatory trigger floor (§4.4.6).
-    const residualTierName = risk.tier.name;
-    const inherentTierName = logic.tierNameForScore(risk.inherent);
-    const specialCategoryData =
-      profile.dataType === "Special category data";
-    const mandatoryFloorApplies = triggerIds.length > 0 || specialCategoryData;
-    // §4.4.6 minimum uplift: any trigger floors to at least High; statutory
-    // decisions or unreviewed agentic action floor to Critical.
-    const criticalTrigger =
-      triggerIds.includes("statutory") || triggerIds.includes("agentic");
-    const mandatoryFloorTier = criticalTrigger
-      ? "Critical"
-      : mandatoryFloorApplies
-        ? "High"
-        : "Low";
-    const controlEvidence = byId("controlEvidence").value;
-    const tierRule = logic.effectiveRiskTier({
-      inherentTierName,
-      residualTierName,
-      mandatoryFloorTier,
-      controlEvidence,
+      likelihood: byId("likelihood").value,
+      control: byId("control").value,
+      controlEvidence: byId("controlEvidence").value,
+      triggerIds,
+      agentic: currentAgentic(),
     });
-    const effectiveTierName = tierRule.effectiveTierName;
-    const tierFloored = effectiveTierName !== residualTierName;
-    const floorReasons = [];
-    if (!tierRule.controlsEvidenced && inherentTierName !== residualTierName) {
-      floorReasons.push(
-        tierRule.verificationNeeded
-          ? "High/Critical inherent tier awaits independent verification of controls"
-          : "controls not yet evidenced, so inherent risk tier",
-      );
-    }
-    if (tierRule.floorRaised) {
-      floorReasons.push(
-        triggerIds.length ? "mandatory trigger" : "special category data",
-      );
-    }
-    const floorReason = floorReasons.join(" + ");
-    // ---------------------------------------------------------------------
-    const assuranceIntensity = logic.assuranceIntensity(
-      agpiScore,
-      effectiveTierName,
-      triggerIds,
-    );
-    const results = {
-      agpiScore,
-      priority,
-      rawAgpiPriority: priority.label,
-      effectiveGovernancePriority: priority.label,
-      risk,
-      triggerIds,
-      assuranceIntensity,
-      residualTierName,
-      inherentTierName,
-      effectiveTierName,
-      mandatoryFloorTier,
-      controlEvidence,
-      tierBasis: tierRule.basis,
-      tierFloored,
-      floorReason,
-      governanceStatus: "Triage complete — formal governance approvals pending",
-    };
-    results.requirements = logic.assessmentRequirements(profile, results);
     return {
       profile,
       forums,
@@ -344,7 +295,8 @@
       const row = document.createElement("tr");
 
       const numberCell = document.createElement("td");
-      appendTextElement(numberCell, "span", "gate-number", String(gate.sequence));
+      // Show the AIG-DEC-01 gate number; the Assurance Board input is not a gate.
+      appendTextElement(numberCell, "span", "gate-number", gate.gateNumber != null ? String(gate.gateNumber) : "A");
       appendTextElement(
         numberCell,
         "span",
@@ -377,7 +329,7 @@
         "status-badge",
         gate.status,
       );
-      if (gate.status.startsWith("Not required")) {
+      if (gate.status.startsWith("Not required") || gate.status.startsWith("Conditional")) {
         status.classList.add("not-required");
       }
 
@@ -441,23 +393,26 @@
   }
 
   function governanceRoute(profile, results) {
-    const canAct =
-      profile.capability === "Agentic AI" ||
-      (profile.actionAuthority && profile.actionAuthority !== "None — outputs only") ||
-      (results.triggerIds && results.triggerIds.includes("agentic"));
-
-    const autonomousWithoutPerActionReview =
-      profile.actionAuthority === "Acts within defined bounds — monitored" ||
-      profile.actionAuthority === "Fully autonomous" ||
-      (results.triggerIds && results.triggerIds.includes("agentic"));
+    const canAct = logic.isActionCapable(profile, results.triggerIds);
+    const review = results.perActionReview;
+    const unsure = profile.actionAuthority === logic.ACTION_AUTHORITY.unsure;
 
     if (canAct) {
+      const gates = "Gate 2 (Technical design review, agentic control checkpoints) and Gate 6 (go-live, which grants the permitted autonomy level) are mandatory for every action-capable use, at any agency tier including T0.";
+      const agency = results.agencyPending
+        ? " Run Assess agency: the agency tier sets a minimum pathway (T2 Medium, T3 High, T4 High or Critical, T5 Critical) and the higher governs."
+        : results.agencyTierLabel
+          ? ` Agency tier ${results.agencyTierLabel}: minimum pathway ${results.agencyMinTier || "none"}.`
+          : "";
       return {
         key: "agentic",
         name: "Agentic governance pathway",
-        why: autonomousWithoutPerActionReview
-          ? "This system can execute actions without human review of each individual action. The mandatory agentic trigger therefore applies and the minimum effective risk tier is Critical. Complete the Agentic Triage, Agent Record (ASBOM), authority controls and the required assurance route."
-          : "This system can act, but each individual action remains human-approved or no unreviewed autonomous action has been identified. Agentic governance controls and the Agent Record (ASBOM) still apply; a Critical risk floor is not imposed solely because the system is agentic."
+        why: (unsure
+          ? "“Can it act?” is Unsure, so the use is treated as action-capable until confirmed, and per-action human review is treated as No. The mandatory agentic trigger therefore applies and the minimum governing tier is Critical (Playbook §4.4.6). "
+          : review === "No" || results.triggerIds.includes("agentic")
+            ? "This system can execute actions without human review of each individual action. The mandatory agentic trigger therefore applies and the minimum governing tier is Critical (Playbook §4.4.6). "
+            : "This system can act, but each individual action remains human-approved. A Critical floor is not imposed solely because the system is agentic. ") +
+          gates + agency + " Complete the Agentic Triage, Agent Record (ASBOM) and authority controls.",
       };
     }
 
@@ -465,14 +420,14 @@
       return {
         key: "light",
         name: "Light-touch governance pathway",
-        why: "Low risk and low governance priority do not waive duties. Complete Equality Act s149, HRA s6 and data-protection/privacy screening, verify the Council-issued AIR-ID and current AIG-INV-04 state, retain proportionate baseline documentation, named ownership, controls and review, and record the delegated decision for this UC-ID before use (Playbook §3.8.2.1). An obviously low-risk use can instead take the one-page Fast-Track Screening (AIG-INV-02): its ten validated No answers are recorded as this screening."
+        why: "Low risk and low governance priority do not waive duties. Complete Equality Act s149, HRA s6 and data-protection/privacy screening, verify the Council-issued AIR-ID and current AIG-INV-04 state, retain proportionate baseline documentation, named ownership, controls and review, and record the delegated decision for this UC-ID (by the officer or forum with confirmed delegation) before use (Playbook §3.8.2.1). An obviously low-risk use can instead take the one-page Fast-Track Screening (AIG-INV-02): its all-No answers, validated by the AI Governance Lead, are recorded as this screening."
       };
     }
 
     return {
       key: "standard",
       name: "Non-agentic governance pathway",
-      why: "This system does not exercise autonomous action authority. Its risk remains classified separately as Low, Medium, High or Critical, and the governance depth follows its effective risk tier, AGPI priority and any mandatory or specialist triggers."
+      why: "This system does not exercise autonomous action authority. Its route follows the governing tier (the highest of the risk tier, any §4.4.6 trigger floor and the impact floor); the AGPI priority sets how quickly governance looks at it, not the route."
     };
   }
 
@@ -503,7 +458,12 @@
     byId("agpiScore").textContent = formatNumber(results.agpiScore);
     byId("agpiPriority").textContent =
       `Provisional · ${results.priority.label} · UC-ID ${profile.ucId || "pending"} use-specific`;
-    byId("agpiAction").textContent = results.priority.action;
+    byId("agpiAction").textContent = [
+      `Typical governance attention (urgency): ${results.priority.action}`,
+      results.priority.floorApplied ? `${results.priority.floorNote} (Proposed — for Council confirmation).` : "",
+      results.priority.overrideNote,
+      "The AGPI priority sets how quickly governance looks at this use; the route is set by the governing tier.",
+    ].filter(Boolean).join(" ");
     byId("needle").style.left = `${results.agpiScore}%`;
 
     byId("impactScore").textContent = formatNumber(results.risk.impact);
@@ -512,7 +472,7 @@
     byId("residualRisk").textContent =
       `${formatNumber(results.risk.residual)} · ${results.residualTierName}`;
     byId("riskTier").textContent =
-      `Provisional · ${results.effectiveTierName} · UC-ID ${profile.ucId || "pending"} use-specific`;
+      `Provisional · ${tierText(results)} · UC-ID ${profile.ucId || "pending"} use-specific`;
     byId("tierStat").className =
       `stat tier-${results.effectiveTierName.toLowerCase()}`;
 
@@ -520,7 +480,7 @@
     const tierIsHighOrCritical =
       results.effectiveTierName === "High" ||
       results.effectiveTierName === "Critical";
-    if (results.triggerIds.length || tierIsHighOrCritical) {
+    if (results.triggerIds.length || tierIsHighOrCritical || results.impactFloorApplied || results.agencyPending) {
       escalationBanner.classList.add("visible");
       const parts = [];
       if (results.triggerIds.length) {
@@ -529,11 +489,14 @@
         );
       }
       parts.push(
-        `Provisional effective triage tier: ${results.effectiveTierName}` +
-          (results.tierFloored
+        `Provisional governing tier: ${tierText(results)}` +
+          (results.tierFloored && results.floorReason
             ? ` (raised by ${results.floorReason}; residual was ${results.residualTierName}).`
             : "."),
       );
+      if (results.agencyPending) {
+        parts.push("This use can act and its agency tier is not yet assessed: Gate 2 is mandatory regardless, and the agency-tier minimum pathway may raise the governing tier.");
+      }
       if (results.tierFloored) {
         parts.push(
           "This is a triage result, not current AIG-INV-04 assurance state. If an authorised forum decides on escalation, record that decision in AIG-DEC-03 or approved native minutes and link its dated Gate Event in AIG-DEC-04.",
@@ -553,10 +516,11 @@
     byId("summaryPriority").textContent =
       `Provisional · ${results.priority.label} · UC-ID ${profile.ucId || "pending"} use-specific`;
     byId("summaryTier").textContent =
-      `Provisional · ${results.effectiveTierName} · UC-ID ${profile.ucId || "pending"} use-specific` +
-      (results.tierFloored ? ` (governance floor: ${results.floorReason})` : "") +
-      ` · inherent ${results.inherentTierName} · residual ${formatNumber(results.risk.residual)} (${results.residualTierName})`;
-    byId("summaryIntensity").textContent = `Provisional · ${results.assuranceIntensity}`;
+      `Provisional · ${tierText(results)} · UC-ID ${profile.ucId || "pending"} use-specific` +
+      (results.tierFloored && results.floorReason ? ` (governance floor: ${results.floorReason})` : "") +
+      ` · inherent ${results.inherentTierName} · residual ${formatNumber(results.risk.residual)} (${results.residualTierName})` +
+      (results.agencyTierLabel ? ` · agency ${results.agencyTierLabel.split(" ")[0]} → governing ${results.effectiveTierName}` : "");
+    byId("summaryIntensity").textContent = `Provisional · ${results.assuranceIntensity} · decision route: ${results.decisionRoute}`;
     byId("summaryNextGate").textContent = `Proposed · ${route[0].requirement}`;
     byId("summaryCommercial").textContent = logic.commercialRequired(profile)
       ? "Potential route — commercial owner confirms"
@@ -571,6 +535,12 @@
     renderHandoff(profile, results);
     updateProvisionalCue();
     return calculation;
+  }
+
+  // The governing tier, marked "at least" while an action-capable use's agency tier
+  // is not yet assessed (its minimum pathway may raise it).
+  function tierText(results) {
+    return results.agencyPending ? `at least ${results.effectiveTierName}` : results.effectiveTierName;
   }
 
   function formatNumber(value) {
@@ -665,6 +635,7 @@
       "==========================================",
       "",
       `Generated: ${logic.formatDate(new Date())}`,
+      `Aligned to: ${logic.SUITE.label} — proposed drafts, not approved`,
       `AIR-ID: ${profile.registerId || "Not assigned"}`,
       `UC-ID: ${profile.ucId || "Pending — not assigned"}`,
       `UC-ID status: ${profile.ucIdStatus || "Pending — no UC-ID entered"}`,
@@ -690,8 +661,12 @@
           `${dimension.name} (${dimension.weight}%): ${agpiScores[dimension.id]} / 5`,
       ),
       `Weighted AGPI score: ${formatNumber(results.agpiScore)} / 100`,
+      `AGPI band: ${results.priority.band ? results.priority.band.label : results.priority.label}`,
+      `Priority floor: ${results.priority.floorNote || "No floor effect"}`,
+      ...(results.priority.overrideNote ? [results.priority.overrideNote] : []),
       `Provisional governance priority: ${results.priority.label}`,
-      `Action: ${results.priority.action}`,
+      `Typical governance attention (urgency): ${results.priority.action}`,
+      "The AGPI priority sets urgency and sequencing only; the route is set by the governing tier (Playbook §3.10.1).",
       "",
       "RISK AND ESCALATION",
       "-------------------",
@@ -704,7 +679,12 @@
       `Control effectiveness: ${results.risk.control}`,
       `Control evidence: ${results.controlEvidence}`,
       `Residual risk: ${formatNumber(results.risk.residual)}`,
-      `Provisional effective triage tier: ${results.effectiveTierName}${results.tierFloored ? ` (governance floor: ${results.floorReason})` : ""}`,
+      `Provisional governing tier: ${tierText(results)}${results.tierFloored && results.floorReason ? ` (governance floor: ${results.floorReason})` : ""}`,
+      `Risk tier with trigger floor: ${results.riskTierName}`,
+      `Impact floor (any confirmed Impact 5 → at least Medium): ${results.impactFloorApplied ? "applied" : "no effect"}`,
+      `Action-capable ("can it act?", Unsure = Yes): ${results.actionCapable ? "Yes" : "No"}; per-action human review: ${results.perActionReview}`,
+      `Agency-tier minimum pathway: ${results.actionCapable ? (results.agencyPending ? "pending — run Assess agency" : (results.agencyMinTier || "none")) : "not applicable"}`,
+      `Decision route for the governing tier: ${results.decisionRoute}`,
       ...(results.tierFloored
         ? [
             "  Note: this effective triage tier is a draft routing input, not a current assurance state. If a formal decision is reached, record it in AIG-DEC-03 or approved native minutes and link the separate dated Gate Event in AIG-DEC-04.",
@@ -730,7 +710,7 @@
     route.forEach((gate) => {
       lines.push(
         "",
-        `${gate.sequence}. ${gate.requirement}`,
+        `${gate.requirement}${gate.gate ? ` (${gate.applicability})` : ""}`,
         `Forum / authority: ${gate.forum}`,
         `Status: ${gate.status}`,
         `Decision: ${gate.decision}`,
@@ -749,6 +729,7 @@
         `Agency tier: ${a.tierLabel}`,
         `Autonomy: ${a.autonomyLabel}`,
         ...logic.AGENCY_DIMENSIONS.map((d) => `${d.label} (0-5): ${a[d.id]} | Rationale: ${(a.dimensionNotes[d.id] || {}).rationale || "Not supplied"} | Evidence ref: ${(a.dimensionNotes[d.id] || {}).evidenceRef || "Not supplied"}`),
+        `Tier set by: ${a.setBy && a.setBy.length ? a.setBy.join(", ") : "no floor above T0"} (AIG-AGT-02/AIG-AGT-03 Tables A and B)`,
         `Governance pathway: ${a.pathway}`,
         `Escalation reasons: ${a.escalations.length ? a.escalations.join("; ") : "None"}`,
         `Containment flags: ${a.flags.length ? a.flags.join("; ") : "None"}`,
@@ -816,6 +797,9 @@
     return logic.buildCanonicalRecord(calculation, latestAgentic ? readAgentic() : null, latestAgentic);
   }
 
+  // Rows 1-16 are the AIG-ASS-01 "AGPI Triage" column A labels, in sheet order
+  // (rows 5-8, 10-19, 21-22). Formula-owned results are given as check values; notes
+  // after them are context only.
   function agpiPrefillCsv(calculation) {
     const p = calculation.profile;
     const r = calculation.results;
@@ -823,15 +807,8 @@
     const rows = [
       ["System / model name", p.systemName],
       ["AIR-ID", p.registerId],
-      ["UC-ID (blank only for shared baseline)", p.ucId],
-      ["Use-case scope / exact outcome assessed", p.usePurpose],
-      ["UC-ID entry status (not verification)", p.ucIdStatus],
-      ["UC-ID interpretation", p.ucId ? "UC-ID-specific use triage." : "UC-ID-specific provisional use triage; ID pending, not a selected shared system baseline."],
-      ["Import limitation", p.ucId ? "Use-scoped proposal; verify this UC-ID before transfer." : "Use-scoped triage has no UC-ID yet; keep pending and do not treat blank as shared system baseline or transfer as a completed assessment."],
-      ["Priority / score scope", `This AGPI triage applies only to UC-ID ${p.ucId || "(pending)"} and the stated use outcome; reassess materially different uses separately. Not approval.`],
-      ["Service area", p.serviceArea],
-      ["Service owner", p.serviceOwner],
       ["Assessed by / date", ""],
+      ["UC-ID (required when scope is UC-ID specific)", p.ucId],
       ["Resident Impact", s.resident],
       ["Public Trust & Reputation", s.trust],
       ["Legal & Regulatory Exposure", s.legal],
@@ -839,11 +816,21 @@
       ["Strategic Value & Organisational Dependency", s.strategic],
       ["Human Oversight & Decision Authority", s.oversight],
       ["AGPI score (0–100)", r.agpiScore],
-      ["Raw AGPI priority", r.rawAgpiPriority || r.priority.label],
-      ["Authorised governance-priority uplift (optional)", ""],
-      ["Effective governance priority", r.effectiveGovernancePriority || r.priority.label],
-      ["Priority uplift / routing rationale", ""],
-      ["Source / completion status", ""] // Formula-owned in AIG-ASS-01; do not paste a status.
+      ["Governance priority", r.priority.ass01Label || r.priority.label],
+      ["Assessment scope (UC-ID specific / Shared system baseline)", "UC-ID specific"],
+      ["Governance Investigation Required? (Yes / No)", ""],
+      ["Priority floor: Resident Impact or Legal & Regulatory Exposure = 5 (Proposed — for Council confirmation)", r.priority.floorNote],
+      ["Typical governance attention for this priority (urgency)", (logic.PRIORITIES.find((x) => x.label === (r.priority.ass01Label || r.priority.label)) || r.priority).action],
+      ["Note (not a field) — Rationale / evidence ref (required, column F) for each of the six dimensions", ""],
+      ["Note (not a field) — Formula-owned values", "AGPI score (D16), Governance priority (B17), Priority floor (B21) and Typical governance attention (B22) are calculated by the workbook; use the values above only to check its result."],
+      ["Note (not a field) — Override rule (Playbook §3.9.6)", r.priority.overrideNote || "No effect: no §4.4.6 trigger with a Priority 5 band."],
+      ["Note (not a field) — Governance priority after the override rule", r.priority.label],
+      ["Note (not a field) — Use-case scope / exact outcome assessed", p.usePurpose],
+      ["Note (not a field) — UC-ID entry status (not verification)", p.ucIdStatus],
+      ["Note (not a field) — UC-ID interpretation", p.ucId ? "UC-ID-specific use triage." : "UC-ID-specific provisional use triage; ID pending, not a selected shared system baseline."],
+      ["Note (not a field) — Import limitation", p.ucId ? "Use-scoped proposal; verify this UC-ID before transfer." : "Use-scoped triage has no UC-ID yet; keep pending and do not treat blank as shared system baseline or transfer as a completed assessment."],
+      ["Note (not a field) — Priority / score scope", `This AGPI triage applies only to UC-ID ${p.ucId || "(pending)"} and the stated use outcome; reassess materially different uses separately. The priority sets urgency only; the route follows the governing tier. Not approval.`],
+      ["Note (not a field) — Service area / Service owner", [p.serviceArea, p.serviceOwner].filter(Boolean).join(" / ")],
     ];
     return fieldValueCsv(rows, "AGPI Triage");
   }
@@ -858,10 +845,12 @@
     const r = calculation.results;
     const triggerSet = new Set(r.triggerIds);
     const a = latestAgentic || null;
-    const isAgent =
-      p.capability === "Agentic AI" ||
-      (p.actionAuthority && p.actionAuthority !== "None — outputs only") ||
-      triggerSet.has("agentic");
+    const isAgent = r.actionCapable;
+    // Web-triage pre-control tier explanation for Triage Import B43.
+    const preControlReason = [
+      r.inherentTierName !== r.residualTierName ? "inherent risk tier (web triage applies no control-based reduction)" : "",
+      r.preControlTierName !== r.inherentTierName && r.mandatoryFloorTier === r.preControlTierName ? `mandatory trigger floor (${r.mandatoryFloorTier})` : "",
+    ].filter(Boolean).join(" + ");
 
     // Rows 1–59 match AIG-ASS-02 Triage Import B5:B63 exactly, in order, so the Value
     // column can be pasted as one block. Notes after row 59 are context only.
@@ -901,10 +890,10 @@
       ["Trigger — Novel Deployment", yesNo(triggerSet.has("novel"))],
       ["Trigger — Statutory Decisions", yesNo(triggerSet.has("statutory"))],
       ["Trigger — Material Change", yesNo(triggerSet.has("materialChange"))],
-      ["Trigger — Agentic Autonomous Action", yesNo(triggerSet.has("agentic"))],
+      ["Trigger — Agentic Autonomous Action", r.perActionReview === "Unsure" ? "Unsure" : yesNo(triggerSet.has("agentic"))],
       ["Mandatory Risk Floor", mandatoryFloorLabel(r)],
-      ["Effective Governance Tier", r.effectiveTierName],
-      ["Tier Floor Reason", r.floorReason || ""],
+      ["Effective Governance Tier", r.preControlTierName],
+      ["Tier Floor Reason", preControlReason],
       ["Assurance Intensity", r.assuranceIntensity],
       ["Governance Status", r.governanceStatus],
       ["Is Agent", yesNo(isAgent)],
@@ -925,6 +914,7 @@
       ["Agent Record (ASBOM) Ref", a ? (a.asbomRef || "") : ""],
       ["UC-ID (blank only for explicit system baseline)", p.ucId],
       ["Triage / assessment scope", "UC-ID specific"],
+      ["Note (not imported) — Governing tier from this triage (AIG-ASS-02 C43 recalculates it: evidenced-control reduction, trigger, impact and agentic floors)", (r.agencyPending ? "at least " : "") + r.effectiveTierName + (r.floorReason ? ` (${r.floorReason})` : "")],
       ["Note (not imported) — Control evidence status (confirm at AIG-ASS-02 Step 2 and record the evidence reference in Step 6)", r.controlEvidence || ""],
       ["Note (not imported) — UC-ID entry status (not verification)", p.ucIdStatus],
       ["Note (not imported) — UC-ID interpretation", p.ucId ? "UC-ID-specific use triage." : "UC-ID-specific provisional use triage; ID pending, not a selected shared system baseline."],
@@ -934,15 +924,16 @@
     return fieldValueCsv(rows, "Triage Import");
   }
 
+  // One row per AIG-AGT-04 "Agent Record" column (row 4, A to BK), in sheet order,
+  // excluding the formula-owned Record QA column. Notes after them are context only.
   function agentRecordPrefillCsv(calculation) {
     if (!latestAgentic) return "";
     const p = calculation.profile;
     const r = calculation.results;
     const a = latestAgentic;
+    const exact = "Exact AIG-AGT-04 Agent Record column (row 4) — owner verification required";
     const rows = [
       ["AIR-ID", p.registerId],
-      ["UC-ID(s) within this authority envelope (reference only)", p.ucId],
-      ["Exact use purpose / outcome", p.usePurpose || p.purpose],
       ["Agent Name", p.systemName],
       ["Approved Purpose (mandate)", ""],
       ["Prohibited Purposes", ""],
@@ -951,15 +942,14 @@
       ["Accountable Executive", ""],
       ["Business Owner", ""],
       ["Operator / Platform", ""],
-      ["Environment", ""],
+      ["Environment (stage)", ""],
       ["Jurisdiction", ""],
-      ["Autonomy Level", a.autonomyLabel],
+      ["Assessed autonomy level (triage; not permission)", a.autonomyLabel],
       ["Agency Tier", a.tierLabel],
-      ["Current system AGPI Priority (verify AIG-INV-04)", ""],
-      ["Use-specific triage AGPI priority (not system summary)", r.priority.label],
+      ["AGPI Priority (from AIG-INV-04)", ""],
       ["Persistence?", ""],
       ["Memory Type", ""],
-      ["Can delegate / create agents?", ""],
+      ["Can delegate?", ""],
       ["Financial Authority (limit)", ""],
       ["Permission Scope (summary)", ""],
       ["Identity / credential provenance", ""],
@@ -995,17 +985,34 @@
       ["Agent Creation Authority", ""],
       ["Self-Modification Authority", ""],
       ["AG-ID", ""],
-      ["Use-specific delegated decision / gate reference(s)", ""]
+      ["UC-ID(s) within this authority envelope (reference only)", p.ucId],
+      ["Use-specific delegated decision / gate reference(s)", ""],
+      ["ASBOM record version", ""],
+      ["ASBOM version effective date", ""],
+      ["Exposure", ""],
+      ["Agency profile ref (Agency Profile sheet — the record)", ""],
+      ["Mandatory tier floor applied (trigger)", r.triggerIds.length ? `${r.mandatoryFloorTier} (${logic.triggerTextFor(r.triggerIds).join("; ")})` : "None triggered"],
+      ["Governing pathway (higher of risk-tier pathway and agency-tier minimum)", `${r.effectiveTierName} (risk-tier pathway ${r.riskTierName}${r.impactFloorApplied ? ", impact floor Medium" : ""}; ${a.tierLabel.split(" ")[0]} agency-tier minimum ${r.agencyMinTier || "none"})`],
+      ["Oversight mode rationale", ""],
+      ["Permitted autonomy level (granted at Gate 6)", ""],
+      ["Permitted autonomy decision ref (AIG-DEC-03)", ""],
+      ["Note (not a column) — Exact use purpose / outcome", p.usePurpose || p.purpose],
+      ["Note (not a column) — Use-specific triage AGPI priority (not the AIG-INV-04 system value)", r.priority.label],
+      ["Note (not a column) — Agency tier set by (AIG-AGT-02/AIG-AGT-03 Tables A and B)", (a.setBy || []).join(", ")],
     ];
     return logic.toCsv(
       ["Target artefact", "Field label / prompt", "Field reference type", "Triage draft value", "Value status", "Review, evidence or authority still required"],
       rows.map(([field, value]) => [
         "AIG-AGT-04 Agent Record / ASBOM",
         field,
-        "Prompt / candidate label — exact controlled field not verified",
+        field.startsWith("Note (not a column)") ? "Context note — not an Agent Record column" : exact,
         value == null ? "" : value,
         "Proposal only — not a mandate, approval or operational state",
-        "Review the current ASBOM contract and evidence; authorised owners determine mandate, permissions, delegations and status.",
+        field === "AGPI Priority (from AIG-INV-04)"
+          ? "Leave blank here: copy the current AIG-INV-04 value; this UC-specific triage priority is not the system summary."
+          : field.startsWith("Permitted autonomy")
+            ? "Granted only at Gate 6 by the go-live decision-maker and recorded in AIG-DEC-03; never inferred from the assessed level."
+            : "Review the current ASBOM contract and evidence; authorised owners determine mandate, permissions, delegations and status.",
       ]),
     );
   }
@@ -1024,7 +1031,11 @@
     const risk = "AIG-ASS-02 / Triage Import";
     add(risk, "AIR-ID", p.registerId, "Triage value; assessor confirms");
     add(risk, "UC-ID (blank only for explicit system baseline)", p.ucId || "", `Scope only; ${p.ucIdStatus || "pending"}; verify independently. Exact outcome: ${p.usePurpose || p.purpose}. Never authority.`);
-    add(risk, "Effective Governance Tier", r.effectiveTierName, "Triage value; assessor confirms");
+    add(risk, "Effective Governance Tier", r.preControlTierName, `Web-triage pre-control tier as defined in Triage Import B42; governing tier from this triage: ${(r.agencyPending ? "at least " : "") + r.effectiveTierName}. The assessor confirms in AIG-ASS-02 C43.`);
+    add(risk, "Is Agent", yesNo(r.actionCapable), "\u201cCan it act?\u201d screen; Unsure is treated as Yes until confirmed");
+    add(risk, "Trigger — Agentic Autonomous Action", r.perActionReview === "Unsure" ? "Unsure" : yesNo(r.triggerIds.includes("agentic")), "No per-action human review (Unsure = No) sets the §4.4.6 Critical floor");
+    add(risk, "Agency Tier", a.tierLabel, "Triage value; assessor confirms (AIG-ASS-02 Step 5)");
+    add(risk, "Agentic Pathway", a.pathway, "Triage value; AIG-ASS-02 row 82 reads the agentic floor from it");
     add(risk, "Assurance Intensity", r.assuranceIntensity, "Triage value; assessor confirms");
     add(risk, "Kill-switch Demonstrated", yesNo(a.killSwitch), "Self-reported at triage; verify evidence");
     add(risk, "Rollback Capability", yesNo(a.rollback), "Self-reported at triage; verify evidence");
@@ -1041,11 +1052,15 @@
     });
     add(triage, "Agency multipliers", a.multipliers.join("; "), "Separate flags; not additional scored dimensions");
     add(triage, "Worst plausible action chain", a.worstChain, "Assessor to validate");
-    add(triage, "Proposed autonomy level", a.autonomyLabel, "Confirm permitted autonomy at gate");
-    add(triage, "Proposed agency tier", a.tierLabel, "Highest applicable tier floor; confirm");
+    add(triage, "Assessed or requested autonomy level", a.autonomyLabel, "The permitted autonomy level is granted at Gate 6 (go-live) and recorded in AIG-DEC-03 and AIG-AGT-04");
+    add(triage, "Agency tier", a.tierLabel, "Highest floor in Tables A and B; confirm");
+    add(triage, "Floors triggered (Tables A and B)", (a.floors || []).join("; "), "Every floor triggered; the highest wins");
+    add(triage, "Rule(s) that set the tier", (a.setBy || []).join("; "), "Record on the Agent Record and in the governance case");
     add(triage, "Tier escalation reasons", a.escalations.join("; "), "Review mandatory floors and uncertainty");
-    add(triage, "Required control route", a.pathway, "Not an approval or runtime control");
-    add(triage, "Production readiness gate", "Required runtime controls Implemented and Evidenced or effective, time-bounded compensating control accepted under Council delegation", "No production approval from triage");
+    add(triage, "Agency-tier pathway", a.pathway, "Not an approval or runtime control");
+    add(triage, "Agency-tier minimum pathway", r.agencyMinTier || "None", "AIG-DEC-01 Agentic pathway; the higher of this and the risk-tier pathway governs");
+    add(triage, "Governing tier", r.effectiveTierName, "Highest of risk tier, trigger floors, impact floor and agency-tier minimum");
+    add(triage, "Production readiness (checked at Gate 6)", "Required runtime controls Implemented and Evidenced or effective, time-bounded compensating control accepted under Council delegation; agentic control checkpoints evidenced at Gate 2 and re-confirmed at Gate 6", "No production approval from triage");
 
     const security = "AIG-ASS-11 / AI Security Review Checklist";
     add(security, "AIR-ID", p.registerId, "Action-capable systems: applies at every base risk tier; review depth is proportionate");
@@ -1055,17 +1070,22 @@
     add(record, "AIR-ID", p.registerId, "Carry forward");
     add(record, "Agent Name", p.systemName, "Proposed; confirm");
     add(record, "Approved Purpose (mandate)", "", "Only fill after formal authorisation");
-    add(record, "Autonomy Level", a.autonomyLabel, "Triage proposal; confirm authorised level");
+    add(record, "Assessed autonomy level (triage; not permission)", a.autonomyLabel, "Triage proposal; the permitted level is granted at Gate 6");
     add(record, "Agency Tier", a.tierLabel, "Triage proposal; confirm");
-    add(record, "Current system AGPI Priority (verify AIG-INV-04)", "", "Leave blank; this UC-specific triage is not the one-row-per-AIR-ID system summary.");
-    add(record, "Use-specific triage AGPI priority (not system summary)", r.priority.label, "Use-specific triage prompt only; do not write into the AIG-INV-04 system summary.");
-    add(record, "Notes", "Proposed purpose from intake: " + p.purpose, "Context only; no approved mandate");
+    add(record, "AGPI Priority (from AIG-INV-04)", "", "Leave blank; copy the current AIG-INV-04 value. This UC-specific triage is not the one-row-per-AIR-ID system summary.");
     add(record, "Kill-switch tested?", "", "Test evidence required");
     add(record, "Rollback capability?", "", "Test evidence required");
+    add(record, "Notes", "Proposed purpose from intake: " + p.purpose, "Context only; no approved mandate");
+    add(record, "AG-ID", "", "Stable per-agent key assigned under the AIG-AGT-04 rules; this tool never issues one");
+    add(record, "UC-ID(s) within this authority envelope (reference only)", p.ucId || "", "Reference only; not an authority grant");
+    add(record, "Governing pathway (higher of risk-tier pathway and agency-tier minimum)", r.effectiveTierName, "Triage value; confirm");
+    add(record, "Permitted autonomy level (granted at Gate 6)", "", "Granted only at Gate 6 by the go-live decision-maker; never inferred from the assessed level");
+    add(record, "Note (not a column) — Use-specific triage AGPI priority (not system summary)", r.priority.label, "Use-specific triage prompt only; do not write into the AIG-INV-04 system summary.");
     add("AIG-AGT-04 / Runtime Controls", "Control ID", "ASI01–ASI10 where applicable", "One row per applicable control; set required/actual state, test, owner and evidence; no state is presumed");
 
     const vector = "AIG-AGT-04 / Capability Vector";
     add(vector, "AIR-ID", p.registerId, "Carry forward");
+    add(vector, "AG-ID", "", "Stable per-agent key; this tool never issues one");
     logic.CAPABILITY_VECTOR.forEach((capability) => add(
       vector, capability, a.capabilities.includes(capability) ? "Yes" : "",
       "Confirm No / Yes / Scoped; blank is unknown"
@@ -1082,8 +1102,9 @@
     ));
     add(vector, "Notes", "Triage seed; verify all capabilities and multipliers.", "Context");
 
-    const authority = "AIG-AGT-05 / Agent Authority Graph (derived from AIG-AGT-04 ASBOM)";
-    add(authority, "AIR-ID / agent reference", p.registerId, "Identity pointer only; no authority edge created");
+    const authority = "AIG-AGT-04 / Authority & Delegations (AIG-AGT-05 Authority Graph derives from it)";
+    add(authority, "AIR-ID (agent)", p.registerId, "Identity pointer only; no authority edge created");
+    add(authority, "AG-ID (agent)", "", "Stable per-agent key; this tool never issues one");
     add(authority, "Authority delegated", "", "Map only an existing authorised edge from AIG-AGT-04; no authority granted here");
     add(authority, "Constraints / ceiling", "", "Verify against ASBOM and formal delegation; do not infer from triage multipliers");
     add(authority, "Revocable how", "", "Prompt only; evidence revocation before any authority is granted");
@@ -1092,15 +1113,22 @@
     add(monitoring, "AIR-ID", p.registerId, "Identity seed only; no monitoring result created");
     add(monitoring, "AI System / Service", p.systemName, "Identity seed only");
     add(monitoring, "Monitoring Owner", "", "Assign and confirm at deployment");
-    add(monitoring, "Metric Category", "Agentic security / operations", "Assessor to confirm category for each applicable metric");
+    add(monitoring, "Metric Category", "Security", "Controlled value; assessor confirms the category for each applicable metric (for example Human Oversight or Error / Failure)");
     add(monitoring, "Approved Threshold / Tolerance", "", "Set and approve per metric before live use; blank is outstanding");
     add(monitoring, "Evidence Location", "", "Cite AIG-AGT-06 action IDs and verified logs when operated; no test is presumed");
     ["Denied tool calls","Authority changes","Memory writes","Loops and delegation","External destinations","Human overrides","Time to containment"].forEach(metric => add(monitoring, "Metric / Indicator", metric, "Set Approved Threshold / Tolerance, Monitoring Owner, review window and evidence before live use where applicable"));
+    add(monitoring, "UC-ID (blank only for an explicitly shared system measure)", p.ucId || "", "Scope key; verify");
+    add(monitoring, "Measure scope (UC-ID specific / Shared system baseline)", "UC-ID specific", "Controlled value");
+    add(monitoring, "Risk tier (UC-ID, AIG-ASS-02)", r.effectiveTierName, "Triage governing tier; replace with the assessor-confirmed AIG-ASS-02 tier");
 
-    const actions = "AIG-AGT-06 / Agentic Action / Decision Record";
-    add(actions, "AIR-ID / agent reference", p.registerId, "Identity pointer only; no action record or decision created");
-    add(actions, "Action / decision record reference", "", "Record each consequential action in the proposed AIG-AGT-06 artefact when operated; no action authority is granted");
-    add(actions, "Human review / outcome / evidence", "", "Prompt only; verify recorded human review, outcome and source evidence");
+    const actions = "AIG-AGT-06 / Agentic Action / Decision Record (controlled fields)";
+    add(actions, "AIR-ID", p.registerId, "Identity pointer only; no action record or decision created");
+    add(actions, "AG-ID", "", "Stable per-agent key; generated records carry it");
+    add(actions, "UC-ID", p.ucId || "", "Required for each consequential action; scope only");
+    add(actions, "Action ID", "", "Generated for each consequential action when operated; no action authority is granted");
+    add(actions, "Approval/override", "", "Recorded at runtime; verify human review and override state");
+    add(actions, "Outcome", "", "Recorded at runtime");
+    add(actions, "Evidence reference", "", "Recorded at runtime; verify source evidence");
 
     return logic.toCsv(
       ["Target Artefact", "Field", "Value", "Treatment / Authority Boundary"],
@@ -1144,7 +1172,7 @@
     const selected = new Set(a.capabilities || []);
     const mult = new Set(a.multipliers || []);
     const headers = [
-      "AIR-ID","Read","Write","Execute","Communicate","Purchase","Delegate",
+      "AIR-ID","AG-ID","Read","Write","Execute","Communicate","Purchase","Delegate",
       "Persuade","Code","Discover","Persist","Replicate","Learn","Escalate",
       "Multiplier: Credential access","Multiplier: Self-modification",
       "Multiplier: Tool discovery","Multiplier: Goal adaptation",
@@ -1153,6 +1181,7 @@
     const yesOrBlank = (name) => selected.has(name) ? "Yes" : "";
     const row = [
       calculation.profile.registerId,
+      "",
       yesOrBlank("Read"),
       yesOrBlank("Write"),
       yesOrBlank("Execute"),
@@ -1173,12 +1202,14 @@
       mult.has("External communication") ? "Yes" : "",
       "Triage seed only. Verify selected capabilities and multipliers; unselected fields remain blank pending No / Yes / Scoped confirmation."
     ];
+    // Columns match AIG-AGT-04 "Capability Vector" row 4 (A to U) exactly, so the row
+    // can be pasted; the guidance column after the blank spacer is not pasted.
     return logic.toCsv(
-      ["Target artefact", ...headers.map((field) => `${field} — prompt / proposed value`), "Field/value status"],
+      [...headers, "", "Guidance only, do not paste: field/value status"],
       [[
-        "AIG-AGT-04 Agent Record / Capability Vector",
         ...row,
-        "Triage handoff only — unselected capabilities remain unknown, not No; verify exact fields and scope against the current controlled ASBOM.",
+        "",
+        "AIG-AGT-04 Capability Vector triage handoff only — AG-ID is left for the Agent Record owner; unselected capabilities remain unknown, not No (confirm No / Yes / Scoped); verify against the current controlled ASBOM.",
       ]],
     );
   }
@@ -1428,6 +1459,7 @@
       multipliers: Array.from(document.querySelectorAll(".ag-mult:checked")).map((c) => c.value),
       capabilities: Array.from(document.querySelectorAll(".ag-cap:checked")).map((c) => c.value),
       killSwitch: byId("agKill").checked, rollback: byId("agRollback").checked, boundariesTested: byId("agBoundaries").checked,
+      otherD1: !!(byId("agD1") && byId("agD1").checked),
       worstChain: byId("agWorstChain").value, asbomRef: byId("agAsbom").value.trim(),
     };
   }
@@ -1450,7 +1482,10 @@
     const minimumAutonomy = actionAuthority === "Fully autonomous" ? 3 :
       actionAuthority === "Acts within defined bounds — monitored" ? 2 :
       actionAuthority === "Human approves each action" ? 1 : 0;
-    if (autonomy < minimumAutonomy) {
+    // AIG-ASS-02 row 82: autonomy 2 or more (the agent executes without a person
+    // executing each action) conflicts with per-action human review.
+    const maximumAutonomy = actionAuthority === "Human approves each action" ? 1 : 5;
+    if (autonomy < minimumAutonomy || autonomy > maximumAutonomy) {
       latestAgentic = null;
       latestAgenticContextKey = null;
       syncAgencyExportAvailability();
@@ -1466,13 +1501,17 @@
     syncAgencyExportAvailability();
     const r = latestAgentic; const host = byId("agencyResult");
     let html = '<p class="ag-tier">' + esc(r.tierLabel) + "</p>";
-    html += "<p><strong>Autonomy:</strong> " + esc(r.autonomyLabel) + "</p>";
-    html += "<p><strong>Governance pathway:</strong> " + esc(r.pathway) + "</p>";
+    html += "<p><strong>Assessed autonomy level:</strong> " + esc(r.autonomyLabel) + " (the permitted level is granted at Gate 6)</p>";
+    html += "<p><strong>Tier set by:</strong> " + esc(r.setBy.length ? r.setBy.join(", ") : "no floor above T0") + " (AIG-AGT-02/AIG-AGT-03 Tables A and B)</p>";
+    html += "<p><strong>Agency-tier pathway:</strong> " + esc(r.pathway) + "</p>";
+    const governing = calculateAll().results;
+    html += "<p><strong>Governing tier:</strong> " + esc((governing.agencyMinTier ? "agency minimum " + governing.agencyMinTier + " · " : "no agency minimum · ") + "risk tier " + governing.riskTierName + " → governing " + governing.effectiveTierName) + "</p>";
     if (r.escalations.length) html += "<p><strong>Escalation:</strong> " + esc(r.escalations.join("; ")) + "</p>";
     if (r.flags.length) html += '<p class="ag-flag"><strong>Flags:</strong> ' + esc(r.flags.join("; ")) + "</p>";
     html += "<p><strong>Deployment control:</strong> " + esc(r.deploymentControl) + "</p>";
     html += '<p class="muted">Draft handoff only: the triage suggests an agent classification and agency tier. AIG-AGT-04 owns permissions and delegations; verify the current authorised Agent Record and never infer authority from this result.</p>';
     host.innerHTML = html; host.hidden = false;
+    update();
   }
   buildAgenticInputs();
   syncAgencyExportAvailability();
