@@ -3,6 +3,11 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const logic = require("../src/triage-logic.js");
+// Header rows and controlled lists read from the suite v3.9 workbooks
+// (regenerate with scripts/extract-suite-fixture.py).
+const contract = require("./fixtures/suite-v3.9-contract.json");
+const PRIORITY_ASS = "Effective Governance Priority (AIG-ASS-01, after any authorised override)";
+const OPERATIONAL = "Operational Status (system baseline)";
 
 function fixture({ dataType = "None", tier = "Low" } = {}) {
   const profile = {
@@ -70,28 +75,18 @@ test("AIG-INV-04 export is a draft handoff and never manufactures system identit
   assert.ok(draft.rows.every((row) => row.length === draft.headers.length));
 
   const supportedFields = {
-    "AI Register": [
-      "AIR-ID", "System name", "Purpose and boundary", "Service area", "Service Owner",
-      "Supplier / source", "Lifecycle stage", "System baseline approval (not use approval)", "System baseline operational status",
-      "Can it act?", "Decision record ref", "Latest gate Event ID",
-      "Assessment / evidence ref", "Next review",
-    ],
-    "Assessment summary": [
-      "AIR-ID", "Priority (AIG-ASS-01)", "AIG-ASS-01 ref / date", "Risk tier (AIG-ASS-02)", "AIG-ASS-02 ref / date",
-      "Agency tier (AIG-AGT-02/AIG-AGT-03)", "AIG-AGT-02/AIG-AGT-03 ref / date", "Privacy / DPIA position",
-      "Equality / EIA position", "Other specialist finding refs", "AIG-AGT-04 Agent Record ref",
-      "AIG-AGT-05 Authority Graph ref", "AIG-OPS-02 Monitoring ref", "As-at date",
-    ],
+    "AI Register": contract["INV-04"]["AI Register"].headers.filter((h) => h !== "Row check"),
+    "Assessment summary": contract["INV-04"]["Assessment summary"].headers.filter((h) => h !== "Row check"),
   };
   assert.deepEqual([...new Set(draft.rows.map((row) => row[0]))].sort(), Object.keys(supportedFields).sort());
-  assert.ok(draft.rows.every(([sheet, field]) => supportedFields[sheet].includes(field)),
-    "every suggestion must use a field name on the proposed workbook's real sheets");
-  assert.ok(draft.rows.some((row) => row[0] === "AI Register" && row[1] === "System name"));
-  assert.ok(draft.rows.some((row) => row[0] === "Assessment summary" && row[1] === "Priority (AIG-ASS-01)"));
+  for (const [sheet, fields] of Object.entries(supportedFields)) {
+    assert.deepEqual(draft.rows.filter((row) => row[0] === sheet).map((row) => row[1]), fields,
+      `${sheet}: one row per v3.9 workbook column, in order`);
+  }
   assert.equal(draft.rows.find((row) =>
-    row[0] === "Assessment summary" && row[1] === "Priority (AIG-ASS-01)")[3], "");
+    row[0] === "Assessment summary" && row[1] === PRIORITY_ASS)[3], "");
   assert.ok(draft.rows.every((row) => !/Register Core|Assurance Snapshot/.test(row[0])));
-  assert.ok(draft.rows.every((row) => !/Approved Purpose \/ Boundary|Governance Approval Status|Is Agent\?|Agent Record \(AIG-AGT-04\) Ref|AGPI \/ assurance \/ risk result/.test(row[1])));
+  assert.ok(draft.rows.every((row) => !/Approved Purpose \/ Boundary|Is Agent\?|Agent Record \(AIG-AGT-04\) Ref|AGPI \/ assurance \/ risk result/.test(row[1])));
 
   const get = (sheet, field) => draft.rows.find((row) => row[0] === sheet && row[1] === field);
   const identity = get("AI Register", "AIR-ID");
@@ -99,8 +94,8 @@ test("AIG-INV-04 export is a draft handoff and never manufactures system identit
   assert.equal(identity[3], "");
   assert.match(identity[5], /Council-issued AIR-ID/);
   assert.match(identity[4], /No value asserted/);
-  assert.equal(get("AI Register", "System baseline approval (not use approval)")[3], "");
-  assert.equal(get("AI Register", "System baseline operational status")[3], "");
+  assert.equal(get("AI Register", "Governance Approval Status (system baseline; not use approval)")[3], "");
+  assert.equal(get("AI Register", OPERATIONAL)[3], "");
   assert.equal(get("AI Register", "Can it act?")[3], "");
   assert.match(get("AI Register", "Purpose and boundary")[5], /not approved purpose/);
   assert.equal(get("Assessment summary", "AIG-AGT-04 Agent Record ref")[3], "");
@@ -144,7 +139,7 @@ test("AIG-DEC-04 gate-plan output is paste-ready for the Gate plan sheet, not an
   assert.deepEqual(header.slice(0, 12), logic.GATE_PLAN_HEADERS);
   assert.equal(header[12], "", "a blank spacer separates the Gate plan columns from guidance");
   assert.ok(header.slice(13).every((h) => h.startsWith("Guidance only, do not paste")));
-  assert.equal(lines.length, route.length + 1);
+  assert.equal(lines.length, route.filter((gate) => gate.gate).length + 1);
   const rows = lines.slice(1).map((line) => line.split('","').map((cell) => cell.replace(/^"|"$/g, "")));
   rows.forEach((row) => {
     assert.equal(row.length, header.length);
@@ -158,7 +153,8 @@ test("AIG-DEC-04 gate-plan output is paste-ready for the Gate plan sheet, not an
     assert.equal(row[9], "");
     assert.ok(["UC-ID specific", "Shared system baseline"].includes(row[11]));
   });
-  assert.equal(rows.find((row) => row[2].startsWith("Procurement"))[4], "Conditional");
+  assert.equal(rows.find((row) => row[2] === "Gate 4 Procurement")[4], "Conditional");
+  rows.forEach((row) => assert.ok(contract["DEC-04"]["Gate plan"].lists["C4:C353"].includes(row[2]), `Gate / forum "${row[2]}" not in the AIG-DEC-04 list`));
   assert.match(rows[0][5], /AGPI \d+/);
   assert.match(csv, /not a decision, approval or Gate Event/);
   assert.doesNotMatch(csv, /Event ID/);
@@ -172,7 +168,7 @@ test("use-scoped handoffs carry exact outcome and operator UC-ID without issuing
   profile.usePurpose = 'Prioritise "one" case workflow for review';
   const register = logic.buildRegisterDraftHandoff(profile, results, null);
   const priority = register.rows.find((row) =>
-    row[0] === "Assessment summary" && row[1] === "Priority (AIG-ASS-01)");
+    row[0] === "Assessment summary" && row[1] === PRIORITY_ASS);
   assert.equal(priority[3], "", "UC-specific triage priority must not populate the one-row-per-AIR-ID system summary");
   assert.match(priority[5], /one-row-per-AIR-ID system summary/);
   assert.match(priority[5], /UC-ID UC-EXAMPLE/);
@@ -185,10 +181,10 @@ test("use-scoped handoffs carry exact outcome and operator UC-ID without issuing
   assert.equal(map.rows.find((row) => row[1] === "Outcome-led use case")[2], profile.usePurpose);
   assert.equal(map.rows.find((row) => row[0].endsWith("/ Relationships") && row[1] === "From ID")[2], "UC-EXAMPLE");
   assert.ok(map.rows.some((row) => row[0].includes("UC_ID_Risk_Decision_Current_View") &&
-    row[1] === "AIG-DEC-04 dated Decision Event ID / date" &&
+    row[1] === "AIG-DEC-04 dated Decision Event ID" &&
     row[2] === ""));
-  assert.match(map.rows.find((row) => row[1] === "AGPI priority (UC-specific)")[2], /Triage prompt only/);
-  assert.match(map.rows.find((row) => row[1] === "Risk tier (UC-specific)")[2], /Triage prompt only/);
+  assert.match(map.rows.find((row) => row[1] === "AGPI priority (UC-specific)")[3], /Triage prompt only/);
+  assert.match(map.rows.find((row) => row[1] === "Risk tier (UC-specific)")[3], /Triage prompt only/);
   assert.ok(map.rows.every((row) => row.length === map.headers.length));
 
   const route = logic.buildRoute(profile, results, {});
@@ -264,7 +260,7 @@ test("materially different uses retain separate triage priorities without writin
   const lowSystemHandoff = logic.buildRegisterDraftHandoff(lowProfile, lowResults, null);
   const highSystemHandoff = logic.buildRegisterDraftHandoff(highProfile, highResults, null);
   const systemPriority = (handoff) => handoff.rows.find((row) =>
-    row[0] === "Assessment summary" && row[1] === "Priority (AIG-ASS-01)");
+    row[0] === "Assessment summary" && row[1] === PRIORITY_ASS);
   assert.equal(systemPriority(lowSystemHandoff)[3], "");
   assert.equal(systemPriority(highSystemHandoff)[3], "");
   assert.match(systemPriority(lowSystemHandoff)[5], /Priority 5/);
@@ -325,7 +321,7 @@ test("retirement handoff keeps plan, event and conditions separate without imply
     registerId: "",
     systemName: "Legacy service",
     priorityLevel: 5,
-    priorityLabel: "Priority 5 - Observe",
+    priorityLabel: "Priority 5 – Observe",
     tier: "Low",
     forum: "Service governance forum",
     eventId: "",
@@ -337,12 +333,12 @@ test("retirement handoff keeps plan, event and conditions separate without imply
     accessTeardown: "Not yet",
   };
   const handoff = logic.buildRetirementGateLogRow(retirement);
-  assert.ok(handoff.rows.some((row) => row[0].includes("Gate Plan")));
-  assert.ok(handoff.rows.some((row) => row[0].includes("Gate Events")));
-  assert.ok(handoff.rows.some((row) => row[0].includes("Gate Conditions")));
+  assert.ok(handoff.rows.some((row) => row[0] === "AIG-DEC-04 / Gate plan"));
+  assert.ok(handoff.rows.some((row) => row[0] === "AIG-DEC-04 / Gate events"));
+  assert.ok(handoff.rows.some((row) => row[0] === "AIG-DEC-04 / Conditions"));
   assert.ok(handoff.rows.every((row) => row.length === handoff.headers.length));
   assert.equal(handoff.rows.find((row) => row[1] === "Event ID")[3], "");
-  const operationalStatus = handoff.rows.find((row) => row[1] === "System baseline operational status");
+  const operationalStatus = handoff.rows.find((row) => row[1] === OPERATIONAL);
   assert.equal(operationalStatus[0], "AI Register");
   assert.equal(operationalStatus[3], "");
   assert.match(handoff.readiness.status, /unverified/);
@@ -372,18 +368,15 @@ test("unverified retirement priority uses full-depth prompts and cannot be ready
 
 test("AIG-DEC-04 retirement handoff includes the separate plan, event and condition contracts", () => {
   const handoff = logic.buildRetirementGateLogRow({ systemName: "Legacy service" });
-  const fieldsFor = (sheet) => new Set(
-    handoff.rows.filter((row) => row[0].includes(sheet)).map((row) => row[1]),
-  );
-  // Every column of the AIG-DEC-04 Gate Log workbook (row 3), except formula-owned checks.
-  for (const field of ["Plan ID", "AIR-ID", "Gate / forum", "Trigger / stage", "Requirement", "Basis / triage ref", "Target date", "Responsible role", "Plan state", "N-A / waiver rationale and authority ref", "UC-ID scope(s) (blank only for explicit system baseline)", "Decision scope (UC-ID specific / Shared system baseline)"]) {
-    assert.ok(fieldsFor("Gate Plan").has(field), `Gate Plan handoff lacks ${field}`);
-  }
-  for (const field of ["Event ID", "AIR-ID", "Plan ID (if any)", "Gate / forum", "Event type", "Date", "Outcome", "Decision-maker / role", "AIG-DEC-03 / minutes ref", "Assurance opinion ref", "Technical snapshot / as-at ref", "Next gate / action", "Recorded by", "UC-ID(s) covered by this dated event", "Decision scope (UC-ID specific / Shared system baseline)"]) {
-    assert.ok(fieldsFor("Gate Events").has(field), `Gate Events handoff lacks ${field}`);
-  }
-  for (const field of ["Condition ID", "Event ID", "AIR-ID", "Required action / condition", "Action owner", "Due date", "State", "Closed / waived on", "Evidence / waiver authority ref", "UC-ID scope (blank only if shared system condition)", "Condition scope (UC-ID specific / shared system baseline)"]) {
-    assert.ok(fieldsFor("Gate Conditions").has(field), `Gate Conditions handoff lacks ${field}`);
+  const fieldsFor = (sheet) => handoff.rows
+    .filter((row) => row[0] === `AIG-DEC-04 / ${sheet}` && !row[1].startsWith("Note (not a column)"))
+    .map((row) => row[1]);
+  // Every column of the AIG-DEC-04 Gate Log workbook (row 3), in order, except
+  // formula-owned checks.
+  for (const sheet of ["Gate plan", "Gate events", "Conditions"]) {
+    const spec = contract["DEC-04"][sheet];
+    const columns = spec.headers.filter((h, i) => !spec.formulaColumns.includes(String.fromCharCode(65 + i)));
+    assert.deepEqual(fieldsFor(sheet), columns, `${sheet} handoff must list every v3.9 column in order`);
   }
   assert.ok(handoff.rows.every((row) =>
     (row[2].includes("AIG-DEC-04 contract") || row[2].includes("Proposed AIG-INV-04") || row[2].includes("Prompt")) &&
@@ -439,15 +432,12 @@ test("canonical JSON and AIG-DEC-02 handoff remain provisional", () => {
   assert.match(record.authorityBoundary.note, /does not evidence gate approval/);
   assert.match(JSON.stringify(record.governance.plannedRoute[0]), /Is the proposal/);
   const csv = logic.buildDecisionReadyHandoff(calculation);
-  assert.match(csv, /AIG-DEC-02 field reference/);
-  assert.match(csv, /Prepared by \(owner to complete\)/);
-  assert.match(csv, /actual date; do not use export date/);
-  assert.match(csv, /Decision question for this forum \(not an attained decision\)/);
+  assert.match(csv, /"Prepared by","Date","Decision required"/);
+  assert.match(csv, /actual paper date; do not use the export date/);
   assert.doesNotMatch(csv, /AI Assurance function/);
   assert.match(csv, /not an import-ready record/);
-  assert.match(csv, /UC-ID \(scope reference only; verify; never create\)/);
   assert.match(csv, /UC-ID entry status \(operator statement only; not verification\)/);
-  assert.match(csv, /Exact use purpose \/ outcome scoped to this triage/);
+  assert.match(csv, /exact use purpose \/ outcome scoped to this triage/);
 });
 
 test("browser UI collects exact UC scope and rejects contradictory ID status before exports", () => {
@@ -464,8 +454,9 @@ test("browser UI collects exact UC scope and rejects contradictory ID status bef
   assert.match(app, /never issues or verifies a UC-ID/);
   assert.match(app, /This AGPI triage applies only to UC-ID/);
   assert.match(app, /This risk triage applies only to UC-ID/);
-  assert.doesNotMatch(app, /AGPI Priority \(from AIG-INV-04\)/);
-  assert.match(app, /Current system AGPI Priority \(verify AIG-INV-04\)/);
+  // AIG-AGT-04 v3.9 column name; left blank with a caveat, never filled from UC triage.
+  assert.match(app, /\["AGPI Priority \(from AIG-INV-04\)", ""\]/);
+  assert.match(app, /this UC-specific triage priority is not the system summary/);
 });
 
 test("agentic exports are bound to the profile and answers that were reviewed", () => {
@@ -525,13 +516,13 @@ test("Risk Assessment pre-fill rows match AIG-ASS-02 Triage Import A5:A63 exactl
   const start = source.indexOf("function riskPrefillCsv");
   const body = source.slice(start, source.indexOf("return fieldValueCsv(rows", start));
   const labels = [...body.matchAll(/^\s*\[\s*"([^"]+)"\s*,/gm)].map((m) => m[1]);
-  const triageImport = ["AIR-ID", "System / Model Name", "Purpose / Description", "Service Area", "Service Owner", "Supplier / Developer", "Source", "AI Capability", "Automated Action Authority", "Systems / Tools Accessed", "Lifecycle Stage", "Personal / Special Category Data", "Triage Date", "AGPI Score (0-100)", "Raw AGPI Priority", "Authorised Governance Priority Uplift", "Effective Governance Priority", "Resident Impact", "Legal and Regulatory Impact", "Reputational Impact", "Operational Impact", "Financial Impact", "Likelihood", "Control Effectiveness", "Impact Score", "Inherent Risk Score", "Inherent Risk Tier", "Residual Risk Score", "Residual Risk Tier", "Trigger — Special Category Data", "Trigger — Vulnerable Residents", "Trigger — Housing/Care/Homelessness", "Trigger — Novel Deployment", "Trigger — Statutory Decisions", "Trigger — Material Change", "Trigger — Agentic Autonomous Action", "Mandatory Risk Floor", "Effective Governance Tier", "Tier Floor Reason", "Assurance Intensity", "Governance Status", "Is Agent", "Agentic Consequence", "Agentic Autonomy", "Agentic Authority", "Agentic Reach", "Agentic Controllability", "Autonomy Level", "Agency Tier", "Agentic Pathway", "Kill-switch Demonstrated", "Rollback Capability", "Boundaries Tested", "Agentic Flags", "Agentic Escalations", "Agentic Deployment Control", "Agent Record (ASBOM) Ref", "UC-ID (blank only for explicit system baseline)", "Triage / assessment scope"];
+  const triageImport = Object.values(contract["ASS-02"]["Triage Import"].labels);
   assert.deepEqual(labels.slice(0, triageImport.length), triageImport);
   assert.ok(labels.slice(triageImport.length).every((label) => label.startsWith("Note (not imported)")));
 });
 
 test("retirement decision options are AIG-DEC-04 Gate Events outcomes", () => {
-  const gateLogOutcomes = ["Progress", "Progress with condition", "Return for evidence", "Pause", "Stop", "Opinion only", "No decision"];
+  const gateLogOutcomes = contract["DEC-04"]["Gate events"].lists["G4:G553"];
   const field = logic.RETIREMENT_FIELDS.find((f) => f.id === "decision");
   assert.deepEqual(field.options.filter((o) => !o.startsWith("Pending")), gateLogOutcomes);
   const opinion = logic.buildRetirementGateLogRow({ decision: "Opinion only" });
@@ -542,7 +533,7 @@ test("retirement is scoped per UC-ID and a whole-system retirement needs every u
   const named = logic.buildRetirementGateLogRow({ retireScope: "Named use(s) only — UC-ID specific", ucIds: "UC-0012-A" });
   assert.equal(named.rows.find((row) => row[1] === "UC-ID(s) covered by this dated event")[3], "UC-0012-A");
   assert.equal(named.rows.find((row) => row[1] === "Decision scope (UC-ID specific / Shared system baseline)")[3], "UC-ID specific");
-  assert.match(named.rows.find((row) => row[1] === "System baseline operational status")[5], /AIR-ID row stays active/);
+  assert.match(named.rows.find((row) => row[1] === OPERATIONAL)[5], /AIR-ID row stays active/);
 
   assert.ok(logic.retirementReadiness({}).outstanding.some((item) => /Retirement scope not stated/.test(item)));
   assert.ok(logic.retirementReadiness({ retireScope: "Named use(s) only — UC-ID specific" }).outstanding.some((item) => /UC-ID\(s\) being retired/.test(item)));
@@ -650,56 +641,18 @@ test("Register lifecycle stage is proposed from the governance position, within 
 test("AIG-INV-05 handoff has one row per map column, with exact headings and controlled values", () => {
   const { profile, results } = fixture();
   const handoff = logic.buildCapabilitiesMapHandoff(profile, results);
-  // Column headings from the AIG-INV-05 workbook (formula check columns excluded), in sheet order.
-  const COLUMNS = {
-    "Use cases": [
-      "UC-ID",
-      "Outcome-led use case",
-      "Service / workflow",
-      "Service Owner",
-      "Canonical AIG-INV-03 / source ref",
-      "AIR-ID (only if issued)",
-      "Confidence",
-      "Verified on",
-      "State",
-      "Use-specific decision / minutes ref (pointer only)",
-      "UC-specific monitoring ref (pointer only)",
-      "Index role (descriptive; not approval)"
-    ],
-    "Capabilities": [
-      "CAP-ID",
-      "Function (verb + noun)",
-      "Inputs",
-      "Outputs",
-      "Boundary / excluded use",
-      "Capability owner",
-      "Definition source ref",
-      "Confidence",
-      "Verified on",
-      "State"
-    ],
-    "Relationships": [
-      "Edge ID",
-      "From type",
-      "From ID",
-      "Relationship",
-      "To type",
-      "To ID",
-      "AIR context",
-      "Meaning / data or action flow",
-      "Link owner",
-      "Evidence / source ref",
-      "Confidence",
-      "Verified on",
-      "State"
-    ]
-  };
+  // Column headings from the v3.9 AIG-INV-05 workbook (formula check columns excluded), in sheet order.
+  const COLUMNS = Object.fromEntries(["Use cases", "Capabilities", "Relationships"].map((sheet) => {
+    const spec = contract["INV-05"][sheet];
+    return [sheet, spec.headers.filter((h, i) => !spec.formulaColumns.includes(String.fromCharCode(65 + i)))];
+  }));
+  const rel = contract["INV-05"].Relationships.lists;
   const LISTS = {
-    Confidence: ["High", "Medium", "Low", "Unknown"],
-    State: ["Proposed", "Confirmed", "Superseded"],
-    "From type": ["UC", "CAP", "AIR", "MOD", "DATA", "IF", "AG", "TOOL"],
-    "To type": ["UC", "CAP", "AIR", "MOD", "DATA", "IF", "AG", "TOOL"],
-    Relationship: ["requires", "provided by", "references", "depends on"],
+    Confidence: contract["INV-05"]["Use cases"].lists["G4:G253"],
+    State: contract["INV-05"]["Use cases"].lists["I4:I253"],
+    "From type": rel["B4:B1003"],
+    "To type": rel["E4:E1003"],
+    Relationship: rel["D4:D1003"],
   };
   for (const [sheet, columns] of Object.entries(COLUMNS)) {
     const rows = handoff.rows.filter((row) => row[0] === `AIG-INV-05 Capabilities and System Map / ${sheet}`);

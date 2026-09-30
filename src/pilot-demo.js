@@ -42,7 +42,7 @@
   panel.setAttribute("aria-labelledby", "pilotDemoTitle");
   panel.innerHTML =
     '<h2 id="pilotDemoTitle">Pilot lab: fictional demo scenarios</h2>' +
-    "<p>Load one of eleven uses of a made-up system to see every priority, risk tier and agency tier. " +
+    "<p>Load one of eleven uses of a made-up system to see every priority and risk tier, and agency tiers T1 to T5. " +
     "The data is fictional, the identifiers are not Council-issued, and all exports are switched off until you clear the demo.</p>" +
     '<div class="pilot-demo-row">' +
     '<label for="pilotDemoSelect" class="visually-hidden">Demo scenario</label>' +
