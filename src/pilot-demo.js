@@ -104,7 +104,8 @@
     setValue("serviceOwner", sys.serviceOwner);
     setValue("supplierDeveloper", sys.supplierDeveloper);
     setValue("source", sys.source);
-    setValue("procurementRequired", sys.procurementRequired);
+    setValue("situation", sys.situation);
+    setValue("procurementRoute", sys.procurementRoute);
     setValue("lifecycle", sys.lifecycle);
     Object.entries(s.profile).forEach(([id, value]) => setValue(id, value));
 
@@ -116,6 +117,10 @@
     setValue("likelihood", String(s.likelihood));
     setValue("control", String(s.control));
     setValue("controlEvidence", s.controlEvidence);
+    // Fictional evidence references so the demo counts evidenced controls as the
+    // workbook does (AIG-ASS-02 Risk Assessment E38 / E40).
+    setValue("controlEvidenceRef", s.controlEvidence.startsWith("Implemented") ? "DEMO-EV (fictional)" : "");
+    setValue("verificationRef", s.controlEvidence === "Implemented, evidenced and independently verified" ? "DEMO-VER (fictional)" : "");
 
     form.querySelectorAll("[data-trigger]").forEach((box) => {
       setChecked(box, s.triggers.includes(box.dataset.trigger));
