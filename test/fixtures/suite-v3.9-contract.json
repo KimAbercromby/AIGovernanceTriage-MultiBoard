@@ -1,0 +1,1337 @@
+{
+  "suite": "v3.9 (30 September 2026)",
+  "generatedBy": "scripts/extract-suite-fixture.py",
+  "versions": {
+    "AIG-GOV-01": "v1.25 draft",
+    "AIG-GOV-02": "v19.9.10 draft",
+    "AIG-GOV-03": "v1.25 draft",
+    "AIG-GOV-04": "v1.1 draft",
+    "AIG-GOV-05": "v1.1 draft",
+    "AIG-GOV-06": "v1.5 draft",
+    "AIG-INV-01": "v1.3 draft",
+    "AIG-INV-02": "v1.4 draft",
+    "AIG-INV-03": "v1.4 draft",
+    "AIG-INV-04": "v1.0 draft (first controlled version)",
+    "AIG-INV-05": "v0.3 proposed design draft",
+    "AIG-ASS-01": "v1.3 draft",
+    "AIG-ASS-02": "v1.8 draft",
+    "AIG-ASS-03": "v1.4 draft",
+    "AIG-ASS-04": "v1.2 draft",
+    "AIG-ASS-05": "v1.2 draft",
+    "AIG-ASS-06": "v1.2 draft",
+    "AIG-ASS-07": "v1.1 draft",
+    "AIG-ASS-08": "v1.3 draft",
+    "AIG-ASS-09": "v1.2 draft",
+    "AIG-ASS-10": "v1.3 draft",
+    "AIG-ASS-11": "v1.5 draft",
+    "AIG-ASS-12": "v1.1 draft",
+    "AIG-DEC-01": "v1.6 draft",
+    "AIG-DEC-02": "v1.2 draft",
+    "AIG-DEC-03": "v1.5 draft",
+    "AIG-DEC-04": "v1.0 draft (first controlled version)",
+    "AIG-OPS-01": "v1.5 draft",
+    "AIG-OPS-02": "v1.5 draft",
+    "AIG-OPS-03": "v1.4 draft",
+    "AIG-OPS-04": "v1.2 draft",
+    "AIG-OPS-05": "v1.4 draft",
+    "AIG-OPS-06": "v1.4 draft",
+    "AIG-AGT-01": "v1.1 draft",
+    "AIG-AGT-02": "v1.3 draft",
+    "AIG-AGT-03": "v1.2 draft",
+    "AIG-AGT-04": "v0.3 working draft",
+    "AIG-AGT-05": "v1.1 draft",
+    "AIG-AGT-06": "v1.2 draft",
+    "AIG-AIMS-01": "v1.2 draft",
+    "AIG-AIMS-02": "v1.2 draft",
+    "AIG-AIMS-03": "v1.2 draft",
+    "AIG-AIMS-04": "v1.2 draft",
+    "AIG-AIMS-05": "v1.4 draft",
+    "AIG-AIMS-06": "v1.5 draft",
+    "AIG-AIMS-07": "v1.1 draft",
+    "AIG-AIMS-08": "v1.2 draft",
+    "AIG-AIMS-09": "v1.1 draft",
+    "AIG-AIMS-10": "v1.3 draft",
+    "AIG-AIMS-11": "v1.1 draft",
+    "AIG-AIMS-12": "v1.1 draft",
+    "AIG-AIMS-13": "v1.3 draft"
+  },
+  "INV-04": {
+    "AI Register": {
+      "source": {
+        "file": "AIG-INV-04_AI_Register_Proposed.xlsx",
+        "sheet": "AI Register",
+        "row": 3
+      },
+      "headers": [
+        "AIR-ID",
+        "System name",
+        "Purpose and boundary",
+        "Service area",
+        "Service Owner",
+        "Supplier / source",
+        "Lifecycle stage",
+        "Governance Approval Status (system baseline; not use approval)",
+        "Operational Status (system baseline)",
+        "Can it act?",
+        "Decision record ref",
+        "Latest gate Event ID",
+        "Assessment / evidence ref",
+        "Next review",
+        "Row check",
+        "UC-ID(s) covered — approved purpose and scope (one per line or AIG-DEC-03 ref)",
+        "AI capability and systems/tools permitted (pointer)",
+        "Date registered",
+        "Date first used",
+        "Personal / special category data?",
+        "ATRS requirement",
+        "Model Card completion",
+        "Monitoring in place?",
+        "Last review date",
+        "Route / pathway",
+        "Intake type"
+      ],
+      "formulaColumns": [
+        "O"
+      ],
+      "lists": {
+        "G4:G206": [
+          "Idea and Innovation",
+          "Registration and Intake",
+          "Risk Assessment and Review",
+          "Approval and Assurance",
+          "Deployment and Operation",
+          "Monitoring and Review",
+          "Retirement and Decommissioning"
+        ],
+        "H4:H206": [
+          "Pending",
+          "Approved",
+          "Approved with conditions",
+          "Rejected",
+          "On hold",
+          "Suspended",
+          "Superseded"
+        ],
+        "I4:I206": [
+          "Not live",
+          "Active",
+          "Suspended",
+          "Decommissioned"
+        ],
+        "J4:J206": [
+          "Yes",
+          "No",
+          "Unsure"
+        ],
+        "T4:T206": [
+          "Yes — special category",
+          "Yes — personal data",
+          "No",
+          "Unsure"
+        ],
+        "U4:U206": [
+          "Required",
+          "Recommended",
+          "Not required",
+          "To assess"
+        ],
+        "V4:V206": [
+          "Complete",
+          "In progress",
+          "Not started",
+          "Not applicable"
+        ],
+        "W4:W206": [
+          "Yes",
+          "No",
+          "Not yet live"
+        ],
+        "Y4:Y206": [
+          "Light-touch",
+          "Low",
+          "Medium",
+          "High",
+          "Critical",
+          "To be determined"
+        ],
+        "Z4:Z206": [
+          "New",
+          "Retrospective",
+          "Aggregated"
+        ]
+      }
+    },
+    "Assessment summary": {
+      "source": {
+        "file": "AIG-INV-04_AI_Register_Proposed.xlsx",
+        "sheet": "Assessment summary",
+        "row": 3
+      },
+      "headers": [
+        "AIR-ID",
+        "Effective Governance Priority (AIG-ASS-01, after any authorised override)",
+        "AIG-ASS-01 ref / date",
+        "Risk tier (AIG-ASS-02; highest applicable UC-ID or baseline)",
+        "AIG-ASS-02 ref / date",
+        "Agency tier (AIG-AGT-02/AIG-AGT-03)",
+        "AIG-AGT-02/AIG-AGT-03 ref / date",
+        "Privacy / DPIA position",
+        "Equality / EIA position",
+        "Other specialist finding refs",
+        "AIG-AGT-04 Agent Record ref",
+        "AIG-AGT-05 Authority Graph ref",
+        "AIG-OPS-02 Monitoring ref",
+        "As-at date",
+        "AGPI score (0–100, AIG-ASS-01)",
+        "Inherent risk score (L × I)",
+        "Control effectiveness (1–5)",
+        "Residual risk score",
+        "Decisions about individuals — Art 22A flag / AIG-OPS-04 tier",
+        "Latest priority-override Event ID (AIG-DEC-04)",
+        "Reconciled on",
+        "Row check"
+      ],
+      "formulaColumns": [
+        "V"
+      ],
+      "lists": {
+        "B4:B206": [
+          "Priority 1 – Critical",
+          "Priority 2 – High",
+          "Priority 3 – Standard",
+          "Priority 4 – Routine",
+          "Priority 5 – Observe"
+        ],
+        "D4:D206": [
+          "Low",
+          "Medium",
+          "High",
+          "Critical"
+        ],
+        "S4:S206": [
+          "Tier A — solely automated significant decision (Art 22A)",
+          "Tier B — AI materially influences a human decision",
+          "Tier C — no bearing on decisions about individuals",
+          "Unsure — assess"
+        ]
+      }
+    }
+  },
+  "DEC-04": {
+    "Gate plan": {
+      "source": {
+        "file": "AIG-DEC-04_Gate_Log_Proposed.xlsx",
+        "sheet": "Gate plan",
+        "row": 3
+      },
+      "headers": [
+        "Plan ID",
+        "AIR-ID",
+        "Gate / forum",
+        "Trigger / stage",
+        "Requirement",
+        "Basis / triage ref",
+        "Target date",
+        "Responsible role",
+        "Plan state",
+        "N-A / waiver rationale and authority ref",
+        "UC-ID scope(s) (blank only for explicit system baseline)",
+        "Decision scope (UC-ID specific / Shared system baseline)",
+        "Row check"
+      ],
+      "formulaColumns": [
+        "M"
+      ],
+      "lists": {
+        "E4:E353": [
+          "Required",
+          "Conditional",
+          "Not applicable"
+        ],
+        "I4:I353": [
+          "Planned",
+          "Complete",
+          "Superseded",
+          "Cancelled"
+        ],
+        "L4:L353": [
+          "UC-ID specific",
+          "Shared system baseline"
+        ],
+        "C4:C353": [
+          "Gate 0 Intake / opportunity",
+          "Gate 1 Strategic prioritisation",
+          "Gate 2 Technical design review",
+          "Gate 3 Case for change / strategic alignment",
+          "Gate 4 Procurement",
+          "Gate 5 Ethics assessment",
+          "Gate 6 Deployment / go-live",
+          "Gate 7 Operate, monitor, review & change",
+          "Gate 8 Retirement / closure",
+          "Other forum (name it in Decision-maker / role)"
+        ]
+      }
+    },
+    "Gate events": {
+      "source": {
+        "file": "AIG-DEC-04_Gate_Log_Proposed.xlsx",
+        "sheet": "Gate events",
+        "row": 3
+      },
+      "headers": [
+        "Event ID",
+        "AIR-ID",
+        "Plan ID (if any)",
+        "Gate / forum",
+        "Event type",
+        "Date",
+        "Outcome",
+        "Decision-maker / role",
+        "AIG-DEC-03 / minutes ref",
+        "Assurance opinion ref",
+        "Technical snapshot / as-at ref",
+        "Next gate / action",
+        "Recorded by",
+        "Row check",
+        "UC-ID(s) covered by this dated event",
+        "Decision scope (UC-ID specific / Shared system baseline)",
+        "Decision-scope completeness prompt",
+        "Time (hh:mm)",
+        "Source (minutes / decision record / system)",
+        "Evidence ID(s) (AIG-INV-04 Evidence index)",
+        "Event-time lifecycle stage"
+      ],
+      "formulaColumns": [
+        "N",
+        "Q"
+      ],
+      "lists": {
+        "E4:E553": [
+          "Decision",
+          "Assurance opinion",
+          "Review only",
+          "Priority override",
+          "Intake / registration"
+        ],
+        "G4:G553": [
+          "Progress",
+          "Progress with condition",
+          "Return for evidence",
+          "Pause",
+          "Stop",
+          "Suspend",
+          "Decommission",
+          "Re-authorise",
+          "Opinion only",
+          "No decision"
+        ],
+        "P4:P553": [
+          "UC-ID specific",
+          "Shared system baseline"
+        ],
+        "D4:D553": [
+          "Gate 0 Intake / opportunity",
+          "Gate 1 Strategic prioritisation",
+          "Gate 2 Technical design review",
+          "Gate 3 Case for change / strategic alignment",
+          "Gate 4 Procurement",
+          "Gate 5 Ethics assessment",
+          "Gate 6 Deployment / go-live",
+          "Gate 7 Operate, monitor, review & change",
+          "Gate 8 Retirement / closure",
+          "Other forum (name it in Decision-maker / role)"
+        ],
+        "U4:U553": [
+          "Idea and Innovation",
+          "Registration and Intake",
+          "Risk Assessment and Review",
+          "Approval and Assurance",
+          "Deployment and Operation",
+          "Monitoring and Review",
+          "Retirement and Decommissioning"
+        ]
+      }
+    },
+    "Conditions": {
+      "source": {
+        "file": "AIG-DEC-04_Gate_Log_Proposed.xlsx",
+        "sheet": "Conditions",
+        "row": 3
+      },
+      "headers": [
+        "Condition ID",
+        "Event ID",
+        "AIR-ID",
+        "Required action / condition",
+        "Action owner",
+        "Due date",
+        "State",
+        "Closed / waived on",
+        "Evidence / waiver authority ref",
+        "Row check",
+        "UC-ID scope (blank only if shared system condition)",
+        "Condition scope (UC-ID specific / shared system baseline)",
+        "Verified by / date",
+        "Monitoring condition? (Yes / No)",
+        "AIG-OPS-02 evidence ref (monitoring conditions)"
+      ],
+      "formulaColumns": [
+        "J"
+      ],
+      "lists": {
+        "G4:G553": [
+          "Open",
+          "Closed-verified",
+          "Accepted-open",
+          "Waived",
+          "Unknown"
+        ],
+        "L4:L553": [
+          "UC-ID specific",
+          "Shared system baseline"
+        ],
+        "N4:N553": [
+          "Yes",
+          "No"
+        ]
+      }
+    }
+  },
+  "ASS-01": {
+    "AGPI Triage": {
+      "source": {
+        "file": "AIG-ASS-01_AGPI_Triage_Tool_Proposed.xlsx",
+        "sheet": "AGPI Triage",
+        "column": "A",
+        "rows": "4-22"
+      },
+      "labels": {
+        "4": "System being assessed",
+        "5": "System / model name",
+        "6": "AIR-ID",
+        "7": "Assessed by / date",
+        "8": "UC-ID (required when scope is UC-ID specific)",
+        "9": "Governance dimension",
+        "10": "Resident Impact",
+        "11": "Public Trust & Reputation",
+        "12": "Legal & Regulatory Exposure",
+        "13": "Governance Visibility & Accountability",
+        "14": "Strategic Value & Organisational Dependency",
+        "15": "Human Oversight & Decision Authority",
+        "16": "AGPI score (0–100)",
+        "17": "Governance priority",
+        "18": "Assessment scope (UC-ID specific / Shared system baseline)",
+        "19": "Governance Investigation Required? (Yes / No)",
+        "20": "Weight check (controlled weights total 100%)",
+        "21": "Priority floor: Resident Impact or Legal & Regulatory Exposure = 5 (Proposed — for Council confirmation)",
+        "22": "Typical governance attention for this priority (urgency)"
+      },
+      "lists": {
+        "B18": [
+          "UC-ID specific",
+          "Shared system baseline"
+        ],
+        "B19": [
+          "Yes",
+          "No"
+        ]
+      },
+      "priorityAttention": {
+        "source": {
+          "file": "AIG-ASS-01_AGPI_Triage_Tool_Proposed.xlsx",
+          "sheet": "AGPI Triage",
+          "column": "B",
+          "rows": "34-38"
+        },
+        "values": [
+          "Priority 1 – Critical: Immediately, first in the queue: governance review with executive oversight; the route, assessments and decision follow the governing tier (Playbook §3.10.1).",
+          "Priority 2 – High: Promptly, next in the queue: enhanced attention and early risk review with AI Governance Working Group oversight; the route, assessments and decision follow the governing tier (Playbook §3.10.1).",
+          "Priority 3 – Standard: In normal order: standard governance attention and ongoing monitoring; the route, assessments and decision follow the governing tier (Playbook §3.10.1).",
+          "Priority 4 – Routine: In routine order: linked UC-ID record under the system AIR-ID and periodic review; the route, assessments and decision follow the governing tier (Playbook §3.10.1).",
+          "Priority 5 – Observe: When capacity allows: local management oversight, with reassessment before operational deployment."
+        ]
+      }
+    }
+  },
+  "ASS-02": {
+    "Triage Import": {
+      "source": {
+        "file": "AIG-ASS-02_AI_Risk_Assessment_Worksheet_Proposed.xlsx",
+        "sheet": "Triage Import",
+        "column": "A",
+        "rows": "5-63"
+      },
+      "labels": {
+        "5": "AIR-ID",
+        "6": "System / Model Name",
+        "7": "Purpose / Description",
+        "8": "Service Area",
+        "9": "Service Owner",
+        "10": "Supplier / Developer",
+        "11": "Source",
+        "12": "AI Capability",
+        "13": "Automated Action Authority",
+        "14": "Systems / Tools Accessed",
+        "15": "Lifecycle Stage",
+        "16": "Personal / Special Category Data",
+        "17": "Triage Date",
+        "18": "AGPI Score (0-100)",
+        "19": "Raw AGPI Priority",
+        "20": "Authorised Governance Priority Uplift",
+        "21": "Effective Governance Priority",
+        "22": "Resident Impact",
+        "23": "Legal and Regulatory Impact",
+        "24": "Reputational Impact",
+        "25": "Operational Impact",
+        "26": "Financial Impact",
+        "27": "Likelihood",
+        "28": "Control Effectiveness",
+        "29": "Impact Score",
+        "30": "Inherent Risk Score",
+        "31": "Inherent Risk Tier",
+        "32": "Residual Risk Score",
+        "33": "Residual Risk Tier",
+        "34": "Trigger — Special Category Data",
+        "35": "Trigger — Vulnerable Residents",
+        "36": "Trigger — Housing/Care/Homelessness",
+        "37": "Trigger — Novel Deployment",
+        "38": "Trigger — Statutory Decisions",
+        "39": "Trigger — Material Change",
+        "40": "Trigger — Agentic Autonomous Action",
+        "41": "Mandatory Risk Floor",
+        "42": "Effective Governance Tier",
+        "43": "Tier Floor Reason",
+        "44": "Assurance Intensity",
+        "45": "Governance Status",
+        "46": "Is Agent",
+        "47": "Agentic Consequence",
+        "48": "Agentic Autonomy",
+        "49": "Agentic Authority",
+        "50": "Agentic Reach",
+        "51": "Agentic Controllability",
+        "52": "Autonomy Level",
+        "53": "Agency Tier",
+        "54": "Agentic Pathway",
+        "55": "Kill-switch Demonstrated",
+        "56": "Rollback Capability",
+        "57": "Boundaries Tested",
+        "58": "Agentic Flags",
+        "59": "Agentic Escalations",
+        "60": "Agentic Deployment Control",
+        "61": "Agent Record (ASBOM) Ref",
+        "62": "UC-ID (blank only for explicit system baseline)",
+        "63": "Triage / assessment scope"
+      },
+      "lists": {
+        "B63": [
+          "UC-ID specific",
+          "Shared system baseline"
+        ]
+      }
+    },
+    "Risk Assessment": {
+      "source": {
+        "file": "AIG-ASS-02_AI_Risk_Assessment_Worksheet_Proposed.xlsx",
+        "sheet": "Risk Assessment"
+      },
+      "lists": {
+        "C23:C27": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "C32:C33": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "C50:C55": [
+          "Yes",
+          "No"
+        ],
+        "C66": [
+          "Yes",
+          "No"
+        ],
+        "C67:C71": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "C75:C77": [
+          "Yes",
+          "No"
+        ],
+        "B85:B89": [
+          "Yes",
+          "No",
+          "N/A — not agentic"
+        ],
+        "E37": [
+          "Yes",
+          "No"
+        ],
+        "E39": [
+          "Yes",
+          "No"
+        ],
+        "C56": [
+          "Yes",
+          "No",
+          "Unsure"
+        ]
+      }
+    }
+  },
+  "AGT-04": {
+    "Agent Record": {
+      "source": {
+        "file": "AIG-AGT-04_Agent_Record_ASBOM_Proposed.xlsx",
+        "sheet": "Agent Record",
+        "row": 4
+      },
+      "headers": [
+        "AIR-ID",
+        "Agent Name",
+        "Approved Purpose (mandate)",
+        "Prohibited Purposes",
+        "Decisions never delegated",
+        "Max acceptable consequence",
+        "Accountable Executive",
+        "Business Owner",
+        "Operator / Platform",
+        "Environment (stage)",
+        "Jurisdiction",
+        "Assessed autonomy level (triage; not permission)",
+        "Agency Tier",
+        "AGPI Priority (from AIG-INV-04)",
+        "Persistence?",
+        "Memory Type",
+        "Can delegate?",
+        "Financial Authority (limit)",
+        "Permission Scope (summary)",
+        "Identity / credential provenance",
+        "Suspension mechanism",
+        "Termination mechanism",
+        "Kill-switch tested?",
+        "Rollback capability?",
+        "Evaluation / red-team status",
+        "Date authorised",
+        "Authority expiry / next reauthorisation",
+        "Governance Approval Status",
+        "Operational Status",
+        "Notes",
+        "Memory Read Scope",
+        "Memory Write Scope",
+        "Memory Retention / Deletion",
+        "Memory Provenance",
+        "Memory Isolation / Poisoning Control",
+        "Model Routing / Fallback",
+        "Frontier Model?",
+        "Max Delegation Depth",
+        "Recursion Allowed?",
+        "Max Concurrent Sub-agents",
+        "Runtime Control State",
+        "Containment Test Date",
+        "Time to Containment",
+        "Action Record Available?",
+        "Human Oversight Mode",
+        "Reversibility Class",
+        "Compensating Action",
+        "Budget / Transaction Ceiling",
+        "Agent Creation Authority",
+        "Self-Modification Authority",
+        "AG-ID",
+        "UC-ID(s) within this authority envelope (reference only)",
+        "Use-specific delegated decision / gate reference(s)",
+        "ASBOM record version",
+        "ASBOM version effective date",
+        "Exposure",
+        "Agency profile ref (Agency Profile sheet — the record)",
+        "Mandatory tier floor applied (trigger)",
+        "Governing pathway (higher of risk-tier pathway and agency-tier minimum)",
+        "Oversight mode rationale",
+        "Record QA",
+        "Permitted autonomy level (granted at Gate 6)",
+        "Permitted autonomy decision ref (AIG-DEC-03)"
+      ],
+      "formulaColumns": [
+        "BI"
+      ],
+      "lists": {
+        "J5:J203": [
+          "Production",
+          "Pre-production / test",
+          "Sandbox"
+        ],
+        "BD5:BD203": [
+          "Customer-facing",
+          "Internal",
+          "Physical / OT"
+        ],
+        "L5:L203": [
+          "A0 advisory",
+          "A1 assisted",
+          "A2 bounded execution",
+          "A3 conditional autonomy",
+          "A4 delegated autonomy",
+          "A5 open-ended autonomy"
+        ],
+        "M5:M203": [
+          "T0 informational",
+          "T1 assisted",
+          "T2 bounded agent",
+          "T3 consequential agent",
+          "T4 high-agency",
+          "T5 exceptional / high-consequence"
+        ],
+        "O5:O203": [
+          "Yes",
+          "No"
+        ],
+        "Q5:Q203": [
+          "Yes",
+          "No"
+        ],
+        "W5:W203": [
+          "Yes",
+          "No"
+        ],
+        "X5:X203": [
+          "Yes",
+          "No"
+        ],
+        "AK5:AK203": [
+          "Yes",
+          "No"
+        ],
+        "AM5:AM203": [
+          "Yes",
+          "No"
+        ],
+        "P5:P203": [
+          "None",
+          "Context",
+          "Working memory",
+          "Retrieved knowledge",
+          "Persistent memory"
+        ],
+        "AB5:AB203": [
+          "Pending",
+          "Approved",
+          "Approved with conditions",
+          "Deferred",
+          "Rejected",
+          "Suspended",
+          "Retired",
+          "Unknown"
+        ],
+        "AC5:AC203": [
+          "Not live",
+          "Active",
+          "Suspended",
+          "Decommissioned"
+        ],
+        "AO5:AO203": [
+          "Designed",
+          "Specified",
+          "Implemented",
+          "Evidenced"
+        ],
+        "AS5:AS203": [
+          "Pre-action approval",
+          "Bounded execution with intervention",
+          "Post-action review",
+          "Monitoring-only"
+        ],
+        "AT5:AT203": [
+          "Fully reversible",
+          "Partly reversible",
+          "Difficult to reverse",
+          "Irreversible"
+        ],
+        "BJ5:BJ203": [
+          "A0 advisory",
+          "A1 assisted",
+          "A2 bounded execution",
+          "A3 conditional autonomy",
+          "A4 delegated autonomy",
+          "A5 open-ended autonomy"
+        ]
+      }
+    },
+    "Capability Vector": {
+      "source": {
+        "file": "AIG-AGT-04_Agent_Record_ASBOM_Proposed.xlsx",
+        "sheet": "Capability Vector",
+        "row": 4
+      },
+      "headers": [
+        "AIR-ID",
+        "AG-ID",
+        "Read",
+        "Write",
+        "Execute",
+        "Communicate",
+        "Purchase",
+        "Delegate",
+        "Persuade",
+        "Code",
+        "Discover",
+        "Persist",
+        "Replicate",
+        "Learn",
+        "Escalate",
+        "Multiplier: Credential access",
+        "Multiplier: Self-modification",
+        "Multiplier: Tool discovery",
+        "Multiplier: Goal adaptation",
+        "Multiplier: External comms",
+        "Notes"
+      ],
+      "formulaColumns": [],
+      "lists": {
+        "C5:O203": [
+          "No",
+          "Yes",
+          "Scoped"
+        ],
+        "P5:T203": [
+          "Yes",
+          "No"
+        ]
+      }
+    },
+    "Runtime Controls": {
+      "source": {
+        "file": "AIG-AGT-04_Agent_Record_ASBOM_Proposed.xlsx",
+        "sheet": "Runtime Controls",
+        "row": 4
+      },
+      "headers": [
+        "AIR-ID",
+        "AG-ID",
+        "Control ID",
+        "Control",
+        "Required State",
+        "Actual State",
+        "Test Date",
+        "Test Result",
+        "Time to Containment",
+        "Owner",
+        "Evidence Ref",
+        "Expiry / Review",
+        "Compensating Control"
+      ],
+      "formulaColumns": [],
+      "controlIds": [
+        "ASI01",
+        "ASI02",
+        "ASI03",
+        "ASI04",
+        "ASI05",
+        "ASI06",
+        "ASI07",
+        "ASI08",
+        "ASI09",
+        "ASI10"
+      ]
+    },
+    "Authority & Delegations": {
+      "source": {
+        "file": "AIG-AGT-04_Agent_Record_ASBOM_Proposed.xlsx",
+        "sheet": "Authority & Delegations",
+        "row": 4
+      },
+      "headers": [
+        "Authority Edge ID",
+        "AIR-ID (agent)",
+        "AG-ID (agent)",
+        "From (delegator)",
+        "To (delegatee)",
+        "Authority delegated",
+        "Mechanism",
+        "Purpose",
+        "Constraints / ceiling",
+        "Revocable how",
+        "Expiry",
+        "Inherited?",
+        "Notes",
+        "Delegator node type",
+        "Delegatee node type",
+        "Edge type",
+        "UC-ID scope",
+        "Scope (actions / data / limits)",
+        "Environment (stage)",
+        "Exposure",
+        "ASBOM record version"
+      ],
+      "formulaColumns": []
+    }
+  },
+  "INV-05": {
+    "System map": {
+      "source": {
+        "file": "AIG-INV-05_Capabilities_and_System_Map_Proposed.xlsx",
+        "sheet": "System map",
+        "row": 3
+      },
+      "headers": [
+        "AIR-ID (from AIG-INV-04)",
+        "System label (AIG-INV-04 snapshot)",
+        "AIG-INV-04 source / version",
+        "AIG-INV-04 reconciled on",
+        "Capabilities",
+        "Models",
+        "Data assets",
+        "Interfaces",
+        "Agents",
+        "Tools",
+        "Proposed links",
+        "Links needing review",
+        "Review state",
+        "Review notes / N-A rationale",
+        "Row check"
+      ],
+      "formulaColumns": [
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "O"
+      ],
+      "lists": {
+        "M4:M203": [
+          "Not reviewed",
+          "In review",
+          "Reconciled",
+          "Needs action"
+        ]
+      }
+    },
+    "Use cases": {
+      "source": {
+        "file": "AIG-INV-05_Capabilities_and_System_Map_Proposed.xlsx",
+        "sheet": "Use cases",
+        "row": 3
+      },
+      "headers": [
+        "UC-ID",
+        "Outcome-led use case",
+        "Service / workflow",
+        "Service Owner",
+        "Canonical AIG-INV-03 / source ref",
+        "AIR-ID (only if issued)",
+        "Confidence",
+        "Verified on",
+        "State",
+        "Row check",
+        "Use-specific decision / minutes ref (pointer only)",
+        "UC-specific monitoring ref (pointer only)",
+        "Index role (descriptive; not approval)"
+      ],
+      "formulaColumns": [
+        "J"
+      ],
+      "lists": {
+        "G4:G253": [
+          "High",
+          "Medium",
+          "Low",
+          "Unknown"
+        ],
+        "I4:I253": [
+          "Proposed",
+          "Confirmed",
+          "Superseded"
+        ]
+      }
+    },
+    "Capabilities": {
+      "source": {
+        "file": "AIG-INV-05_Capabilities_and_System_Map_Proposed.xlsx",
+        "sheet": "Capabilities",
+        "row": 3
+      },
+      "headers": [
+        "CAP-ID",
+        "Function (verb + noun)",
+        "Inputs",
+        "Outputs",
+        "Boundary / excluded use",
+        "Capability owner",
+        "Definition source ref",
+        "Confidence",
+        "Verified on",
+        "State",
+        "Row check"
+      ],
+      "formulaColumns": [
+        "K"
+      ],
+      "lists": {
+        "H4:H253": [
+          "High",
+          "Medium",
+          "Low",
+          "Unknown"
+        ],
+        "J4:J253": [
+          "Proposed",
+          "Confirmed",
+          "Superseded"
+        ]
+      }
+    },
+    "Relationships": {
+      "source": {
+        "file": "AIG-INV-05_Capabilities_and_System_Map_Proposed.xlsx",
+        "sheet": "Relationships",
+        "row": 3
+      },
+      "headers": [
+        "Map Edge ID",
+        "From type",
+        "From ID",
+        "Relationship",
+        "To type",
+        "To ID",
+        "AIR context",
+        "Meaning / data or action flow",
+        "Link owner",
+        "Evidence / source ref",
+        "Confidence",
+        "Verified on",
+        "State",
+        "Link check"
+      ],
+      "formulaColumns": [
+        "N"
+      ],
+      "lists": {
+        "B4:B1003": [
+          "UC",
+          "CAP",
+          "AIR",
+          "MOD",
+          "DATA",
+          "IF",
+          "AG",
+          "TOOL"
+        ],
+        "E4:E1003": [
+          "UC",
+          "CAP",
+          "AIR",
+          "MOD",
+          "DATA",
+          "IF",
+          "AG",
+          "TOOL"
+        ],
+        "D4:D1003": [
+          "requires",
+          "provided by",
+          "references",
+          "depends on"
+        ],
+        "K4:K1003": [
+          "High",
+          "Medium",
+          "Low",
+          "Unknown"
+        ],
+        "M4:M1003": [
+          "Proposed",
+          "Confirmed",
+          "Superseded"
+        ]
+      }
+    }
+  },
+  "UCV": {
+    "UC Risk and Decision View": {
+      "source": {
+        "file": "UC_ID_Risk_Decision_Current_View.xlsx",
+        "sheet": "UC Risk and Decision View",
+        "row": 3
+      },
+      "headers": [
+        "UC-ID",
+        "AIR-ID",
+        "Outcome / workflow",
+        "Service Owner",
+        "AGPI priority (UC-specific)",
+        "Risk tier (UC-specific)",
+        "Assessment ref(s) / as-at",
+        "Decision outcome (source)",
+        "Delegated authority / decision ref",
+        "AIG-DEC-03 / approved minutes ref",
+        "Decision scope (UC-ID specific / Shared system baseline)",
+        "Permitted purpose, users, data, actions and exclusions",
+        "Condition ID(s)",
+        "Condition closure / waiver evidence ref",
+        "Condition state (None / Open / Closed-verified / Accepted-open / Waived / Unknown)",
+        "AIG-DEC-04 dated Decision Event ID",
+        "Decision effective date",
+        "Expiry / next review date",
+        "AIG-OPS-02 use-specific monitoring ref / as-at",
+        "Independent checker / date",
+        "Reconciliation (Verified / Unverified / Conflict)",
+        "AIG-DEC-04 Decision event date",
+        "Derived position (prompt only; not authority)"
+      ],
+      "formulaColumns": [
+        "W"
+      ],
+      "lists": {
+        "U4:U203": [
+          "Verified",
+          "Unverified",
+          "Conflict"
+        ],
+        "H4:H203": [
+          "Pending",
+          "Approved",
+          "Approved with conditions",
+          "Deferred",
+          "Rejected",
+          "Suspended",
+          "Retired",
+          "Unknown"
+        ],
+        "K4:K203": [
+          "UC-ID specific",
+          "Shared system baseline"
+        ],
+        "O4:O203": [
+          "None",
+          "Open",
+          "Closed-verified",
+          "Accepted-open",
+          "Waived",
+          "Unknown"
+        ],
+        "E4:E203": [
+          "Priority 1 – Critical",
+          "Priority 2 – High",
+          "Priority 3 – Standard",
+          "Priority 4 – Routine",
+          "Priority 5 – Observe",
+          "Governance Investigation Required"
+        ],
+        "F4:F203": [
+          "Critical",
+          "High",
+          "Medium",
+          "Low"
+        ]
+      }
+    }
+  },
+  "OPS-02": {
+    "Monitoring Log": {
+      "source": {
+        "file": "AIG-OPS-02_AI_Post_Deployment_Monitoring_and_Review_Log_Proposed.xlsx",
+        "sheet": "Monitoring Log",
+        "row": 4
+      },
+      "headers": [
+        "AIR-ID",
+        "AI System / Service",
+        "Monitoring Period",
+        "Review Date",
+        "Monitoring Owner",
+        "Metric Category",
+        "Metric / Indicator",
+        "Approved Threshold / Tolerance",
+        "Actual Result",
+        "Trend",
+        "Threshold Breach?",
+        "Severity",
+        "Action / Decision",
+        "Action Owner",
+        "Due Date",
+        "Incident / CAPA Ref",
+        "Material Change?",
+        "Risk Reassessment Required?",
+        "Residual Risk After Review",
+        "Governance Escalation?",
+        "AIG-DEC-04 Event ID (Gate Log ref)",
+        "Complaints / Challenges",
+        "Human Override Rate / Trend",
+        "Evidence Location",
+        "Next Review Date",
+        "Review Status",
+        "Sample Source / Population of Record",
+        "Selection Basis",
+        "Population Size",
+        "Sample Size Reviewed",
+        "Sampling Window",
+        "UC-ID (blank only for an explicitly shared system measure)",
+        "Measure scope (UC-ID specific / Shared system baseline)",
+        "Closure and evidence check",
+        "Risk tier (UC-ID, AIG-ASS-02)",
+        "Required minimum cadence (derived)",
+        "Minimum sample (derived)",
+        "Reassessment trigger (Appendix E.4)",
+        "Reassessment / consideration ref (AIG-ASS-02)",
+        "AIG-DEC-04 Condition ID (if monitoring a condition)"
+      ],
+      "formulaColumns": [
+        "AH",
+        "AJ",
+        "AK"
+      ],
+      "lists": {
+        "F5:F2000": [
+          "Performance",
+          "Fairness / Bias",
+          "Drift",
+          "Error / Failure",
+          "Human Oversight",
+          "Complaints / Challenges",
+          "Privacy",
+          "Security",
+          "Benefits / Outcomes",
+          "Other"
+        ],
+        "J5:J2000": [
+          "Improving",
+          "Stable",
+          "Deteriorating",
+          "New / Baseline",
+          "Not yet known"
+        ],
+        "K5:K2000": [
+          "Yes",
+          "No",
+          "Unknown"
+        ],
+        "L5:L2000": [
+          "Low",
+          "Medium",
+          "High",
+          "Critical"
+        ],
+        "Q5:Q2000": [
+          "Yes",
+          "No",
+          "Unknown"
+        ],
+        "R5:R2000": [
+          "Yes",
+          "No",
+          "Unknown"
+        ],
+        "T5:T2000": [
+          "Yes",
+          "No",
+          "Unknown"
+        ],
+        "Z5:Z2000": [
+          "Open",
+          "Reviewed",
+          "Action Open",
+          "Escalated",
+          "Closed"
+        ],
+        "AB5:AB2000": [
+          "Full population (census)",
+          "Simple random",
+          "Stratified random",
+          "Risk-weighted / targeted",
+          "Exception-based"
+        ],
+        "AG5:AG2000": [
+          "UC-ID specific",
+          "Shared system baseline"
+        ],
+        "AI5:AI2000": [
+          "Low",
+          "Medium",
+          "High",
+          "Critical"
+        ],
+        "AL5:AL2000": [
+          "None",
+          "Threshold breach",
+          "Material change (model, data, supplier, purpose, user population or autonomous authority)",
+          "Significant complaint / challenge pattern",
+          "Material incident or near miss",
+          "Adverse human-override trend",
+          "Control failure",
+          "Legal / regulatory change"
+        ]
+      }
+    }
+  },
+  "DEC-02": {
+    "source": {
+      "file": "AIG-DEC-02_Decision_Ready_Paper.docx",
+      "section": "The template (tables 3-11)"
+    },
+    "headerBlock": [
+      "AIR-ID",
+      "System",
+      "Forum",
+      "Gate",
+      "Prepared by",
+      "Date"
+    ],
+    "decisionRequired": "Decision required",
+    "triageHeadline": "Triage headline",
+    "triageHeadlineText": "AGPI Priority _ (____)     Risk tier: ____\nEscalation: list any triggers, or \"none\"\nRoute: Light-touch / Standard / Enhanced-Agentic  (AGPI priority and risk tier per UC-ID in the rows below)",
+    "ucTable": [
+      "UC-ID and use",
+      "AGPI priority; risk tier; assessment refs",
+      "Proposed outcome",
+      "Permitted and excluded scope",
+      "Conditions",
+      "Delegated authority; effective and review dates"
+    ],
+    "recommendation": "Recommendation",
+    "bearing": "Bearing on your decision",
+    "conditionsProposed": "Conditions proposed",
+    "fullEvidence": "Full evidence",
+    "decision": "Decision",
+    "decisionOptions": "☐ Approve   ☐ Approve with conditions   ☐ Defer   ☐ Reject   ☐ Suspend   ☐ Retire   (one outcome per UC-ID; recorded in AIG-DEC-03 or approved minutes)"
+  },
+  "AGT-06": {
+    "source": {
+      "file": "AIG-AGT-06_Agentic_Action_Decision_Record.docx",
+      "section": "Controlled fields"
+    },
+    "fields": [
+      "Action ID",
+      "AIR-ID",
+      "AG-ID",
+      "UC-ID",
+      "ASBOM version/revision",
+      "Source Edge ID(s)",
+      "Agent identity/version",
+      "Timestamp",
+      "Authority invoked",
+      "Objective/context",
+      "Action/tool",
+      "Policy decision",
+      "Approval/override",
+      "Outcome",
+      "Reversibility",
+      "Evidence reference",
+      "Runtime control state",
+      "Exception/incident reference"
+    ]
+  }
+}

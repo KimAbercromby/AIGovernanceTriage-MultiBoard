@@ -14,7 +14,10 @@ It also includes eleven fictional demo scenarios (see **Pilot lab demo** below).
 A **Pilot lab** panel at the top of the triage form loads one of eleven uses of a
 made-up system, *DEMO: Riverside Repairs Assistant* (AIR-DEMO-01, UC-DEMO-01 to
 UC-DEMO-11). Together they produce every AGPI priority (1 to 5), every risk tier
-(Low to Critical) and every agency tier (T0 to T5), using the tool's own logic.
+(Low to Critical) and agency tiers T1 to T5, using the tool's own logic. Under the
+suite v3.9 tier-assignment table (AIG-AGT-02 / AIG-AGT-03 Tables A and B) UC-DEMO-06
+moved from T0 to T1 (its Consequence score of 1 sets a T1 floor), so no scenario now
+shows T0; its scores were left unchanged.
 
 The demo is guarded so it cannot be mistaken for, or turned into, a Council record:
 
@@ -30,9 +33,32 @@ outcome, and that every export control the tool wires up is blocked in demo mode
 ## Suite alignment and status
 
 This tool is aligned as a review aid to proposed, separate AI governance
-workbook drafts. They are **proposed and unapproved**, not an approved or live
-policy, process or record. This public tool does not read or write controlled
-records and must not be treated as issued authority.
+workbook drafts: **AI governance suite v3.9 (30 September 2026)**, Playbook 19.9.10,
+Gate Map AIG-DEC-01 1.6, AGPI Triage AIG-ASS-01 1.3, Risk Worksheet AIG-ASS-02 1.8,
+Register AIG-INV-04 1.0, Gate Log AIG-DEC-04 1.0, Agent Record AIG-AGT-04 0.3 and
+Capabilities and System Map AIG-INV-05 0.3. They are **proposed and unapproved**,
+not an approved or live policy, process or record. This public tool does not read
+or write controlled records and must not be treated as issued authority.
+
+Rules applied (Proposed — for Council confirmation):
+
+- **Priority is urgency only.** AGPI bands per AIG-ASS-01; a Resident Impact or Legal &
+  Regulatory Exposure score of 5 sets at least Priority 2; a use with a §4.4.6 trigger
+  cannot be Priority 5. The priority does not set the route or assurance depth.
+- **Governing tier sets the route:** the highest of the risk tier (inherent until
+  controls are evidenced; High/Critical reductions need independent verification),
+  the §4.4.6 trigger floor, the impact floor (any confirmed Impact 5 → at least
+  Medium) and, for action-capable uses, the agency-tier minimum (T0/T1 none, T2
+  Medium, T3 High, T4 High or Critical without evidenced per-action review, T5
+  Critical). "Can it act?" Unsure counts as Yes; per-action review Unsure counts as
+  No (Critical floor).
+- **Gates (AIG-DEC-01 v1.6):** Gate 2 and Gate 6 are mandatory for every
+  action-capable use (T0 included) and Gate 6 grants the permitted autonomy level;
+  Gate 4 applies when procured; Gate 5 from Medium; resident-facing generative AI at
+  Medium needs the AIG-ASS-11 Section 7 adversarial test before Gate 6. The AI
+  Assurance Board advises and never decides.
+- **Agency tier:** the AIG-AGT-02 / AIG-AGT-03 tier-assignment table (Tables A and B,
+  highest floor wins; a kill-switch that is not demonstrated is a rule D1 trigger).
 
 - **AIG-INV-04:** permanent Council-issued AIR-ID and current assurance state. Look up and
   verify an existing AIR-ID in the current controlled workbook; this tool never
@@ -50,10 +76,11 @@ records and must not be treated as issued authority.
   or triage score is not use approval.
 - **AIG-DEC-04:** its proposed draft separates prospective **Gate Plan**, dated **Gate
   Events**, and event-linked **Gate Conditions**. The "Download Gate Log plan rows"
-  export gives paste-ready rows for the Gate plan sheet only (columns A to L, Plan
-  state Planned; Plan ID, target date and any N/A rationale left blank for the
-  governance steward), followed by guidance columns that are not pasted. It never
-  creates Gate Events or Conditions.
+  export gives paste-ready rows for the Gate plan sheet only: one row per AIG-DEC-01
+  decision gate 1 to 6, columns A to L, with Gate / forum from the workbook's gate
+  list, Requirement Required or Conditional and Plan state Planned (Plan ID, target
+  date and any N/A rationale left blank for the governance steward), followed by
+  guidance columns that are not pasted. It never creates Gate Events or Conditions.
 - **AIG-INV-05 Capabilities and System Map:** a proposed controlled catalogue
   artefact, not approved or adopted. Triage offers a
   clearly labelled proposal for outcome-led use cases, capabilities and a UC →
@@ -125,6 +152,12 @@ node scripts/build.js
 node scripts/build.js --check
 node --test test/*.test.js
 ```
+
+`test/suite-v3.9-contract.test.js` checks every export's field labels, order and
+controlled values against `test/fixtures/suite-v3.9-contract.json`, which records the
+header rows and dropdown lists read from the suite workbooks (file, sheet and row).
+Regenerate it for a new suite release with
+`python3 scripts/extract-suite-fixture.py <folder of suite .xlsx/.docx files>`.
 
 Publish `index.html` from the repository root with GitHub Pages. The build
 script synchronises maintained sources into the embedded scripts, preserving
