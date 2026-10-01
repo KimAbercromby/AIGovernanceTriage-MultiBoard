@@ -3,9 +3,9 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const logic = require("../src/triage-logic.js");
-// Header rows and controlled lists read from the suite v3.9.3 workbooks
+// Header rows and controlled lists read from the suite v3.9.4 workbooks
 // (regenerate with scripts/extract-suite-fixture.py).
-const contract = require("./fixtures/suite-v3.9.3-contract.json");
+const contract = require("./fixtures/suite-v3.9.4-contract.json");
 const PRIORITY_ASS = "Effective Governance Priority (AIG-ASS-01, after any authorised override)";
 const OPERATIONAL = "Operational Status (system baseline)";
 
@@ -81,7 +81,7 @@ test("AIG-INV-04 export is a draft handoff and never manufactures system identit
   assert.deepEqual([...new Set(draft.rows.map((row) => row[0]))].sort(), Object.keys(supportedFields).sort());
   for (const [sheet, fields] of Object.entries(supportedFields)) {
     assert.deepEqual(draft.rows.filter((row) => row[0] === sheet).map((row) => row[1]), fields,
-      `${sheet}: one row per v3.9.3 workbook column, in order`);
+      `${sheet}: one row per v3.9.4 workbook column, in order`);
   }
   assert.equal(draft.rows.find((row) =>
     row[0] === "Assessment summary" && row[1] === PRIORITY_ASS)[3], "");
@@ -382,7 +382,7 @@ test("AIG-DEC-04 retirement handoff includes the separate plan, event and condit
   for (const sheet of ["Gate plan", "Gate events", "Conditions"]) {
     const spec = contract["DEC-04"][sheet];
     const columns = spec.headers.filter((h, i) => !spec.formulaColumns.includes(String.fromCharCode(65 + i)));
-    assert.deepEqual(fieldsFor(sheet), columns, `${sheet} handoff must list every v3.9.3 column in order`);
+    assert.deepEqual(fieldsFor(sheet), columns, `${sheet} handoff must list every v3.9.4 column in order`);
   }
   assert.ok(handoff.rows.every((row) =>
     (row[2].includes("AIG-DEC-04 contract") || row[2].includes("Proposed AIG-INV-04") || row[2].includes("Prompt")) &&
@@ -460,7 +460,7 @@ test("browser UI collects exact UC scope and rejects contradictory ID status bef
   assert.match(app, /never issues or verifies a UC-ID/);
   assert.match(app, /This AGPI triage applies only to UC-ID/);
   assert.match(app, /This risk triage applies only to UC-ID/);
-  // AIG-AGT-04 v3.9.3 column name; left blank with a caveat, never filled from UC triage.
+  // AIG-AGT-04 v3.9.4 column name; left blank with a caveat, never filled from UC triage.
   assert.match(app, /\["AGPI Priority \(from AIG-INV-04\)", ""\]/);
   assert.match(app, /this UC-specific triage priority is not the system summary/);
 });
@@ -577,7 +577,7 @@ test("light-touch and Low uses are not asked for Medium+ assessments (governance
   const ev = logic.buildEvidenceList(low.profile, low.results).join("\n");
   assert.equal(logic.isLightTouch(low.profile, low.results), true);
   assert.doesNotMatch(ev, /^Responsible AI Assessment$/m);
-  assert.doesNotMatch(ev, /^Security Review Checklist$/m);
+  assert.doesNotMatch(ev, /^AI Security Review Checklist/m);
   assert.match(ev, /Security policy compliance check/);
   assert.match(ev, /Model Card \(short form/);
   assert.match(ev, /Equality Act 2010 section 149 screening \(all tiers/);
@@ -587,12 +587,13 @@ test("Medium uses need the Responsible AI Assessment; High uses also need the fu
   const medium = fixture({ tier: "Medium" });
   const evM = logic.buildEvidenceList(medium.profile, medium.results);
   assert.ok(evM.includes("Responsible AI Assessment"));
-  assert.ok(!evM.includes("Security Review Checklist"));
+  assert.ok(!evM.includes(logic.SECURITY_REVIEW_EVIDENCE));
   assert.ok(evM.includes("Model Card"));
   const high = fixture({ tier: "High" });
   const evH = logic.buildEvidenceList(high.profile, high.results);
   assert.ok(evH.includes("Responsible AI Assessment"));
-  assert.ok(evH.includes("Security Review Checklist"));
+  assert.ok(evH.includes(logic.SECURITY_REVIEW_EVIDENCE));
+  assert.equal(logic.SECURITY_REVIEW_EVIDENCE, "AI Security Review Checklist, including the Section 8 threat model");
 });
 
 test("action-capable or triggered Low uses keep the full assessments", () => {
@@ -601,12 +602,12 @@ test("action-capable or triggered Low uses keep the full assessments", () => {
   const evA = logic.buildEvidenceList(acting.profile, acting.results);
   assert.equal(logic.isLightTouch(acting.profile, acting.results), false);
   assert.ok(evA.includes("Responsible AI Assessment"));
-  assert.ok(evA.includes("Security Review Checklist"));
+  assert.ok(evA.includes(logic.SECURITY_REVIEW_EVIDENCE));
   const trig = fixture();
   trig.results.triggerIds = ["novel"];
   const evT = logic.buildEvidenceList(trig.profile, trig.results);
   assert.ok(evT.includes("Responsible AI Assessment"));
-  assert.ok(evT.includes("Security Review Checklist"));
+  assert.ok(evT.includes(logic.SECURITY_REVIEW_EVIDENCE));
 });
 
 test("High and Critical uses with personal data indicate a DPIA (Playbook §4.5.9, AIG-ASS-05)", () => {
@@ -648,7 +649,7 @@ test("Register lifecycle stage is proposed from the governance position, within 
 test("AIG-INV-05 handoff has one row per map column, with exact headings and controlled values", () => {
   const { profile, results } = fixture();
   const handoff = logic.buildCapabilitiesMapHandoff(profile, results);
-  // Column headings from the v3.9.3 AIG-INV-05 workbook (formula check columns excluded), in sheet order.
+  // Column headings from the v3.9.4 AIG-INV-05 workbook (formula check columns excluded), in sheet order.
   const COLUMNS = Object.fromEntries(["Use cases", "Capabilities", "Relationships"].map((sheet) => {
     const spec = contract["INV-05"][sheet];
     return [sheet, spec.headers.filter((h, i) => !spec.formulaColumns.includes(String.fromCharCode(65 + i)))];

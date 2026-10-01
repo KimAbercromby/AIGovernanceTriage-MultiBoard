@@ -6,26 +6,26 @@
   "use strict";
 
   // Suite release this tool is aligned to, with the artefact versions it relies on
-  // (from the AIG-GOV-03 Artefact Index, suite release v3.9.3, 1 October 2026).
+  // (from the AIG-GOV-03 Artefact Index, suite release v3.9.4, 1 October 2026).
   const SUITE = {
-    release: "v3.9.3",
+    release: "v3.9.4",
     date: "1 October 2026",
     status: "Proposed — for Council confirmation; not approved or adopted",
     versions: {
-      "AIG-GOV-02 Playbook": "19.9.13 draft",
-      "AIG-GOV-03 Artefact Index": "1.28 draft",
+      "AIG-GOV-02 Playbook": "19.9.14 draft",
+      "AIG-GOV-03 Artefact Index": "1.29 draft",
       "AIG-INV-04 AI Register": "1.0 draft",
       "AIG-INV-05 Capabilities and System Map": "0.3 proposed design draft",
       "AIG-ASS-01 AGPI Triage Tool": "1.4 draft",
       "AIG-ASS-02 AI Risk Assessment Worksheet": "1.10 draft",
-      "AIG-ASS-11 AI Security Review Checklist": "1.7 draft",
+      "AIG-ASS-11 AI Security Review Checklist": "1.8 draft",
       "AIG-DEC-01 Gate Map": "1.9 draft",
       "AIG-DEC-02 Decision-Ready Paper": "1.4 draft",
       "AIG-DEC-03 Governance Decision Record": "1.7 draft",
       "AIG-DEC-04 Gate Log": "1.1 draft",
       "AIG-AGT-02 Agentic Classification Reference": "1.5 draft",
       "AIG-AGT-03 Agentic Triage": "1.4 draft",
-      "AIG-AGT-04 Agent Record (ASBOM)": "0.4 working draft",
+      "AIG-AGT-04 Agent Record (ASBOM)": "0.5 working draft",
       "AIG-AGT-06 Agentic Action / Decision Record": "1.4 draft",
       "AIG-OPS-01 Deployment and Rollout Plan": "1.8 draft",
       "AIG-OPS-02 Monitoring and Review Log": "1.6 draft",
@@ -932,9 +932,11 @@
       evidence.push("Responsible AI Assessment");
     }
     // Playbook §4.5.9: the AI Security Review Checklist is a High/Critical minimum and
-    // applies to action-capable systems at every tier (AIG-ASS-11).
+    // applies to action-capable systems at every tier (AIG-ASS-11). Since suite v3.9.4 the
+    // item names the Section 8 threat model, required at these tiers and for any
+    // action-capable AI (a §4.4.6 trigger always sets at least High).
     if (tier === "High" || tier === "Critical" || triggered || canAct) {
-      evidence.push("Security Review Checklist");
+      evidence.push(SECURITY_REVIEW_EVIDENCE);
     } else {
       evidence.push("Security policy compliance check (full Security Review Checklist from High risk, for systems that can act, or where the security owner asks)");
     }
@@ -996,6 +998,10 @@
 
   const ADVERSARIAL_TEST =
     "Adversarial test for resident-facing generative AI (AIG-ASS-11 Section 7) before go-live (Gate 6) (Proposed — for Council confirmation)";
+
+  // v3.9.4: required evidence at High, Critical and for action-capable uses names the
+  // AIG-ASS-11 Section 8 threat model (Proposed — for Council confirmation).
+  const SECURITY_REVIEW_EVIDENCE = "AI Security Review Checklist, including the Section 8 threat model";
 
   function isResidentFacingGenerativeMedium(profile, results) {
     return results.effectiveTierName === "Medium" &&
@@ -2469,6 +2475,7 @@
     D1_TRIGGERS,
     ADVERSARIAL_TEST,
     BUSINESS_CONTINUITY_LINK,
+    SECURITY_REVIEW_EVIDENCE,
     governancePriority,
     agencyMinimumTier,
     governingTier,
