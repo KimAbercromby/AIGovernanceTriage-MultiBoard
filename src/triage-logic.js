@@ -6,28 +6,28 @@
   "use strict";
 
   // Suite release this tool is aligned to, with the artefact versions it relies on
-  // (from the AIG-GOV-03 Artefact Index, suite release v3.9.2, 30 September 2026).
+  // (from the AIG-GOV-03 Artefact Index, suite release v3.9.3, 1 October 2026).
   const SUITE = {
-    release: "v3.9.2",
-    date: "30 September 2026",
+    release: "v3.9.3",
+    date: "1 October 2026",
     status: "Proposed — for Council confirmation; not approved or adopted",
     versions: {
-      "AIG-GOV-02 Playbook": "19.9.12 draft",
-      "AIG-GOV-03 Artefact Index": "1.27 draft",
+      "AIG-GOV-02 Playbook": "19.9.13 draft",
+      "AIG-GOV-03 Artefact Index": "1.28 draft",
       "AIG-INV-04 AI Register": "1.0 draft",
       "AIG-INV-05 Capabilities and System Map": "0.3 proposed design draft",
       "AIG-ASS-01 AGPI Triage Tool": "1.4 draft",
       "AIG-ASS-02 AI Risk Assessment Worksheet": "1.10 draft",
-      "AIG-ASS-11 AI Security Review Checklist": "1.6 draft",
-      "AIG-DEC-01 Gate Map": "1.8 draft",
-      "AIG-DEC-02 Decision-Ready Paper": "1.3 draft",
-      "AIG-DEC-03 Governance Decision Record": "1.6 draft",
+      "AIG-ASS-11 AI Security Review Checklist": "1.7 draft",
+      "AIG-DEC-01 Gate Map": "1.9 draft",
+      "AIG-DEC-02 Decision-Ready Paper": "1.4 draft",
+      "AIG-DEC-03 Governance Decision Record": "1.7 draft",
       "AIG-DEC-04 Gate Log": "1.1 draft",
-      "AIG-AGT-02 Agentic Classification Reference": "1.4 draft",
-      "AIG-AGT-03 Agentic Triage": "1.3 draft",
+      "AIG-AGT-02 Agentic Classification Reference": "1.5 draft",
+      "AIG-AGT-03 Agentic Triage": "1.4 draft",
       "AIG-AGT-04 Agent Record (ASBOM)": "0.4 working draft",
-      "AIG-AGT-06 Agentic Action / Decision Record": "1.3 draft",
-      "AIG-OPS-01 Deployment and Rollout Plan": "1.7 draft",
+      "AIG-AGT-06 Agentic Action / Decision Record": "1.4 draft",
+      "AIG-OPS-01 Deployment and Rollout Plan": "1.8 draft",
       "AIG-OPS-02 Monitoring and Review Log": "1.6 draft",
       "UC_ID_Risk_Decision_Current_View": "1.0 draft",
     },
@@ -255,7 +255,7 @@
     return situation === SITUATIONS.change || situation === SITUATIONS.approved;
   }
 
-  // Procurement question (AIG-DEC-01 v1.8 Gate 4 rule; Playbook §5.5.1; AIG-ASS-08 v1.5;
+  // Procurement question (AIG-DEC-01 v1.9 Gate 4 rule; Playbook §5.5.1; AIG-ASS-08 v1.6;
   // Proposed — for Council confirmation). v3.9.2 (T-07, T-08).
   const PROCUREMENT = {
     unknown: "Not yet known",
@@ -621,7 +621,7 @@
     );
   }
 
-  // Agency-tier minimum pathway (AIG-DEC-01 v1.8 Agentic pathway; AIG-AGT-03 §6;
+  // Agency-tier minimum pathway (AIG-DEC-01 v1.9 Agentic pathway; AIG-AGT-03 §6;
   // Playbook F.2). Applies to action-capable uses only. T0/T1 none, T2 Medium,
   // T3 High, T4 High (Critical where actions run without evidenced per-action human
   // review), T5 Critical. Proposed — for Council confirmation.
@@ -682,7 +682,7 @@
   }
 
   // Gate 4 and the full Supplier DDQ apply only where a procurement, new contract,
-  // licence change or contract variation is needed (AIG-DEC-01 v1.8), not from the
+  // licence change or contract variation is needed (AIG-DEC-01 v1.9), not from the
   // Source answer alone (v3.9.2, T-07).
   function commercialRequired(profile) {
     return procurementRouteOf(profile) === PROCUREMENT.new;
@@ -990,7 +990,7 @@
 
   // v3.9.1 (Proposed — for Council confirmation): AIG-OPS-01 section 8 "Rollback and Contingency" adds the
   // business continuity link (Civil Contingencies Act 2004; AIG-AIMS-05 REQ-054); the label and question are
-  // quoted exactly from AIG-OPS-01 v1.7 (unchanged from v1.6) and are evidenced at Gate 6 (go-live).
+  // quoted exactly from AIG-OPS-01 v1.8 (unchanged from v1.6) and are evidenced at Gate 6 (go-live).
   const BUSINESS_CONTINUITY_LINK =
     "AIG-OPS-01 section 8, Business continuity link (Proposed — for Council confirmation): Is this service a prioritised activity in the Council's business continuity plan? Yes / No / Not known. If yes, give the plan reference and confirm the fallback above is consistent with it.";
 
@@ -1008,7 +1008,7 @@
     return match ? Number(match[1]) : null;
   }
 
-  // Prospective gate route (AIG-DEC-01 v1.8 Gate Map, gates 1 to 6), with the AI
+  // Prospective gate route (AIG-DEC-01 v1.9 Gate Map, gates 1 to 6), with the AI
   // Assurance Board's assurance input shown as a separate, non-deciding step. The
   // governing tier sets which gates apply; the AGPI priority sets urgency only.
   // Gate 2 and Gate 6 are mandatory for every action-capable use (R1, R2); Gate 4
@@ -1139,7 +1139,7 @@
         naRationale: gate4.naRationale,
         forum: configured.commercial,
         decision:
-          "Funding, tendering and contract award: is the procurement route, supplier and contract acceptable under the relevant delegated authority? Gate 4 applies wherever a procurement, new contract, licence change or contract variation is needed (AIG-DEC-01 v1.8; Proposed \u2014 for Council confirmation).",
+          "Funding, tendering and contract award: is the procurement route, supplier and contract acceptable under the relevant delegated authority? Gate 4 applies wherever a procurement, new contract, licence change or contract variation is needed (AIG-DEC-01 v1.9; Proposed \u2014 for Council confirmation).",
         evidence: gate4.applies === true || gate4.applies === null
           ? [
             "Supplier AI Due Diligence Questionnaire (AIG-ASS-08)",
@@ -1458,7 +1458,7 @@
   // AIG-DEC-01 decision gate (1 to 6). Columns A to L match the workbook exactly and
   // every controlled column holds a value from its dropdown: Gate / forum from the
   // Lists sheet, Requirement Required/Conditional (Not applicable for Gate 4 under the
-  // AIG-DEC-01 v1.8 rule, with a draft rationale in column J for the steward to confirm),
+  // AIG-DEC-01 v1.9 rule, with a draft rationale in column J for the steward to confirm),
   // Plan state Planned, Decision scope UC-ID specific. A blank spacer column separates
   // the guidance columns, which are not part of the Gate plan. Plan ID and Target date
   // stay blank for the governance steward: the tool never issues IDs. The AI
@@ -1842,7 +1842,7 @@
         : "Sections 1\u20139 (supplier responses); Section 10 \u2014 Council Evaluation (internal)",
       fields: [
         { label: "Procurement route (intake answer)", value: gate4.route },
-        { label: "Gate 4 (AIG-DEC-01 v1.8 rule)", value: gate4.label },
+        { label: "Gate 4 (AIG-DEC-01 v1.9 rule)", value: gate4.label },
       ],
       note: `${gate4.note} The commercial owner confirms the procurement position. (Proposed \u2014 for Council confirmation.)`,
     });
