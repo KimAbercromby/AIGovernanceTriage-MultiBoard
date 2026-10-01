@@ -2,7 +2,7 @@
 
 // One test per v3.9.2 pilot-readiness finding fixed in this tool (scenario test of
 // suite v3.9.1, 30 September 2026). Expected values come from the v3.9.2 workbooks
-// via test/fixtures/suite-v3.9.2-contract.json and from the AIG-DEC-01 v1.8 Gate 4
+// via test/fixtures/suite-v3.9.3-contract.json and from the AIG-DEC-01 v1.8 Gate 4
 // rule, Playbook §6.4.4 and AIG-OPS-02 v1.6 (Proposed — for Council confirmation).
 
 const test = require("node:test");
@@ -10,7 +10,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const logic = require("../src/triage-logic.js");
-const contract = require("./fixtures/suite-v3.9.2-contract.json");
+const contract = require("./fixtures/suite-v3.9.3-contract.json");
 
 const root = path.join(__dirname, "..");
 const app = fs.readFileSync(path.join(root, "src", "triage-app.js"), "utf8");
