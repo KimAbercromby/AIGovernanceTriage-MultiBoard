@@ -43,7 +43,7 @@ test("Copilot new use, existing licence, no new investment, Low: Gates 1 and 3 p
 
 test("the rule does not apply when investment is Yes or Unsure, there is no AIR-ID, a new contract is needed, or the use can act", () => {
   for (const o of [{ newInvestment: "Yes" }, { newInvestment: "Unsure (counts as Yes)" }, { newInvestment: undefined }, { registerId: "" },
-    { procurementRoute: "New contract, licence change or contract variation" }, { actionAuthority: "Human approves each action" },
+    { procurementRoute: "New contract, licence change or contract variation" }, { procurementRoute: "Not yet known" }, { registerId: "AIR-" }, { actionAuthority: "Human approves each action" },
     { situation: "Found already in use" }, { situation: "Change to a use in governance" }]) {
     const p = profile(o);
     const route = logic.buildRoute(p, run(p), {});

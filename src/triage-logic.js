@@ -303,9 +303,11 @@
   function gates13Rule(profile, results) {
     const reasons = [];
     if (situationOf(profile) !== SITUATIONS.new || isFoundInUse(profile)) reasons.push("it is not a new use");
-    if (!/^AIR-/.test((profile && profile.registerId) || "")) reasons.push("no existing AIR-ID is entered (a new system always counts as new investment)");
+    if (!/^AIR-[A-Z0-9]/i.test((profile && profile.registerId) || "")) reasons.push("no existing AIR-ID is entered (a new system always counts as new investment)");
     if (newInvestmentOf(profile) !== NEW_INVESTMENT.no) reasons.push("new investment is Yes or Unsure");
-    if (procurementRouteOf(profile) === PROCUREMENT.new) reasons.push("a new contract, licence change or variation is needed");
+    const proc = procurementRouteOf(profile);
+    if (proc === PROCUREMENT.new) reasons.push("a new contract, licence change or variation is needed");
+    if (proc === PROCUREMENT.unknown) reasons.push("the procurement route is not yet known (counts as possible new investment)");
     const tier = results && results.effectiveTierName;
     if (tier !== "Low" && tier !== "Medium") reasons.push("the governing tier is High or Critical");
     if (isActionCapable(profile, results && results.triggerIds)) reasons.push("the use can act");
