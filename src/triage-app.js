@@ -486,10 +486,14 @@
     if (routeBanner) {
       routeBanner.className = "route-banner route-" + gRoute.key;
       byId("routeBannerName").textContent = `Provisional · ${gRoute.name}`;
-      const conflicts = logic.answerConflicts(profile);
+      const conflicts = logic.answerConflicts(profile, results);
       byId("routeBannerWhy").textContent = (conflicts.length ? conflicts.join(" ") + " " : "") + gRoute.why;
       const warn = byId("investmentWarning");
-      if (warn) { warn.textContent = conflicts.join(" "); warn.hidden = !conflicts.length; }
+      const invConflicts = logic.answerConflicts(profile).filter((m) => /no new investment/.test(m));
+      if (warn) { warn.textContent = invConflicts.join(" "); warn.hidden = !invConflicts.length; }
+      const ftWarn = byId("fastTrackWarning");
+      const ftConflicts = conflicts.filter((m) => /Fast-Track answers are No/.test(m));
+      if (ftWarn) { ftWarn.textContent = ftConflicts.join(" "); ftWarn.hidden = !ftConflicts.length; }
     }
 
     const controlStatus = byId("controlStatus");

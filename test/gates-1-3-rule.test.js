@@ -145,3 +145,14 @@ test("v3.9.8 (decision B4): contradictory investment and procurement answers are
   const html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
   assert.match(html, /id="investmentWarning"/);
 });
+
+test("v3.9.8 (decision E8): all-No Fast Track with a tier above Low is flagged", () => {
+  const p = profile({});
+  const med = logic.calculateTriage({ profile: p, agpiScores: agpi, impactScores: { residentImpact: 3, legalImpact: 3, reputationImpact: 2, operationalImpact: 2, financialImpact: 1 }, likelihood: 3,
+    control: 2, controlEvidence: "Not evidenced — planned or unverified", triggerIds: [], agentic: null });
+  assert.equal(med.effectiveTierName, "Medium");
+  assert.match(logic.answerConflicts(p, med).join(" "), /All ten Fast-Track answers are No, but the risk scores give Medium/);
+  assert.deepEqual(logic.answerConflicts(p, run(p)), [], "no warning at Low");
+  assert.deepEqual(logic.answerConflicts(profile({ fastTrack: "One or more Yes or Unsure" }), med), [], "no warning when Fast Track has a Yes");
+  assert.match(fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8"), /id="fastTrackWarning"/);
+});

@@ -1593,6 +1593,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
                 <option>One or more Yes or Unsure</option>
               </select>
               <small>Light-touch is only possible when all ten Fast-Track answers are No. Any Yes or Unsure means full Intake and the Standard route at the Low tier.</small>
+              <p id="fastTrackWarning" class="answer-warning" role="status" hidden></p>
             </label>
             <label class="field">
               <span>AIR-ID <small>existing Council-issued identifier only; never generated here</small></span>
@@ -2527,8 +2528,13 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
   }
   // Answers that contradict each other (decision B4, suite v3.9.8). The stricter
   // answer still applies; the person is told why so they can correct the form.
-  function answerConflicts(profile) {
+  function answerConflicts(profile, results) {
     const out = [];
+    const tier = results && results.effectiveTierName;
+    // Decision E8: all ten Fast-Track answers No but a governing tier above Low.
+    if (fastTrackOf(profile) === FAST_TRACK.allNo && tier && tier !== "Low") {
+      out.push(`All ten Fast-Track answers are No, but the risk scores give ${tier}. One of them is likely wrong. Check the Fast-Track answers and the impact and likelihood scores with the AI Governance Lead. The higher tier applies until they agree.`);
+    }
     if (newInvestmentOf(profile) === NEW_INVESTMENT.no && procurementRouteOf(profile) === PROCUREMENT.new) {
       out.push("You said no new investment, but a new contract, licence change or contract variation is new investment. Gates 1, 3 and 4 apply. Check your answers.");
     }
@@ -5415,10 +5421,14 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     if (routeBanner) {
       routeBanner.className = "route-banner route-" + gRoute.key;
       byId("routeBannerName").textContent = `Provisional · ${gRoute.name}`;
-      const conflicts = logic.answerConflicts(profile);
+      const conflicts = logic.answerConflicts(profile, results);
       byId("routeBannerWhy").textContent = (conflicts.length ? conflicts.join(" ") + " " : "") + gRoute.why;
       const warn = byId("investmentWarning");
-      if (warn) { warn.textContent = conflicts.join(" "); warn.hidden = !conflicts.length; }
+      const invConflicts = logic.answerConflicts(profile).filter((m) => /no new investment/.test(m));
+      if (warn) { warn.textContent = invConflicts.join(" "); warn.hidden = !invConflicts.length; }
+      const ftWarn = byId("fastTrackWarning");
+      const ftConflicts = conflicts.filter((m) => /Fast-Track answers are No/.test(m));
+      if (ftWarn) { ftWarn.textContent = ftConflicts.join(" "); ftWarn.hidden = !ftConflicts.length; }
     }
 
     const controlStatus = byId("controlStatus");

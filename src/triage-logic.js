@@ -297,8 +297,13 @@
   }
   // Answers that contradict each other (decision B4, suite v3.9.8). The stricter
   // answer still applies; the person is told why so they can correct the form.
-  function answerConflicts(profile) {
+  function answerConflicts(profile, results) {
     const out = [];
+    const tier = results && results.effectiveTierName;
+    // Decision E8: all ten Fast-Track answers No but a governing tier above Low.
+    if (fastTrackOf(profile) === FAST_TRACK.allNo && tier && tier !== "Low") {
+      out.push(`All ten Fast-Track answers are No, but the risk scores give ${tier}. One of them is likely wrong. Check the Fast-Track answers and the impact and likelihood scores with the AI Governance Lead. The higher tier applies until they agree.`);
+    }
     if (newInvestmentOf(profile) === NEW_INVESTMENT.no && procurementRouteOf(profile) === PROCUREMENT.new) {
       out.push("You said no new investment, but a new contract, licence change or contract variation is new investment. Gates 1, 3 and 4 apply. Check your answers.");
     }
