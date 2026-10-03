@@ -25,6 +25,7 @@
 
   const profileFieldIds = [
     "situation",
+    "fastTrack",
     "registerId",
     "ucId",
     "ucIdStatus",
@@ -448,10 +449,18 @@
       return {
         key: "light",
         name: "Light-touch governance pathway",
-        why: "Low risk and low governance priority do not waive duties. Complete Equality Act s149, HRA s6 and data-protection/privacy screening, verify the Council-issued AIR-ID and current AIG-INV-04 state, retain proportionate baseline documentation, named ownership, controls and review, and record the delegated decision for this UC-ID (by the officer or forum with confirmed delegation) before use (Playbook §3.8.2.1). An obviously low-risk use can reach this route through the one-page Fast-Track Screening (AIG-INV-02), with all ten answers No and the route validated by the AI Governance Lead. The Fast-Track decides the route only: the equality, human-rights and privacy screening is still recorded, and can draw on the Fast-Track answers."
+        why: "Low risk and low governance priority do not waive duties. Complete Equality Act s149, HRA s6 and data-protection/privacy screening, verify the Council-issued AIR-ID and current AIG-INV-04 state, retain proportionate baseline documentation, named ownership, controls and review, and record the delegated decision for this UC-ID (by the officer or forum with confirmed delegation) before use (Playbook §3.8.2.1). This use reached this route through the one-page Fast-Track Screening (AIG-INV-02) with all ten answers No; the AI Governance Lead validates the route. The Fast-Track decides the route only: the equality, human-rights and privacy screening is still recorded, and can draw on the Fast-Track answers."
       };
     }
 
+    const ftBlock = logic.lightTouchBlockReason(profile, results);
+    if (ftBlock && !logic.isFoundInUse(profile) && !logic.isReentry(profile)) {
+      return {
+        key: "standard",
+        name: "Non-agentic governance pathway \u00b7 Standard route at Low",
+        why: ftBlock + " Low risk and low priority do not waive duties: complete the Equality Act s149, HRA s6 and data-protection/privacy screening and record the delegated decision for this UC-ID before use."
+      };
+    }
     if (logic.isFoundInUse(profile)) {
       return { key: "standard", name: "Retrospective intake (found already in use) \u00b7 non-agentic", why: lead + "Its route follows the governing tier (the highest of the risk tier, any \u00a74.4.6 trigger floor and the impact floor); the AGPI priority sets how quickly governance looks at it." };
     }
@@ -692,6 +701,7 @@
       `Operational state: ${profile.lifecycle}`,
       `Data type: ${profile.dataType}`,
       `What's happening: ${logic.situationOf(profile)}${logic.isFoundInUse(profile) ? " (full retrospective intake; never light-touch)" : logic.isReentry(profile) ? " (re-entry to intake on the same AIR-ID)" : ""}`,
+      `Fast-Track Screening (AIG-INV-02): ${logic.fastTrackOf(profile)}`,
       `Procurement route: ${results.gate4.route}; Gate 4: ${results.gate4.label}`,
       "",
       "AGPI PRIORITY",
@@ -1440,7 +1450,7 @@
     if (target.matches && target.matches("#likelihood")) likelihoodEntered = true;
     if (target.matches && target.matches("#control")) controlEntered = true;
     if (target.matches && target.matches(
-      '[data-dimension], [data-impact], [data-trigger], #likelihood, #control, #controlEvidence, #controlEvidenceRef, #verificationRef, #governanceInvestigation, #situation, #procurementRoute, #actionAuthority, #ucId, #ucIdStatus, #usePurpose'
+      '[data-dimension], [data-impact], [data-trigger], #likelihood, #control, #controlEvidence, #controlEvidenceRef, #verificationRef, #governanceInvestigation, #situation, #fastTrack, #procurementRoute, #actionAuthority, #ucId, #ucIdStatus, #usePurpose'
     )) byId("triageReviewed").checked = false;
     update();
   }

@@ -28,6 +28,7 @@
       "lane": "Standard",
       "title": "Repairs manual summariser for staff",
       "profile": {
+        "fastTrack": "All ten No",
         "capability": "Generative AI",
         "dataType": "None",
         "publicFacing": "No",
@@ -65,6 +66,7 @@
       "lane": "Standard",
       "title": "Sorts incoming repair requests by trade for staff to check",
       "profile": {
+        "fastTrack": "One or more Yes or Unsure",
         "capability": "Natural Language Processing",
         "dataType": "Personal data",
         "publicFacing": "No",
@@ -90,11 +92,12 @@
       "control": 3,
       "controlEvidence": "Implemented and evidenced",
       "triggers": [],
+      "outcomeChange": "Suite v3.9.6: Light-touch now needs an all-No Fast-Track Screening. This use processes personal data (Fast-Track Q2 Yes), so it moved from Light-touch to the Standard route at the Low tier. Its scores, priority and tier are unchanged.",
       "expected": {
         "agpiScore": 33.75,
         "priority": "Priority 4 – Routine",
         "effectiveTier": "Low",
-        "pathway": "Light-touch governance pathway"
+        "pathway": "Non-agentic governance pathway \u00b7 Standard route at Low"
       }
     },
     {
@@ -219,6 +222,7 @@
       "lane": "Agentic",
       "title": "Answers staff questions on repair policy; takes no action",
       "profile": {
+        "fastTrack": "All ten No",
         "capability": "Generative AI",
         "dataType": "None",
         "publicFacing": "No",

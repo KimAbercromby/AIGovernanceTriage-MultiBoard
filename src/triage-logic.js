@@ -255,6 +255,31 @@
     return situation === SITUATIONS.change || situation === SITUATIONS.approved;
   }
 
+  // Fast-Track Screening (AIG-INV-02) outcome. Light-touch is reachable only after
+  // all ten Fast-Track answers are No and the AI Governance Lead validates the route
+  // (Playbook §3.8.2.1; AIG-DEC-01 Gate Map). Any Yes or Unsure, or no Fast Track,
+  // means full Intake (AIG-INV-03) and the route follows the governing tier.
+  const FAST_TRACK = {
+    notDone: "Not done (full Intake)",
+    allNo: "All ten No",
+    notAllNo: "One or more Yes or Unsure",
+  };
+  function fastTrackOf(profile) {
+    const value = profile && profile.fastTrack;
+    return Object.values(FAST_TRACK).includes(value) ? value : FAST_TRACK.notDone;
+  }
+  // Fast-Track answers that the rest of the profile shows cannot be No:
+  // Q1 (can it act?), Q2 (personal or special category data) and Q5 (public-facing).
+  function fastTrackConflicts(profile) {
+    const p = profile || {};
+    const out = [];
+    const authority = p.actionAuthority || "";
+    if (authority && authority !== ACTION_AUTHORITY.none) out.push("Q1 (it can act, or that is unconfirmed)");
+    if (p.dataType === "Personal data" || p.dataType === "Special category data") out.push("Q2 (it processes personal data)");
+    if (p.publicFacing === "Yes") out.push("Q5 (it is public-facing)");
+    return out;
+  }
+
   // Procurement question (AIG-DEC-01 v1.9 Gate 4 rule; Playbook §5.5.1; AIG-ASS-08 v1.6;
   // Proposed — for Council confirmation). v3.9.2 (T-07, T-08).
   const PROCUREMENT = {
@@ -897,7 +922,7 @@
   // Playbook §3.8.2.1 / Appendix F.6: light-touch only for a Priority 4-5,
   // Low-tier, non-action-capable use with no mandatory trigger and no indicated
   // specialist assessment. The AI Governance Lead still validates the route.
-  function isLightTouch(profile, results) {
+  function lowTierCandidate(profile, results) {
     const req = assessmentRequirements(profile, results);
     const label = (results.priority && results.priority.label) || "";
     const lowPriority = label.indexOf("Priority 4") === 0 || label.indexOf("Priority 5") === 0;
@@ -911,6 +936,22 @@
     const newUse = situationOf(profile) === SITUATIONS.new && !isFoundInUse(profile);
     return newUse && !results.governanceInvestigation && lowPriority && results.effectiveTierName === "Low" &&
       !(results.triggerIds || []).length && !anyAssessment && !isAgentSystem(profile, results);
+  }
+  // Light-touch needs everything above AND an all-No Fast Track that the rest of the
+  // profile does not contradict (suite v3.9.6 finding: a use with personal data was
+  // shown as Light-touch although Fast-Track Q2 would be Yes).
+  function isLightTouch(profile, results) {
+    return lowTierCandidate(profile, results) && fastTrackOf(profile) === FAST_TRACK.allNo &&
+      !fastTrackConflicts(profile).length;
+  }
+  // Why a use that otherwise looks low enough is not Light-touch ("" when it is, or
+  // when it was never a candidate).
+  function lightTouchBlockReason(profile, results) {
+    if (!lowTierCandidate(profile, results) || isLightTouch(profile, results)) return "";
+    const ft = fastTrackOf(profile);
+    if (ft === FAST_TRACK.notDone) return "No Fast-Track Screening (AIG-INV-02) is recorded, so the use goes through full Intake (AIG-INV-03) and the Standard route at the Low tier.";
+    if (ft === FAST_TRACK.notAllNo) return "The Fast-Track Screening (AIG-INV-02) had at least one Yes or Unsure, so Light-touch is not available. The use goes through full Intake (AIG-INV-03) and the Standard route at the Low tier.";
+    return `Fast Track is recorded as all ten No, but this profile means ${fastTrackConflicts(profile).join(", ")} would be Yes. Check the Fast-Track answers; until they agree, the use takes the Standard route at the Low tier.`;
   }
 
   // Governance by trigger, not by catalogue (Playbook §3.8.2.4):
@@ -2522,6 +2563,10 @@
     assessmentRequirements,
     buildEvidenceList,
     isLightTouch,
+    lightTouchBlockReason,
+    FAST_TRACK,
+    fastTrackOf,
+    fastTrackConflicts,
     buildRoute,
     buildRegisterDraftHandoff,
     buildCapabilitiesMapHandoff,

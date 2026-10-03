@@ -27,7 +27,9 @@ function run(s) {
     agentic: canAct ? agentic : null,
   });
   const pathway = canAct ? "Agentic governance pathway"
-    : logic.isLightTouch(profile, results) ? "Light-touch governance pathway" : "Non-agentic governance pathway";
+    : logic.isLightTouch(profile, results) ? "Light-touch governance pathway"
+    : logic.lightTouchBlockReason(profile, results) ? "Non-agentic governance pathway \u00b7 Standard route at Low"
+    : "Non-agentic governance pathway";
   return {
     agpiScore: results.agpiScore,
     priority: results.priority.label,
