@@ -51,6 +51,12 @@ Rules applied (Proposed — for Council confirmation):
 - **What's happening?** New use, change to a use in governance, found already in use,
   or already approved. AI found already in use always gets full retrospective intake,
   never light-touch; a change re-enters intake on the same AIR-ID.
+- **Light-touch needs an all-No Fast Track.** The Fast-Track Screening (AIG-INV-02)
+  outcome is asked in step 1. Light-touch is shown only when all ten answers are No,
+  the profile does not contradict them (it cannot act, no personal data, not
+  public-facing) and the use is otherwise Low, Priority 4 or 5, with no trigger. Any
+  Yes or Unsure, or no Fast Track, gives the Standard route at the Low tier, and the
+  route banner says why.
 - **Governing tier sets the route:** the highest of the risk tier (inherent until
   controls are evidenced; High/Critical reductions need independent verification),
   the §4.4.6 trigger floor, the impact floor (any confirmed Impact 5 → at least

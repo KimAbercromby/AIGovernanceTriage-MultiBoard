@@ -1576,6 +1576,15 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
               <small>AI found already in use always goes through full retrospective intake, never Fast Track or the light-touch route. A change to a use already in governance re-enters intake on the same AIR-ID. Already approved: check the use matches the approval exactly; anything different is a change.</small>
             </label>
             <label class="field">
+              <span>Fast-Track Screening (AIG-INV-02)</span>
+              <select id="fastTrack">
+                <option>Not done (full Intake)</option>
+                <option>All ten No</option>
+                <option>One or more Yes or Unsure</option>
+              </select>
+              <small>Light-touch is only possible when all ten Fast-Track answers are No. Any Yes or Unsure means full Intake and the Standard route at the Low tier.</small>
+            </label>
+            <label class="field">
               <span>AIR-ID <small>existing Council-issued identifier only; never generated here</small></span>
               <input id="registerId" autocomplete="off" placeholder="AIR-XXXX">
             </label>
@@ -2447,6 +2456,31 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     return situation === SITUATIONS.change || situation === SITUATIONS.approved;
   }
 
+  // Fast-Track Screening (AIG-INV-02) outcome. Light-touch is reachable only after
+  // all ten Fast-Track answers are No and the AI Governance Lead validates the route
+  // (Playbook §3.8.2.1; AIG-DEC-01 Gate Map). Any Yes or Unsure, or no Fast Track,
+  // means full Intake (AIG-INV-03) and the route follows the governing tier.
+  const FAST_TRACK = {
+    notDone: "Not done (full Intake)",
+    allNo: "All ten No",
+    notAllNo: "One or more Yes or Unsure",
+  };
+  function fastTrackOf(profile) {
+    const value = profile && profile.fastTrack;
+    return Object.values(FAST_TRACK).includes(value) ? value : FAST_TRACK.notDone;
+  }
+  // Fast-Track answers that the rest of the profile shows cannot be No:
+  // Q1 (can it act?), Q2 (personal or special category data) and Q5 (public-facing).
+  function fastTrackConflicts(profile) {
+    const p = profile || {};
+    const out = [];
+    const authority = p.actionAuthority || "";
+    if (authority && authority !== ACTION_AUTHORITY.none) out.push("Q1 (it can act, or that is unconfirmed)");
+    if (p.dataType === "Personal data" || p.dataType === "Special category data") out.push("Q2 (it processes personal data)");
+    if (p.publicFacing === "Yes") out.push("Q5 (it is public-facing)");
+    return out;
+  }
+
   // Procurement question (AIG-DEC-01 v1.9 Gate 4 rule; Playbook §5.5.1; AIG-ASS-08 v1.6;
   // Proposed — for Council confirmation). v3.9.2 (T-07, T-08).
   const PROCUREMENT = {
@@ -3089,7 +3123,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
   // Playbook §3.8.2.1 / Appendix F.6: light-touch only for a Priority 4-5,
   // Low-tier, non-action-capable use with no mandatory trigger and no indicated
   // specialist assessment. The AI Governance Lead still validates the route.
-  function isLightTouch(profile, results) {
+  function lowTierCandidate(profile, results) {
     const req = assessmentRequirements(profile, results);
     const label = (results.priority && results.priority.label) || "";
     const lowPriority = label.indexOf("Priority 4") === 0 || label.indexOf("Priority 5") === 0;
@@ -3103,6 +3137,22 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     const newUse = situationOf(profile) === SITUATIONS.new && !isFoundInUse(profile);
     return newUse && !results.governanceInvestigation && lowPriority && results.effectiveTierName === "Low" &&
       !(results.triggerIds || []).length && !anyAssessment && !isAgentSystem(profile, results);
+  }
+  // Light-touch needs everything above AND an all-No Fast Track that the rest of the
+  // profile does not contradict (suite v3.9.6 finding: a use with personal data was
+  // shown as Light-touch although Fast-Track Q2 would be Yes).
+  function isLightTouch(profile, results) {
+    return lowTierCandidate(profile, results) && fastTrackOf(profile) === FAST_TRACK.allNo &&
+      !fastTrackConflicts(profile).length;
+  }
+  // Why a use that otherwise looks low enough is not Light-touch ("" when it is, or
+  // when it was never a candidate).
+  function lightTouchBlockReason(profile, results) {
+    if (!lowTierCandidate(profile, results) || isLightTouch(profile, results)) return "";
+    const ft = fastTrackOf(profile);
+    if (ft === FAST_TRACK.notDone) return "No Fast-Track Screening (AIG-INV-02) is recorded, so the use goes through full Intake (AIG-INV-03) and the Standard route at the Low tier.";
+    if (ft === FAST_TRACK.notAllNo) return "The Fast-Track Screening (AIG-INV-02) had at least one Yes or Unsure, so Light-touch is not available. The use goes through full Intake (AIG-INV-03) and the Standard route at the Low tier.";
+    return `Fast Track is recorded as all ten No, but this profile means ${fastTrackConflicts(profile).join(", ")} would be Yes. Check the Fast-Track answers; until they agree, the use takes the Standard route at the Low tier.`;
   }
 
   // Governance by trigger, not by catalogue (Playbook §3.8.2.4):
@@ -4714,6 +4764,10 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     assessmentRequirements,
     buildEvidenceList,
     isLightTouch,
+    lightTouchBlockReason,
+    FAST_TRACK,
+    fastTrackOf,
+    fastTrackConflicts,
     buildRoute,
     buildRegisterDraftHandoff,
     buildCapabilitiesMapHandoff,
@@ -4779,6 +4833,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
 
   const profileFieldIds = [
     "situation",
+    "fastTrack",
     "registerId",
     "ucId",
     "ucIdStatus",
@@ -5202,10 +5257,18 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       return {
         key: "light",
         name: "Light-touch governance pathway",
-        why: "Low risk and low governance priority do not waive duties. Complete Equality Act s149, HRA s6 and data-protection/privacy screening, verify the Council-issued AIR-ID and current AIG-INV-04 state, retain proportionate baseline documentation, named ownership, controls and review, and record the delegated decision for this UC-ID (by the officer or forum with confirmed delegation) before use (Playbook §3.8.2.1). An obviously low-risk use can reach this route through the one-page Fast-Track Screening (AIG-INV-02), with all ten answers No and the route validated by the AI Governance Lead. The Fast-Track decides the route only: the equality, human-rights and privacy screening is still recorded, and can draw on the Fast-Track answers."
+        why: "Low risk and low governance priority do not waive duties. Complete Equality Act s149, HRA s6 and data-protection/privacy screening, verify the Council-issued AIR-ID and current AIG-INV-04 state, retain proportionate baseline documentation, named ownership, controls and review, and record the delegated decision for this UC-ID (by the officer or forum with confirmed delegation) before use (Playbook §3.8.2.1). This use reached this route through the one-page Fast-Track Screening (AIG-INV-02) with all ten answers No; the AI Governance Lead validates the route. The Fast-Track decides the route only: the equality, human-rights and privacy screening is still recorded, and can draw on the Fast-Track answers."
       };
     }
 
+    const ftBlock = logic.lightTouchBlockReason(profile, results);
+    if (ftBlock && !logic.isFoundInUse(profile) && !logic.isReentry(profile)) {
+      return {
+        key: "standard",
+        name: "Non-agentic governance pathway \u00b7 Standard route at Low",
+        why: ftBlock + " Low risk and low priority do not waive duties: complete the Equality Act s149, HRA s6 and data-protection/privacy screening and record the delegated decision for this UC-ID before use."
+      };
+    }
     if (logic.isFoundInUse(profile)) {
       return { key: "standard", name: "Retrospective intake (found already in use) \u00b7 non-agentic", why: lead + "Its route follows the governing tier (the highest of the risk tier, any \u00a74.4.6 trigger floor and the impact floor); the AGPI priority sets how quickly governance looks at it." };
     }
@@ -5446,6 +5509,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       `Operational state: ${profile.lifecycle}`,
       `Data type: ${profile.dataType}`,
       `What's happening: ${logic.situationOf(profile)}${logic.isFoundInUse(profile) ? " (full retrospective intake; never light-touch)" : logic.isReentry(profile) ? " (re-entry to intake on the same AIR-ID)" : ""}`,
+      `Fast-Track Screening (AIG-INV-02): ${logic.fastTrackOf(profile)}`,
       `Procurement route: ${results.gate4.route}; Gate 4: ${results.gate4.label}`,
       "",
       "AGPI PRIORITY",
@@ -6194,7 +6258,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     if (target.matches && target.matches("#likelihood")) likelihoodEntered = true;
     if (target.matches && target.matches("#control")) controlEntered = true;
     if (target.matches && target.matches(
-      '[data-dimension], [data-impact], [data-trigger], #likelihood, #control, #controlEvidence, #controlEvidenceRef, #verificationRef, #governanceInvestigation, #situation, #procurementRoute, #actionAuthority, #ucId, #ucIdStatus, #usePurpose'
+      '[data-dimension], [data-impact], [data-trigger], #likelihood, #control, #controlEvidence, #controlEvidenceRef, #verificationRef, #governanceInvestigation, #situation, #fastTrack, #procurementRoute, #actionAuthority, #ucId, #ucIdStatus, #usePurpose'
     )) byId("triageReviewed").checked = false;
     update();
   }
@@ -6638,6 +6702,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       "lane": "Standard",
       "title": "Repairs manual summariser for staff",
       "profile": {
+        "fastTrack": "All ten No",
         "capability": "Generative AI",
         "dataType": "None",
         "publicFacing": "No",
@@ -6675,6 +6740,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       "lane": "Standard",
       "title": "Sorts incoming repair requests by trade for staff to check",
       "profile": {
+        "fastTrack": "One or more Yes or Unsure",
         "capability": "Natural Language Processing",
         "dataType": "Personal data",
         "publicFacing": "No",
@@ -6700,11 +6766,12 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       "control": 3,
       "controlEvidence": "Implemented and evidenced",
       "triggers": [],
+      "outcomeChange": "Suite v3.9.6: Light-touch now needs an all-No Fast-Track Screening. This use processes personal data (Fast-Track Q2 Yes), so it moved from Light-touch to the Standard route at the Low tier. Its scores, priority and tier are unchanged.",
       "expected": {
         "agpiScore": 33.75,
         "priority": "Priority 4 – Routine",
         "effectiveTier": "Low",
-        "pathway": "Light-touch governance pathway"
+        "pathway": "Non-agentic governance pathway \u00b7 Standard route at Low"
       }
     },
     {
@@ -6829,6 +6896,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       "lane": "Agentic",
       "title": "Answers staff questions on repair policy; takes no action",
       "profile": {
+        "fastTrack": "All ten No",
         "capability": "Generative AI",
         "dataType": "None",
         "publicFacing": "No",

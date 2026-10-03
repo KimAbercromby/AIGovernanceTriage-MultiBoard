@@ -11,6 +11,7 @@ const OPERATIONAL = "Operational Status (system baseline)";
 
 function fixture({ dataType = "None", tier = "Low" } = {}) {
   const profile = {
+    fastTrack: "All ten No",
     registerId: "",
     ucId: "",
     ucIdStatus: "Pending — no UC-ID entered",

@@ -19,7 +19,7 @@ const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
 
 function profile(overrides) {
   return {
-    situation: "New use", registerId: "AIR-T001", ucId: "UC-T001", ucIdStatus: "Provisional — operator-entered, unverified",
+    situation: "New use", fastTrack: "All ten No", registerId: "AIR-T001", ucId: "UC-T001", ucIdStatus: "Provisional — operator-entered, unverified",
     systemName: "Scenario", purpose: "Purpose", usePurpose: "Use", serviceArea: "Service", serviceOwner: "Owner",
     supplierDeveloper: "Supplier", source: "Internally developed", capability: "Predictive AI",
     actionAuthority: "None — outputs only", systemsAccessed: "", lifecycle: "Idea", dataType: "None",
