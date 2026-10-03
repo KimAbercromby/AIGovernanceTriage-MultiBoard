@@ -1,7 +1,7 @@
 "use strict";
 
-// Export contract and logic tests against AI governance suite v3.9.7 (3 October 2026).
-// Expected headers and controlled lists come from test/fixtures/suite-v3.9.7-contract.json,
+// Export contract and logic tests against AI governance suite v3.9.8 (3 October 2026).
+// Expected headers and controlled lists come from test/fixtures/suite-v3.9.8-contract.json,
 // generated from the workbooks by scripts/extract-suite-fixture.py; each entry records
 // its source file, sheet and header row.
 
@@ -10,7 +10,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const logic = require("../src/triage-logic.js");
-const contract = require("./fixtures/suite-v3.9.7-contract.json");
+const contract = require("./fixtures/suite-v3.9.8-contract.json");
 
 const app = fs.readFileSync(path.join(__dirname, "..", "src", "triage-app.js"), "utf8");
 const html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
@@ -50,10 +50,10 @@ function triage({ profile = {}, agpi = ones(), impact = impacts(), likelihood = 
   return { profile: p, results: logic.calculateTriage({ profile: p, agpiScores: agpi, impactScores: impact, likelihood, control, controlEvidence: evidence, triggerIds: triggers, agentic }) };
 }
 
-// ---- Export headers equal the v3.9.7 workbooks ---------------------------------
+// ---- Export headers equal the v3.9.8 workbooks ---------------------------------
 
 test("fixture records its v3.9 source for every export target", () => {
-  assert.match(contract.suite, /^v3\.9\.7 /);
+  assert.match(contract.suite, /^v3\.9\.8 /);
   for (const [key, spec] of [
     ["INV-04 AI Register", contract["INV-04"]["AI Register"]],
     ["DEC-04 Gate plan", contract["DEC-04"]["Gate plan"]],
@@ -232,8 +232,8 @@ test("AIG-DEC-02 decision paper handoff uses the template's own field labels, in
   assert.equal(first[10], "Enhanced / Agentic");
 });
 
-test("stated suite and artefact versions match the v3.9.7 Artefact Index (AIG-GOV-03)", () => {
-  assert.equal(logic.SUITE.release, "v3.9.7");
+test("stated suite and artefact versions match the v3.9.8 Artefact Index (AIG-GOV-03)", () => {
+  assert.equal(logic.SUITE.release, "v3.9.8");
   const index = contract.versions;
   const byId = {
     "AIG-GOV-02 Playbook": "AIG-GOV-02", "AIG-GOV-03 Artefact Index": "AIG-GOV-03",
@@ -250,7 +250,7 @@ test("stated suite and artefact versions match the v3.9.7 Artefact Index (AIG-GO
     assert.ok(index[id].startsWith(`v${logic.SUITE.versions[name]}`), `${name}: tool ${logic.SUITE.versions[name]}, index ${index[id]}`);
   }
   assert.equal(Object.keys(byId).length, Object.keys(logic.SUITE.versions).length - 1); // all but the UC-ID view (not indexed)
-  assert.match(html, /Aligned to AI governance suite v3\.9\.7 \(3 October 2026\): Playbook 19\.9\.16, Gate Map AIG-DEC-01 1\.11, AGPI AIG-ASS-01 1\.4, Risk Worksheet AIG-ASS-02 1\.10/);
+  assert.match(html, /Aligned to AI governance suite v3\.9\.8 \(3 October 2026\): Playbook 19\.9\.17, Gate Map AIG-DEC-01 1\.12, AGPI AIG-ASS-01 1\.4, Risk Worksheet AIG-ASS-02 1\.10/);
 });
 
 // ---- v3.8 / v3.9 logic rules ---------------------------------------------------
@@ -281,7 +281,7 @@ function ass01B24(c, b23) {
   return "No trigger floor (no §4.4.6 trigger)";
 }
 
-test("the reimplemented B17 / B24 match the v3.9.7 AIG-ASS-01 rows read from the workbook", () => {
+test("the reimplemented B17 / B24 match the v3.9.8 AIG-ASS-01 rows read from the workbook", () => {
   const spec = contract["ASS-01"]["AGPI Triage"];
   assert.equal(spec.labels["23"], "Mandatory escalation trigger applies (Playbook §4.4.6)? (Yes / No / Unsure)");
   assert.deepEqual(spec.lists.B23, ["Yes", "No", "Unsure"]);
@@ -502,7 +502,7 @@ test("agency tier follows AIG-AGT-02 Tables A and B: the Table C calibration exa
 
 // ---- v3.9.1 --------------------------------------------------------------------
 
-// Evaluate the AIG-ASS-02 v1.10 Risk Assessment C82 agentic floor (read from the v3.9.7
+// Evaluate the AIG-ASS-02 v1.10 Risk Assessment C82 agentic floor (read from the v3.9.8
 // workbook) for one agency tier label (C73) and pathway (C74), Step 5 complete, no C56
 // conflict. v1.10 reads the tier token T0–T5 by exact match (INDEX/MATCH arrays taken
 // from the formula); the controlled pathway wording is used only when C73 has no token.

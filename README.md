@@ -33,7 +33,7 @@ outcome, and that every export control the tool wires up is blocked in demo mode
 ## Suite alignment and status
 
 This tool is aligned as a review aid to proposed, separate AI governance
-workbook drafts: **AI governance suite v3.9.7 (3 October 2026)**, Playbook 19.9.16,
+workbook drafts: **AI governance suite v3.9.8 (3 October 2026)**, Playbook 19.9.17,
 Gate Map AIG-DEC-01 1.11, AGPI Triage AIG-ASS-01 1.4, Risk Worksheet AIG-ASS-02 1.10,
 Deployment and Rollout Plan AIG-OPS-01 1.10, Monitoring Log AIG-OPS-02 1.6, Register
 AIG-INV-04 1.0, Gate Log AIG-DEC-04 1.2, Agent Record AIG-AGT-04 0.5 and Capabilities and System Map
@@ -77,7 +77,12 @@ Rules applied (Proposed — for Council confirmation):
   benefits; any assurance opinion) moves to Gate 5 where it applies, otherwise Gate 6.
   Column J of an N/A row is left for the governance steward; the proposed rationale is
   in the handoff guidance column.
-- **Gates (AIG-DEC-01 v1.11):** Gate 2 and Gate 6 are mandatory for every
+- **Answers that contradict each other (suite v3.9.8):** the stricter answer applies and
+  the tool says why. "No new investment" with a new contract, licence change or
+  contract variation keeps Gates 1, 3 and 4; an all-No Fast-Track Screening with a
+  governing tier above Low keeps the higher tier and asks for the answers and scores to
+  be checked with the AI Governance Lead.
+- **Gates (AIG-DEC-01 v1.12):** Gate 2 and Gate 6 are mandatory for every
   action-capable use (T0 included) and Gate 6 grants the permitted autonomy level;
   Gate 4 applies wherever a procurement, new contract, licence change or contract
   variation is needed; for an existing contract or licence, or a free public tool, it
@@ -196,8 +201,8 @@ node scripts/build.js --check
 node --test test/*.test.js
 ```
 
-`test/suite-v3.9.7-contract.test.js` checks every export's field labels, order and
-controlled values against `test/fixtures/suite-v3.9.7-contract.json`, which records the
+`test/suite-v3.9.8-contract.test.js` checks every export's field labels, order and
+controlled values against `test/fixtures/suite-v3.9.8-contract.json`, which records the
 header rows and dropdown lists read from the suite workbooks (file, sheet and row).
 `test/v392-findings.test.js` has one test for each v3.9.2 pilot-readiness fix.
 Regenerate the fixture for a new suite release with

@@ -1,5 +1,5 @@
 "use strict";
-// Suite v3.9.7: AIG-DEC-01 v1.11 Gate 1 and 3 rule. Gates 1 and 3 (investment and
+// Suite v3.9.8: AIG-DEC-01 v1.12 Gate 1 and 3 rule. Gates 1 and 3 (investment and
 // strategic case) are proposed N/A only for a new UC-ID under an existing AIR-ID that
 // needs no new investment, at Low or Medium, and cannot act.
 const test = require("node:test");
@@ -8,7 +8,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const logic = require("../src/triage-logic.js");
 
-const NO = "No — existing approved system and licence, no new cost";
+const NO = "No — no new funding, licences, charges, procurement, contract or licence change";
 const agpi = { resident: 1, trust: 2, legal: 2, visibility: 2, strategic: 1, oversight: 1 };
 const low = { residentImpact: 1, legalImpact: 2, reputationImpact: 2, operationalImpact: 1, financialImpact: 1 };
 function profile(o) {
@@ -17,7 +17,7 @@ function profile(o) {
     systemName: "Copilot (fictional)", purpose: "Assistant", usePurpose: "Meeting-notes summary", serviceArea: "Customer Services",
     serviceOwner: "Owner", supplierDeveloper: "Microsoft", source: "Embedded in platform / supplier feature", capability: "Generative AI",
     actionAuthority: "None — outputs only", systemsAccessed: "", lifecycle: "Idea", dataType: "Personal data",
-    procurementRoute: "Existing contract or licence", newInvestment: NO, systemApproval: "Yes — Approved and Active, review not overdue", affectsIndividuals: "No", publicFacing: "No", dateFirstUsed: "", ...o,
+    procurementRoute: "Existing contract or licence", newInvestment: NO, systemApproval: "Yes — Approved (or Approved with conditions) and Active, review not overdue", affectsIndividuals: "No", publicFacing: "No", dateFirstUsed: "", ...o,
   };
 }
 const run = (p, impacts = low, likelihood = 2) => logic.calculateTriage({
