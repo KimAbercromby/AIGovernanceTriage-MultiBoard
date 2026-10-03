@@ -33,7 +33,7 @@ outcome, and that every export control the tool wires up is blocked in demo mode
 ## Suite alignment and status
 
 This tool is aligned as a review aid to proposed, separate AI governance
-workbook drafts: **AI governance suite v3.9.7 (3 October 2026)**, Playbook 19.9.15,
+workbook drafts: **AI governance suite v3.9.7 (3 October 2026)**, Playbook 19.9.16,
 Gate Map AIG-DEC-01 1.10, AGPI Triage AIG-ASS-01 1.4, Risk Worksheet AIG-ASS-02 1.10,
 Deployment and Rollout Plan AIG-OPS-01 1.10, Monitoring Log AIG-OPS-02 1.6, Register
 AIG-INV-04 1.0, Gate Log AIG-DEC-04 1.2, Agent Record AIG-AGT-04 0.5 and Capabilities and System Map

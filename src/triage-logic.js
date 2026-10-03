@@ -12,7 +12,7 @@
     date: "3 October 2026",
     status: "Proposed — for Council confirmation; not approved or adopted",
     versions: {
-      "AIG-GOV-02 Playbook": "19.9.15 draft",
+      "AIG-GOV-02 Playbook": "19.9.16 draft",
       "AIG-GOV-03 Artefact Index": "1.32 draft",
       "AIG-INV-04 AI Register": "1.0 draft",
       "AIG-INV-05 Capabilities and System Map": "0.3 proposed design draft",
