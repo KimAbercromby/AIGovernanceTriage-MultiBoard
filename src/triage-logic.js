@@ -505,6 +505,7 @@
     "Evidence ID(s) (AIG-INV-04 Evidence index)", "Event-time lifecycle stage",
     "Incident ref (AIG-OPS-03), precautionary pause",
     "Follow-up decision due date (precautionary pause)",
+    "Screening considered by the decision-maker (Yes / No)",
   ];
   const GATE_CONDITION_HEADERS = [
     "Condition ID", "Event ID", "AIR-ID", "Required action / condition",
@@ -2329,6 +2330,7 @@
     add(event, "Event-time lifecycle stage", decided ? "Retirement and Decommissioning" : "", "Controlled value once the event is recorded.");
     add(event, "Incident ref (AIG-OPS-03), precautionary pause", "", "Precautionary pause (containment) events only; blank for a retirement decision.");
     add(event, "Follow-up decision due date (precautionary pause)", "", "Precautionary pause (containment) events only; blank for a retirement decision.");
+    add(event, "Screening considered by the decision-maker (Yes / No)", "", "For a Decision that lets a use continue (Progress, Progress with condition, Re-authorise); blank for a retirement decision. AIG-DEC-04 v1.3 column X.");
     add(event, "Note (not a column) — Rationale", ret.rationale, "Proposal context only; not a record of an event that occurred.");
 
     const conditionRows = conditions.length ? conditions : [""];

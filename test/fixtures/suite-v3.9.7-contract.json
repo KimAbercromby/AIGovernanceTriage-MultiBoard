@@ -301,7 +301,8 @@
         "Evidence ID(s) (AIG-INV-04 Evidence index)",
         "Event-time lifecycle stage",
         "Incident ref (AIG-OPS-03), precautionary pause",
-        "Follow-up decision due date (precautionary pause)"
+        "Follow-up decision due date (precautionary pause)",
+        "Screening considered by the decision-maker (Yes / No)"
       ],
       "formulaColumns": [
         "N",
@@ -353,6 +354,10 @@
           "Deployment and Operation",
           "Monitoring and Review",
           "Retirement and Decommissioning"
+        ],
+        "X4:X553": [
+          "Yes",
+          "No"
         ]
       }
     },
