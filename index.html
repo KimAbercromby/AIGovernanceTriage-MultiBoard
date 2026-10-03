@@ -4491,6 +4491,8 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     Suspend: "Suspended",
     Decommission: "Retired",
     "Re-authorise": "Approved or Approved with conditions (after reassessment)",
+    // Suite v3.9.8 (decision H2): lifts a precautionary pause; not offered for a Gate 8 retirement.
+    Resume: "Approved or Approved with conditions (the approval in force before the precautionary pause carries over)",
   };
 
   // Retirement handoff: one row per AIG-DEC-04 column for the Gate plan, Gate events
@@ -4561,7 +4563,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     add(event, "Event-time lifecycle stage", decided ? "Retirement and Decommissioning" : "", "Controlled value once the event is recorded.");
     add(event, "Incident ref (AIG-OPS-03), precautionary pause", "", "Precautionary pause (containment) events only; blank for a retirement decision.");
     add(event, "Follow-up decision due date (precautionary pause)", "", "Precautionary pause (containment) events only; blank for a retirement decision.");
-    add(event, "Screening considered by the decision-maker (Yes / No)", "", "For a Decision that lets a use continue (Progress, Progress with condition, Re-authorise); blank for a retirement decision. AIG-DEC-04 v1.3 column X.");
+    add(event, "Screening considered by the decision-maker (Yes / No)", "", "For a Decision that lets a use continue (Progress, Progress with condition, Re-authorise, Resume); blank for a retirement decision. AIG-DEC-04 v1.3 column X.");
     add(event, "Note (not a column) — Rationale", ret.rationale, "Proposal context only; not a record of an event that occurred.");
 
     const conditionRows = conditions.length ? conditions : [""];

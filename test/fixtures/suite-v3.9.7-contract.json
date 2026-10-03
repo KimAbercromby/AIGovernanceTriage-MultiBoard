@@ -326,6 +326,7 @@
           "Suspend",
           "Decommission",
           "Re-authorise",
+          "Resume",
           "Opinion only",
           "No decision",
           "Paused — pending decision"

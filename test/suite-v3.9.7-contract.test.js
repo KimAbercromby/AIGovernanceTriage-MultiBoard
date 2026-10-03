@@ -131,7 +131,9 @@ test("AIG-DEC-04 retirement handoff uses the v3.9 sheet names, columns and lists
   const decisionOptions = logic.RETIREMENT_FIELDS.find((f) => f.id === "decision").options.filter((o) => !o.startsWith("Pending"));
   const outcomes = contract["DEC-04"]["Gate events"].lists["G4:G553"];
   assert.ok(outcomes.includes("Paused — pending decision"));
-  assert.deepEqual(decisionOptions, outcomes.filter((o) => o !== "Paused — pending decision"));
+  // v3.9.8 (decision H2): "Resume" only lifts a precautionary pause, so it is not a Gate 8 option either.
+  assert.ok(outcomes.includes("Resume"));
+  assert.deepEqual(decisionOptions, outcomes.filter((o) => o !== "Paused — pending decision" && o !== "Resume"));
   assert.deepEqual(logic.RETIREMENT_PRIORITIES.map((p) => p.label), contract["INV-04"]["Assessment summary"].lists["B4:B206"]);
 });
 

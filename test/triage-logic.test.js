@@ -529,8 +529,9 @@ test("Risk Assessment pre-fill rows match AIG-ASS-02 Triage Import A5:A63 exactl
 });
 
 test("retirement decision options are AIG-DEC-04 Gate Events outcomes", () => {
-  // "Paused — pending decision" (v3.9.2) belongs to a Precautionary pause event only.
-  const gateLogOutcomes = contract["DEC-04"]["Gate events"].lists["G4:G553"].filter((o) => o !== "Paused — pending decision");
+  // "Paused — pending decision" (v3.9.2) belongs to a Precautionary pause event only, and
+  // "Resume" (v3.9.8, decision H2) only lifts one.
+  const gateLogOutcomes = contract["DEC-04"]["Gate events"].lists["G4:G553"].filter((o) => o !== "Paused — pending decision" && o !== "Resume");
   const field = logic.RETIREMENT_FIELDS.find((f) => f.id === "decision");
   assert.deepEqual(field.options.filter((o) => !o.startsWith("Pending")), gateLogOutcomes);
   const opinion = logic.buildRetirementGateLogRow({ decision: "Opinion only" });
