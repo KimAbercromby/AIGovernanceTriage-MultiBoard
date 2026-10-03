@@ -43,6 +43,7 @@
     "dataType",
     "procurementRoute",
     "newInvestment",
+    "systemApproval",
     "affectsIndividuals",
     "publicFacing",
     "dateFirstUsed",
@@ -1452,7 +1453,7 @@
     if (target.matches && target.matches("#likelihood")) likelihoodEntered = true;
     if (target.matches && target.matches("#control")) controlEntered = true;
     if (target.matches && target.matches(
-      '[data-dimension], [data-impact], [data-trigger], #likelihood, #control, #controlEvidence, #controlEvidenceRef, #verificationRef, #governanceInvestigation, #situation, #fastTrack, #procurementRoute, #newInvestment, #actionAuthority, #ucId, #ucIdStatus, #usePurpose'
+      '[data-dimension], [data-impact], [data-trigger], #likelihood, #control, #controlEvidence, #controlEvidenceRef, #verificationRef, #governanceInvestigation, #situation, #fastTrack, #procurementRoute, #newInvestment, #systemApproval, #actionAuthority, #ucId, #ucIdStatus, #usePurpose'
     )) byId("triageReviewed").checked = false;
     update();
   }

@@ -17,7 +17,7 @@ function profile(o) {
     systemName: "Copilot (fictional)", purpose: "Assistant", usePurpose: "Meeting-notes summary", serviceArea: "Customer Services",
     serviceOwner: "Owner", supplierDeveloper: "Microsoft", source: "Embedded in platform / supplier feature", capability: "Generative AI",
     actionAuthority: "None — outputs only", systemsAccessed: "", lifecycle: "Idea", dataType: "Personal data",
-    procurementRoute: "Existing contract or licence", newInvestment: NO, affectsIndividuals: "No", publicFacing: "No", dateFirstUsed: "", ...o,
+    procurementRoute: "Existing contract or licence", newInvestment: NO, systemApproval: "Yes — Approved and Active, review not overdue", affectsIndividuals: "No", publicFacing: "No", dateFirstUsed: "", ...o,
   };
 }
 const run = (p, impacts = low, likelihood = 2) => logic.calculateTriage({
@@ -119,4 +119,18 @@ test("v3.9.8 (decision A5): a no-cost change to an approved use at Low skips Gat
   }
   const money = profile({ situation: "Change to a use in governance", newInvestment: "Yes" });
   assert.equal(gate(logic.buildRoute(money, run(money), {}), 1).applicability, "Required", "a change that needs money keeps the gates");
+});
+
+test("v3.9.8 (decision A6): Gates 1 and 3 stay unless the existing system's approval is confirmed current", () => {
+  for (const systemApproval of ["No — suspended, lapsed or review overdue", "Unsure (counts as No)", undefined]) {
+    const p = profile({ systemApproval });
+    const route = logic.buildRoute(p, run(p), {});
+    assert.equal(gate(route, 1).applicability, "Required", String(systemApproval));
+    assert.equal(gate(route, 3).applicability, "Required", String(systemApproval));
+  }
+  const fresh = profile({ registerId: "", systemApproval: undefined, source: "Free / public tool", procurementRoute: "Free public tool" });
+  assert.equal(gate(logic.buildRoute(fresh, run(fresh), {}), 3).applicability, "Not applicable", "the question does not apply to a new system");
+  const html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
+  const sel = /<select id="systemApproval">([\s\S]*?)<\/select>/.exec(html)[1];
+  assert.deepEqual([...sel.matchAll(/<option>([^<]+)<\/option>/g)].map((m) => m[1]), Object.values(logic.SYSTEM_APPROVAL));
 });
