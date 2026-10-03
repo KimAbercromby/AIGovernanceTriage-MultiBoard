@@ -68,8 +68,9 @@ Rules applied (Proposed — for Council confirmation):
   Council takes a use or system on; Gate 3 decides the investment and business case.
   With no new investment ("New investment needed?" No; Unsure counts as Yes), at Low
   or Medium, for a use that cannot act, Gate 3 is proposed Not applicable. Gate 1 is
-  also proposed Not applicable for a new use under an existing AIR-ID; a system new to
-  the Council always goes to Gate 1, even if free. What a N/A gate carried (screening
+  also proposed Not applicable for a new use, or a change to a use already in
+  governance, under an existing AIR-ID; a system new to the Council always goes to
+  Gate 1, even if free. A change still re-enters intake and is never Light-touch. What a N/A gate carried (screening
   outcome, which may be by reference to a current covering assessment; purpose and
   benefits; any assurance opinion) moves to Gate 5 where it applies, otherwise Gate 6.
   Column J of an N/A row is left for the governance steward; the proposed rationale is

@@ -44,7 +44,7 @@ test("Copilot new use, existing licence, no new investment, Low: Gates 1 and 3 p
 test("the rule does not apply when investment is Yes or Unsure, there is no AIR-ID, a new contract is needed, or the use can act", () => {
   for (const o of [{ newInvestment: "Yes" }, { newInvestment: "Unsure (counts as Yes)" }, { newInvestment: undefined },
     { procurementRoute: "New contract, licence change or contract variation" }, { procurementRoute: "Not yet known" }, { actionAuthority: "Human approves each action" },
-    { situation: "Found already in use" }, { situation: "Change to a use in governance" }]) {
+    { situation: "Found already in use" }]) {
     const p = profile(o);
     const route = logic.buildRoute(p, run(p), {});
     assert.equal(gate(route, 1).applicability, "Required", JSON.stringify(o));
@@ -104,4 +104,19 @@ test("v3.9.8: a new system that needs money keeps both Gates 1 and 3", () => {
   const route = logic.buildRoute(p, run(p), {});
   assert.equal(gate(route, 1).applicability, "Required");
   assert.equal(gate(route, 3).applicability, "Required");
+});
+
+test("v3.9.8 (decision A5): a no-cost change to an approved use at Low skips Gates 1 and 3 but stays re-entry", () => {
+  for (const situation of ["Change to a use in governance", "Already approved"]) {
+    const p = profile({ situation });
+    const r = run(p);
+    const route = logic.buildRoute(p, r, {});
+    assert.equal(logic.isReentry(p), true);
+    assert.equal(logic.isLightTouch(p, r), false, "a change is never Light-touch");
+    assert.equal(gate(route, 1).applicability, "Not applicable", situation);
+    assert.equal(gate(route, 3).applicability, "Not applicable", situation);
+    assert.match(gate(route, 1).naRationale, /changed use under AIR-SIM1/);
+  }
+  const money = profile({ situation: "Change to a use in governance", newInvestment: "Yes" });
+  assert.equal(gate(logic.buildRoute(money, run(money), {}), 1).applicability, "Required", "a change that needs money keeps the gates");
 });

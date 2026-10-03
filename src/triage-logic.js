@@ -297,14 +297,16 @@
   }
   // Gate 1 decides whether the Council takes a use or system on at all; Gate 3 decides
   // the investment and strategic case (AIG-DEC-01 v1.12 Gate 1 and 3 rule).
-  // Gate 1 is N/A only for a new UC-ID under an existing AIR-ID with no new investment,
+  // Gate 1 is N/A only for a new UC-ID, or a change to a use in governance (decision A5),
+  // under an existing AIR-ID with no new investment,
   // at Low or Medium, that cannot act: a new system always goes to Gate 1, even if free.
   // Gate 3 is N/A wherever there is no new investment, at Low or Medium, and the use
   // cannot act, for new and existing systems alike. The tool only proposes N/A: the
   // governance steward confirms it in the Gate Plan with the rule, their name and date.
   function gates13Rule(profile, results) {
     const common = [];
-    if (situationOf(profile) !== SITUATIONS.new || isFoundInUse(profile)) common.push("it is not a new use");
+    // A new use, or a change to a use in governance (re-entry, decision A5); never AI found in use.
+    if (isFoundInUse(profile)) common.push("AI found already in use goes through retrospective intake");
     if (newInvestmentOf(profile) !== NEW_INVESTMENT.no) common.push("new investment is Yes or Unsure");
     const proc = procurementRouteOf(profile);
     if (proc === PROCUREMENT.new) common.push("a new contract, licence change or variation is needed");
@@ -314,12 +316,13 @@
     if (isActionCapable(profile, results && results.triggerIds)) common.push("the use can act");
     const existing = /^AIR-[A-Z0-9]/i.test((profile && profile.registerId) || "");
     const reasons1 = existing ? common.slice() : common.concat("no existing AIR-ID is entered (a system new to the Council always goes to Gate 1)");
+    const useWord = isReentry(profile) ? "changed use" : "new UC-ID";
     const na1 = reasons1.length === 0;
     const na3 = common.length === 0;
     const base = `no new funding, licences, charges, procurement or business case; governing tier ${tier}; cannot act`;
     return {
       na1, na3, na: na1 && na3, reasons1, reasons3: common, reasons: reasons1,
-      rationale1: na1 ? `N/A — existing approved system, no new investment (AIG-DEC-01 Gate 1 and 3 rule): new UC-ID under ${profile.registerId}; ${base}. Governance steward confirms the system approval is current and records the rule, their name and date in column J.` : "",
+      rationale1: na1 ? `N/A — existing approved system, no new investment (AIG-DEC-01 Gate 1 and 3 rule): ${useWord} under ${profile.registerId}; ${base}. Governance steward confirms the system approval is current and records the rule, their name and date in column J.` : "",
       rationale3: na3 ? `N/A — no new investment (AIG-DEC-01 Gate 1 and 3 rule): ${base}. Governance steward confirms and records the rule, their name and date in column J.` : "",
           };
   }
