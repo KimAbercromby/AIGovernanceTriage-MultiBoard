@@ -42,8 +42,8 @@ test("Copilot new use, existing licence, no new investment, Low: Gates 1 and 3 p
 });
 
 test("the rule does not apply when investment is Yes or Unsure, there is no AIR-ID, a new contract is needed, or the use can act", () => {
-  for (const o of [{ newInvestment: "Yes" }, { newInvestment: "Unsure (counts as Yes)" }, { newInvestment: undefined }, { registerId: "" },
-    { procurementRoute: "New contract, licence change or contract variation" }, { procurementRoute: "Not yet known" }, { registerId: "AIR-" }, { actionAuthority: "Human approves each action" },
+  for (const o of [{ newInvestment: "Yes" }, { newInvestment: "Unsure (counts as Yes)" }, { newInvestment: undefined },
+    { procurementRoute: "New contract, licence change or contract variation" }, { procurementRoute: "Not yet known" }, { actionAuthority: "Human approves each action" },
     { situation: "Found already in use" }, { situation: "Change to a use in governance" }]) {
     const p = profile(o);
     const route = logic.buildRoute(p, run(p), {});
@@ -86,4 +86,22 @@ test("the page asks the new investment question with the three answers", () => {
   const html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
   const sel = /<select id="newInvestment">([\s\S]*?)<\/select>/.exec(html)[1];
   assert.deepEqual([...sel.matchAll(/<option>([^<]+)<\/option>/g)].map((m) => m[1]), Object.values(logic.NEW_INVESTMENT));
+});
+
+test("v3.9.8 (decision A1): a free new system goes to Gate 1 but not Gate 3", () => {
+  for (const id of ["", "AIR-", "Copilot"]) {
+    const p = profile({ registerId: id, source: "Free / public tool", procurementRoute: "Free public tool" });
+    const r = run(p);
+    const route = logic.buildRoute(p, r, {});
+    assert.equal(gate(route, 1).applicability, "Required", `Gate 1 for '${id}'`);
+    assert.equal(gate(route, 3).applicability, "Not applicable", `Gate 3 for '${id}'`);
+    assert.ok(gate(route, 6).evidence.includes("Purpose and expected benefits"), "Gate 3 items carried to Gate 6");
+  }
+});
+
+test("v3.9.8: a new system that needs money keeps both Gates 1 and 3", () => {
+  const p = profile({ registerId: "", newInvestment: "Yes", procurementRoute: "New contract, licence change or contract variation" });
+  const route = logic.buildRoute(p, run(p), {});
+  assert.equal(gate(route, 1).applicability, "Required");
+  assert.equal(gate(route, 3).applicability, "Required");
 });

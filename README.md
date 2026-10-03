@@ -64,14 +64,16 @@ Rules applied (Proposed — for Council confirmation):
   Medium, T3 High, T4 High or Critical without evidenced per-action review, T5
   Critical). "Can it act?" Unsure counts as Yes; per-action review Unsure counts as
   No (Critical floor).
-- **Gates 1 and 3 (AIG-DEC-01 v1.11 Gate 1 and 3 rule):** they decide investment and
-  the strategic case, so they are proposed Not applicable only for a new use under an
-  existing AIR-ID that needs no new investment ("New investment needed?" No; Unsure
-  counts as Yes), at Low or Medium, that cannot act. A new system always counts as new
-  investment. What they carried (screening outcome, which may be by reference to a
-  current covering assessment; purpose and benefits; any assurance opinion) moves to
-  Gate 5 where it applies, otherwise Gate 6. Column J of an N/A row is left for the
-  governance steward; the proposed rationale is in the handoff guidance column.
+- **Gates 1 and 3 (AIG-DEC-01 v1.12 Gate 1 and 3 rule):** Gate 1 decides whether the
+  Council takes a use or system on; Gate 3 decides the investment and business case.
+  With no new investment ("New investment needed?" No; Unsure counts as Yes), at Low
+  or Medium, for a use that cannot act, Gate 3 is proposed Not applicable. Gate 1 is
+  also proposed Not applicable for a new use under an existing AIR-ID; a system new to
+  the Council always goes to Gate 1, even if free. What a N/A gate carried (screening
+  outcome, which may be by reference to a current covering assessment; purpose and
+  benefits; any assurance opinion) moves to Gate 5 where it applies, otherwise Gate 6.
+  Column J of an N/A row is left for the governance steward; the proposed rationale is
+  in the handoff guidance column.
 - **Gates (AIG-DEC-01 v1.11):** Gate 2 and Gate 6 are mandatory for every
   action-capable use (T0 included) and Gate 6 grants the permitted autonomy level;
   Gate 4 applies wherever a procurement, new contract, licence change or contract
