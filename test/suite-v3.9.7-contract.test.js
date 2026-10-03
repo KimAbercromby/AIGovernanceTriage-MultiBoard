@@ -248,7 +248,7 @@ test("stated suite and artefact versions match the v3.9.7 Artefact Index (AIG-GO
     assert.ok(index[id].startsWith(`v${logic.SUITE.versions[name]}`), `${name}: tool ${logic.SUITE.versions[name]}, index ${index[id]}`);
   }
   assert.equal(Object.keys(byId).length, Object.keys(logic.SUITE.versions).length - 1); // all but the UC-ID view (not indexed)
-  assert.match(html, /Aligned to AI governance suite v3\.9\.7 \(3 October 2026\): Playbook 19\.9\.16, Gate Map AIG-DEC-01 1\.10, AGPI AIG-ASS-01 1\.4, Risk Worksheet AIG-ASS-02 1\.10/);
+  assert.match(html, /Aligned to AI governance suite v3\.9\.7 \(3 October 2026\): Playbook 19\.9\.16, Gate Map AIG-DEC-01 1\.11, AGPI AIG-ASS-01 1\.4, Risk Worksheet AIG-ASS-02 1\.10/);
 });
 
 // ---- v3.8 / v3.9 logic rules ---------------------------------------------------

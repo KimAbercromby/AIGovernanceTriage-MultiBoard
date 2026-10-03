@@ -34,7 +34,7 @@ outcome, and that every export control the tool wires up is blocked in demo mode
 
 This tool is aligned as a review aid to proposed, separate AI governance
 workbook drafts: **AI governance suite v3.9.7 (3 October 2026)**, Playbook 19.9.16,
-Gate Map AIG-DEC-01 1.10, AGPI Triage AIG-ASS-01 1.4, Risk Worksheet AIG-ASS-02 1.10,
+Gate Map AIG-DEC-01 1.11, AGPI Triage AIG-ASS-01 1.4, Risk Worksheet AIG-ASS-02 1.10,
 Deployment and Rollout Plan AIG-OPS-01 1.10, Monitoring Log AIG-OPS-02 1.6, Register
 AIG-INV-04 1.0, Gate Log AIG-DEC-04 1.2, Agent Record AIG-AGT-04 0.5 and Capabilities and System Map
 AIG-INV-05 0.3. They are **proposed and unapproved**,
@@ -64,7 +64,15 @@ Rules applied (Proposed — for Council confirmation):
   Medium, T3 High, T4 High or Critical without evidenced per-action review, T5
   Critical). "Can it act?" Unsure counts as Yes; per-action review Unsure counts as
   No (Critical floor).
-- **Gates (AIG-DEC-01 v1.10):** Gate 2 and Gate 6 are mandatory for every
+- **Gates 1 and 3 (AIG-DEC-01 v1.11 Gate 1 and 3 rule):** they decide investment and
+  the strategic case, so they are proposed Not applicable only for a new use under an
+  existing AIR-ID that needs no new investment ("New investment needed?" No; Unsure
+  counts as Yes), at Low or Medium, that cannot act. A new system always counts as new
+  investment. What they carried (screening outcome, which may be by reference to a
+  current covering assessment; purpose and benefits; any assurance opinion) moves to
+  Gate 5 where it applies, otherwise Gate 6. Column J of an N/A row is left for the
+  governance steward; the proposed rationale is in the handoff guidance column.
+- **Gates (AIG-DEC-01 v1.11):** Gate 2 and Gate 6 are mandatory for every
   action-capable use (T0 included) and Gate 6 grants the permitted autonomy level;
   Gate 4 applies wherever a procurement, new contract, licence change or contract
   variation is needed; for an existing contract or licence, or a free public tool, it
@@ -107,7 +115,7 @@ Rules applied (Proposed — for Council confirmation):
   export gives paste-ready rows for the Gate plan sheet only: one row per AIG-DEC-01
   decision gate 1 to 6, columns A to L, with Gate / forum from the workbook's gate
   list, Requirement Required or Conditional (Gate 4 Not applicable under the AIG-DEC-01
-  v1.10 rule, with a draft rationale for the steward to confirm) and Plan state Planned
+  v1.11 rule, with a draft rationale for the steward to confirm) and Plan state Planned
   (Plan ID and target date left blank for the governance steward), followed by
   column M left empty and labelled (it is the workbook Row check formula: paste
   columns A to L only) and guidance columns that are not pasted. It never creates Gate Events or Conditions.

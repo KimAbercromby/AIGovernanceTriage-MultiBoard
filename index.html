@@ -1691,6 +1691,15 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
               <small>Gate 4 applies wherever a procurement, new contract, licence change or contract variation is needed. For an existing contract or licence, or a free public tool, Gate 4 is N/A with the reason and the remaining supplier checks are completed (AIG-DEC-01 Gate 4 rule; Proposed — for Council confirmation).</small>
             </label>
             <label class="field">
+              <span>New investment needed for this use?</span>
+              <select id="newInvestment">
+                <option>Unsure (counts as Yes)</option>
+                <option>Yes</option>
+                <option>No — existing approved system and licence, no new cost</option>
+              </select>
+              <small>New funding, extra licences or usage charges, a procurement or a business case. Gates 1 and 3 (investment and strategic case) are only proposed N/A for a new use of an existing approved system with no new investment, at Low or Medium, that cannot act (AIG-DEC-01 Gate 1 and 3 rule).</small>
+            </label>
+            <label class="field">
               <span>Could outputs materially affect individuals or services?</span>
               <select id="affectsIndividuals">
                 <option>No</option>
@@ -2195,7 +2204,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
         <p><strong>Decision support only.</strong> Numerical results do not replace professional judgement, statutory assessments, delegated authority or local terms of reference. Where uncertainty exists, apply the higher level of scrutiny until formal review is complete.</p>
         <p><strong>Privacy.</strong> This calculator runs entirely in the browser. It uses no cookies, analytics, external services or persistent storage. Refreshing the page clears all entries.</p>
       </div>
-      <p class="footer-version">Aligned to AI governance suite v3.9.7 (3 October 2026): Playbook 19.9.16, Gate Map AIG-DEC-01 1.10, AGPI AIG-ASS-01 1.4, Risk Worksheet AIG-ASS-02 1.10, Rollout Plan AIG-OPS-01 1.10, Monitoring Log AIG-OPS-02 1.6, Register AIG-INV-04 1.0, Gate Log AIG-DEC-04 1.2, Agent Record AIG-AGT-04 0.5, Capabilities and System Map AIG-INV-05 0.3. For review against proposed, unapproved standalone workbook drafts. Local static tool; no Council records are read or written.</p>
+      <p class="footer-version">Aligned to AI governance suite v3.9.7 (3 October 2026): Playbook 19.9.16, Gate Map AIG-DEC-01 1.11, AGPI AIG-ASS-01 1.4, Risk Worksheet AIG-ASS-02 1.10, Rollout Plan AIG-OPS-01 1.10, Monitoring Log AIG-OPS-02 1.6, Register AIG-INV-04 1.0, Gate Log AIG-DEC-04 1.2, Agent Record AIG-AGT-04 0.5, Capabilities and System Map AIG-INV-05 0.3. For review against proposed, unapproved standalone workbook drafts. Local static tool; no Council records are read or written.</p>
     </footer>
 
     <script id="triage-logic">
@@ -2220,9 +2229,9 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       "AIG-ASS-01 AGPI Triage Tool": "1.4 draft",
       "AIG-ASS-02 AI Risk Assessment Worksheet": "1.10 draft",
       "AIG-ASS-11 AI Security Review Checklist": "1.9 draft",
-      "AIG-DEC-01 Gate Map": "1.10 draft",
-      "AIG-DEC-02 Decision-Ready Paper": "1.5 draft",
-      "AIG-DEC-03 Governance Decision Record": "1.8 draft",
+      "AIG-DEC-01 Gate Map": "1.11 draft",
+      "AIG-DEC-02 Decision-Ready Paper": "1.6 draft",
+      "AIG-DEC-03 Governance Decision Record": "1.9 draft",
       "AIG-DEC-04 Gate Log": "1.2 draft",
       "AIG-AGT-02 Agentic Classification Reference": "1.6 draft",
       "AIG-AGT-03 Agentic Triage": "1.5 draft",
@@ -2485,7 +2494,47 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     return out;
   }
 
-  // Procurement question (AIG-DEC-01 v1.10 Gate 4 rule; Playbook §5.5.1; AIG-ASS-08 v1.6;
+  // New investment question (AIG-INV-03 v1.8; AIG-DEC-01 v1.11 Gate 1 and 3 rule;
+  // suite v3.9.7). Unsure counts as Yes.
+  const NEW_INVESTMENT = {
+    unsure: "Unsure (counts as Yes)",
+    yes: "Yes",
+    no: "No — existing approved system and licence, no new cost",
+  };
+  function newInvestmentOf(profile) {
+    const value = profile && profile.newInvestment;
+    return Object.values(NEW_INVESTMENT).includes(value) ? value : NEW_INVESTMENT.unsure;
+  }
+  // Gates 1 and 3 decide investment and the strategic case. They are N/A only for a
+  // new UC-ID under an existing AIR-ID that needs no new investment, at Low or Medium,
+  // and not action-capable. A new system (no AIR-ID) always counts as new investment.
+  // The tool only proposes the N/A: the governance steward confirms it in the Gate
+  // Plan with the rule, their name and date, and that the system approval is current.
+  function gates13Rule(profile, results) {
+    const reasons = [];
+    if (situationOf(profile) !== SITUATIONS.new || isFoundInUse(profile)) reasons.push("it is not a new use");
+    if (!/^AIR-/.test((profile && profile.registerId) || "")) reasons.push("no existing AIR-ID is entered (a new system always counts as new investment)");
+    if (newInvestmentOf(profile) !== NEW_INVESTMENT.no) reasons.push("new investment is Yes or Unsure");
+    if (procurementRouteOf(profile) === PROCUREMENT.new) reasons.push("a new contract, licence change or variation is needed");
+    const tier = results && results.effectiveTierName;
+    if (tier !== "Low" && tier !== "Medium") reasons.push("the governing tier is High or Critical");
+    if (isActionCapable(profile, results && results.triggerIds)) reasons.push("the use can act");
+    const na = reasons.length === 0;
+    return {
+      na,
+      reasons,
+      rationale: na
+        ? `N/A — existing approved system, no new investment (AIG-DEC-01 Gate 1 and 3 rule): new UC-ID under ${profile.registerId}; no new funding, licences, charges, procurement or business case; governing tier ${tier}; cannot act. Governance steward confirms the system approval is current and records the rule, their name and date in column J.`
+        : "",
+    };
+  }
+  const CARRIED_FROM_GATES_1_3 = [
+    "Equality, human-rights and data protection screening outcome (may be by reference to a current covering assessment, with Evidence IDs; Playbook \u00a74.6), seen by the decision-maker before deciding",
+    "Purpose and expected benefits",
+    "Versioned AI assurance opinion, where one is given",
+  ];
+
+  // Procurement question (AIG-DEC-01 v1.11 Gate 4 rule; Playbook §5.5.1; AIG-ASS-08 v1.6;
   // Proposed — for Council confirmation). v3.9.2 (T-07, T-08).
   const PROCUREMENT = {
     unknown: "Not yet known",
@@ -2851,7 +2900,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     );
   }
 
-  // Agency-tier minimum pathway (AIG-DEC-01 v1.10 Agentic pathway; AIG-AGT-03 §6;
+  // Agency-tier minimum pathway (AIG-DEC-01 v1.11 Agentic pathway; AIG-AGT-03 §6;
   // Playbook F.2). Applies to action-capable uses only. T0/T1 none, T2 Medium,
   // T3 High, T4 High (Critical where actions run without evidenced per-action human
   // review), T5 Critical. Proposed — for Council confirmation.
@@ -2912,7 +2961,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
   }
 
   // Gate 4 and the full Supplier DDQ apply only where a procurement, new contract,
-  // licence change or contract variation is needed (AIG-DEC-01 v1.10), not from the
+  // licence change or contract variation is needed (AIG-DEC-01 v1.11), not from the
   // Source answer alone (v3.9.2, T-07).
   function commercialRequired(profile) {
     return procurementRouteOf(profile) === PROCUREMENT.new;
@@ -3260,7 +3309,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     return match ? Number(match[1]) : null;
   }
 
-  // Prospective gate route (AIG-DEC-01 v1.10 Gate Map, gates 1 to 6), with the AI
+  // Prospective gate route (AIG-DEC-01 v1.11 Gate Map, gates 1 to 6), with the AI
   // Assurance Board's assurance input shown as a separate, non-deciding step. The
   // governing tier sets which gates apply; the AGPI priority sets urgency only.
   // Gate 2 and Gate 6 are mandatory for every action-capable use (R1, R2); Gate 4
@@ -3285,6 +3334,8 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       : "";
     const gate2Required = canAct || atLeast("High");
     const gate5Required = atLeast("Medium");
+    const g13 = gates13Rule(profile, results);
+    const g13Status = "Not applicable (proposed) · governance steward confirms under the AIG-DEC-01 Gate 1 and 3 rule";
     const boardRecommendation = agencyNum !== null && agencyNum >= 3;
     const status = (required) => required
       ? (retrospective ? "Draft plan — required (retrospective)" : "Draft plan — required")
@@ -3297,7 +3348,9 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
         gate: DEC04_GATES[1],
         gateNumber: 1,
         requirement: "Gate 1 · Strategic prioritisation",
-        applicability: "Required",
+        applicability: g13.na ? "Not applicable" : "Required",
+        planRequirement: g13.na ? "Not applicable" : "Required",
+        naRationale: g13.rationale,
         forum: configured.strategic,
         decision: retrospective
           ? "Does the purpose, ownership and continued strategic fit support retaining this live system? (Invest in discovery, or reject.)"
@@ -3311,7 +3364,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
           "AGPI triage result (urgency) and provisional governing tier (AIG-ASS-01 / AIG-ASS-02)",
           "Decision-Ready Paper (AIG-DEC-02)",
         ],
-        status: status(true),
+        status: g13.na ? g13Status : status(true),
         handoff:
           "The AGPI priority sets how quickly governance looks at this use; the route is set by the governing tier. The forum's decision belongs in AIG-DEC-03 or approved minutes, with a dated AIG-DEC-04 Gate Event.",
       },
@@ -3365,7 +3418,9 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
         gate: DEC04_GATES[3],
         gateNumber: 3,
         requirement: "Gate 3 · Case for change / strategic alignment",
-        applicability: "Required",
+        applicability: g13.na ? "Not applicable" : "Required",
+        planRequirement: g13.na ? "Not applicable" : "Required",
+        naRationale: g13.rationale,
         forum: configured.digital,
         decision:
           "Strategic alignment, cost-benefit and delivery dates: should the investment progress within portfolio, funding, dependency and delivery constraints?",
@@ -3376,7 +3431,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
           "Versioned AI assurance opinion",
           "Material open conditions",
         ],
-        status: status(true),
+        status: g13.na ? g13Status : status(true),
         handoff:
           "Prepare the decision question and evidence; the forum records any decision in AIG-DEC-03 or approved minutes.",
       },
@@ -3391,7 +3446,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
         naRationale: gate4.naRationale,
         forum: configured.commercial,
         decision:
-          "Funding, tendering and contract award: is the procurement route, supplier and contract acceptable under the relevant delegated authority? Gate 4 applies wherever a procurement, new contract, licence change or contract variation is needed (AIG-DEC-01 v1.10; Proposed \u2014 for Council confirmation).",
+          "Funding, tendering and contract award: is the procurement route, supplier and contract acceptable under the relevant delegated authority? Gate 4 applies wherever a procurement, new contract, licence change or contract variation is needed (AIG-DEC-01 v1.11; Proposed \u2014 for Council confirmation).",
         evidence: gate4.applies === true || gate4.applies === null
           ? [
             "Supplier AI Due Diligence Questionnaire (AIG-ASS-08)",
@@ -3423,6 +3478,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
           "Responsible AI Assessment (AIG-ASS-04)",
           "Bias testing and monitoring plan",
           "Human-in-the-loop validation",
+          ...(g13.na && gate5Required ? CARRIED_FROM_GATES_1_3 : []),
         ],
         status: status(gate5Required),
         handoff: gate5Required
@@ -3456,6 +3512,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
           ...(atLeast("High") || canAct ? ["Security Review (AIG-ASS-11) outcome confirmed"] : []),
           ...(isResidentFacingGenerativeMedium(profile, results) ? [ADVERSARIAL_TEST] : []),
           "ATRS applicability / publication owner confirmation and evidence reference (pending; case-specific)",
+          ...(g13.na && !gate5Required ? CARRIED_FROM_GATES_1_3 : []),
         ],
         status: status(true),
         handoff:
@@ -3713,7 +3770,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
   // AIG-DEC-01 decision gate (1 to 6). Columns A to L match the workbook exactly and
   // every controlled column holds a value from its dropdown: Gate / forum from the
   // Lists sheet, Requirement Required/Conditional (Not applicable for Gate 4 under the
-  // AIG-DEC-01 v1.10 rule, with a draft rationale in column J for the steward to confirm),
+  // AIG-DEC-01 v1.11 rule, with a draft rationale in column J for the steward to confirm),
   // Plan state Planned, Decision scope UC-ID specific. A blank spacer column separates
   // the guidance columns, which are not part of the Gate plan. Plan ID and Target date
   // stay blank for the governance steward: the tool never issues IDs. The AI
@@ -3741,14 +3798,14 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       "",
       "Service Owner",
       "Planned",
-      gate.naRationale || "",
+      "",
       profile.ucId || "",
       "UC-ID specific",
       "",
       gate.forum,
       gate.decision,
       gate.evidence.join("; "),
-      `${gate.status}. ${gate.handoff} UC-ID entry state: ${ucIdEntryStatus(profile)}. Exact scoped purpose/outcome: ${profile.usePurpose || profile.purpose || "(not entered)"}. A Gate plan row is a prospective requirement only; not a decision, approval or Gate Event.`,
+      `${gate.status}. ${gate.naRationale ? `Proposed N/A rationale for column J (the steward confirms it and adds the authority ref, their name and date): ${gate.naRationale} ` : ""}${gate.handoff} UC-ID entry state: ${ucIdEntryStatus(profile)}. Exact scoped purpose/outcome: ${profile.usePurpose || profile.purpose || "(not entered)"}. A Gate plan row is a prospective requirement only; not a decision, approval or Gate Event.`,
     ]);
     return toCsv(headers, rows);
   }
@@ -3799,7 +3856,8 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     const headers = [...DEC02_HEADERS, "", ...DEC02_GUIDANCE_HEADERS];
     const priority = paperPriority(results.effectiveGovernancePriority || results.priority.label);
     const tier = results.effectiveTierName + (results.agencyPending ? " (at least; agency tier not yet assessed)" : "");
-    const rows = route.filter((gate) => gate.gate).map((gate) => [
+    // No paper is prepared for a gate proposed Not applicable (Gate 1 and 3 rule, Gate 4 rule).
+    const rows = route.filter((gate) => gate.gate && gate.applicability !== "Not applicable").map((gate) => [
       profile.registerId || "",
       profile.systemName || "",
       `${gate.forum} (Gate ${gate.gateNumber}; configure to local name)`,
@@ -4097,7 +4155,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
         : "Sections 1\u20139 (supplier responses); Section 10 \u2014 Council Evaluation (internal)",
       fields: [
         { label: "Procurement route (intake answer)", value: gate4.route },
-        { label: "Gate 4 (AIG-DEC-01 v1.10 rule)", value: gate4.label },
+        { label: "Gate 4 (AIG-DEC-01 v1.11 rule)", value: gate4.label },
       ],
       note: `${gate4.note} The commercial owner confirms the procurement position. (Proposed \u2014 for Council confirmation.)`,
     });
@@ -4771,6 +4829,9 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     assessmentRequirements,
     buildEvidenceList,
     isLightTouch,
+    NEW_INVESTMENT,
+    newInvestmentOf,
+    gates13Rule,
     lightTouchBlockReason,
     FAST_TRACK,
     fastTrackOf,
@@ -4858,6 +4919,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     "lifecycle",
     "dataType",
     "procurementRoute",
+    "newInvestment",
     "affectsIndividuals",
     "publicFacing",
     "dateFirstUsed",
@@ -5207,7 +5269,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     byId("continuityIdentity").textContent += profile.ucId
       ? ` · UC-ID: ${profile.ucId} (${profile.ucIdStatus || "verification pending"})`
       : " · UC-ID pending for this use by operator choice; not a shared system baseline";
-    const next = route[0];
+    const next = route.find((g) => g.gate && g.applicability === "Required") || route.find((g) => g.gate && g.applicability !== "Not applicable") || route[0];
     byId("continuityNext").textContent = next
       ? `Next proposed handoff: ${next.requirement} · ${next.forum}. Carry the confirmed AIR-ID forward; do not mark the gate complete here.`
       : "No gate has been proposed; the governance owner must confirm the route.";
@@ -5265,7 +5327,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       return {
         key: "light",
         name: "Light-touch governance pathway",
-        why: "Low risk and low governance priority do not waive duties. Complete Equality Act s149, HRA s6 and data-protection/privacy screening, verify the Council-issued AIR-ID and current AIG-INV-04 state, retain proportionate baseline documentation, named ownership, controls and review, and record the delegated decision for this UC-ID (by the officer or forum with confirmed delegation) before use (Playbook §3.8.2.1). This use reached this route through the one-page Fast-Track Screening (AIG-INV-02) with all ten answers No; the AI Governance Lead validates the route. The Fast-Track decides the route only: the equality, human-rights and privacy screening is still recorded, and can draw on the Fast-Track answers."
+        why: "Low risk and low governance priority do not waive duties. Complete Equality Act s149, HRA s6 and data-protection/privacy screening, verify the Council-issued AIR-ID and current AIG-INV-04 state, retain proportionate baseline documentation, named ownership, controls and review, and record the delegated decision for this UC-ID (by the officer or forum with confirmed delegation) before use (Playbook §3.8.2.1). This use reached this route through the one-page Fast-Track Screening (AIG-INV-02) with all ten answers No; the AI Governance Lead validates the route. For a new use of an existing approved system with no new investment, Gates 1 and 3 are proposed N/A (AIG-DEC-01 Gate 1 and 3 rule), so the plan is the intake event, the single delegated decision (Gate 6) and review. The screening may be done by reference to a current covering assessment, such as the system's DPIA, recorded in the Fast-Track Part C box (Playbook \u00a74.6). The Fast-Track decides the route only: the equality, human-rights and privacy screening is still recorded, and can draw on the Fast-Track answers."
       };
     }
 
@@ -5383,7 +5445,8 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       ` · inherent ${results.inherentTierName} · residual ${formatNumber(results.risk.residual)} (${results.residualTierName})` +
       (results.agencyTierLabel ? ` · agency ${results.agencyTierLabel.split(" ")[0]} → governing ${results.effectiveTierName}` : "");
     byId("summaryIntensity").textContent = `Provisional · ${results.assuranceIntensity} · decision route: ${results.decisionRoute}`;
-    byId("summaryNextGate").textContent = `Proposed · ${route[0].requirement}`;
+    const nextGate = route.find((g) => g.gate && g.applicability === "Required") || route.find((g) => g.gate && g.applicability !== "Not applicable") || route[0];
+    byId("summaryNextGate").textContent = `Proposed · ${nextGate.requirement}`;
     byId("summaryCommercial").textContent = `${results.gate4.label} (procurement route: ${results.gate4.route}); the commercial owner confirms`;
     byId("summaryMonitoring").textContent = results.agencyPending
       ? `${results.monitoringMinimum} The governing tier is at least ${results.effectiveTierName} until Assess agency is run.`
@@ -6266,7 +6329,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     if (target.matches && target.matches("#likelihood")) likelihoodEntered = true;
     if (target.matches && target.matches("#control")) controlEntered = true;
     if (target.matches && target.matches(
-      '[data-dimension], [data-impact], [data-trigger], #likelihood, #control, #controlEvidence, #controlEvidenceRef, #verificationRef, #governanceInvestigation, #situation, #fastTrack, #procurementRoute, #actionAuthority, #ucId, #ucIdStatus, #usePurpose'
+      '[data-dimension], [data-impact], [data-trigger], #likelihood, #control, #controlEvidence, #controlEvidenceRef, #verificationRef, #governanceInvestigation, #situation, #fastTrack, #procurementRoute, #newInvestment, #actionAuthority, #ucId, #ucIdStatus, #usePurpose'
     )) byId("triageReviewed").checked = false;
     update();
   }

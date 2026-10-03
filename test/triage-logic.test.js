@@ -147,13 +147,13 @@ test("AIG-DEC-04 gate-plan output is paste-ready for the Gate plan sheet, not an
     assert.equal(row[0], "", "Plan ID is left for the governance steward");
     assert.equal(row[1], "AIR-EXAMPLE");
     assert.ok(["Required", "Conditional", "Not applicable"].includes(row[4]));
-    // v3.9.2: only Gate 4 is proposed N/A, under the AIG-DEC-01 v1.8 rule, and then
-    // with a draft rationale in column J (the DEC-04 row check needs one).
+    // v3.9.7: column J is left for the governance steward (the DEC-04 row check then
+    // asks for the rationale and authority ref); a proposed N/A rationale goes in the
+    // handoff guidance column. Gates 1 and 3 can also be proposed N/A (Gate 1 and 3 rule).
+    assert.equal(row[9], "");
     if (row[4] === "Not applicable") {
-      assert.equal(row[2], "Gate 4 Procurement");
-      assert.match(row[9], /^N\/A \(built in-house\)|^N\/A — existing contract \/ free tool/);
-    } else {
-      assert.equal(row[9], "");
+      assert.ok(["Gate 1 Strategic prioritisation", "Gate 3 Case for change / strategic alignment", "Gate 4 Procurement"].includes(row[2]));
+      assert.match(row[row.length - 1], /Proposed N\/A rationale for column J/);
     }
     assert.equal(row[6], "", "Target date is left blank");
     assert.equal(row[8], "Planned");
