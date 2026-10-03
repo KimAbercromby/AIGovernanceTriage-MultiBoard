@@ -1441,6 +1441,37 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     /* Result text was white on a pale panel (unreadable) before this pass. */
     #main .result-panel p{color:var(--c-ink)}
     #main .field-help[hidden]{display:none}
+    /* ---- Step 4: multi-board governance route, calmer ---- */
+    #main .route-rules,#main .continuity-more{margin:4px 0 16px}
+    #main .route-rules>summary,#main .continuity-more>summary{cursor:pointer;width:fit-content;color:var(--c-gold-ink);font-size:14px;font-weight:600;text-decoration:underline;text-underline-offset:2px}
+    #main .route-rules>summary:hover,#main .continuity-more>summary:hover{color:var(--c-navy)}
+    #main .route-rules p{margin:8px 0 0;max-width:75ch;font-size:14.5px;color:var(--c-muted);line-height:1.6}
+    #main .route-banner{background:var(--c-card)!important;border:1px solid var(--c-line)!important;border-left:4px solid var(--c-gold)!important;border-radius:8px;padding:14px 18px}
+    #main .route-banner-label{text-transform:none;letter-spacing:0;font-size:13px;font-weight:600;color:var(--c-muted)}
+    #main .continuity-thread{background:var(--c-card);border:1px solid var(--c-line);border-left:1px solid var(--c-line);border-radius:8px;padding:14px 18px;margin:0 0 18px}
+    #main .continuity-thread .mini-label{text-transform:none;letter-spacing:0;font-size:13px;font-weight:600;color:var(--c-muted)}
+    #main .continuity-heading strong{font-size:16px;font-weight:600;color:var(--c-navy)}
+    #main .continuity-next{font-size:15px;font-weight:600;color:var(--c-ink);margin:8px 0 0}
+    #main .continuity-more .continuity-steps{margin-top:12px}
+    #main .continuity-more .continuity-caveat{font-size:13.5px;color:var(--c-muted)}
+    /* Key facts: a quiet list of label and value, not nine bold cards */
+    #main .summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 28px;margin:6px 0 10px;padding:0;background:none;border:0;border-radius:0}
+    #main .summary-grid>div{background:none;border:0;border-top:1px solid var(--c-line);border-radius:0;box-shadow:none;padding:12px 0 14px;min-height:0}
+    #main .summary-grid span{display:block;font-size:13px;font-weight:600;color:var(--c-muted);text-transform:none;letter-spacing:0;margin:0 0 4px}
+    #main .summary-grid strong{display:block;font-size:14.5px;font-weight:400;line-height:1.5;color:var(--c-ink)}
+    #main .summary-grid>div:nth-child(-n+4) strong{font-weight:600;color:var(--c-navy);font-size:15px}
+    #main .summary-grid>div:nth-child(7){grid-column:1/-1;order:9}
+    #main .summary-grid>div:nth-child(7) strong{max-width:95ch}
+    /* Evidence prompts: a plain two-column checklist */
+    #main .evidence-details .evidence-list{gap:0 28px;padding:10px 18px 14px}
+    #main .evidence-details .evidence-list li{border:0;border-bottom:1px solid #edf0f3;border-radius:0;background:none;padding:8px 0 8px 22px;position:relative;font-size:14px;line-height:1.45}
+    #main .evidence-details .evidence-list li::before{content:"";position:absolute;left:2px;top:12px;width:9px;height:9px;border:1.5px solid var(--c-gold-ink);border-radius:2px}
+    #main .evidence-details,#main .route-details,#main .handoff-details{margin-left:0;margin-right:0;border-color:var(--c-line);border-radius:8px}
+    /* The demo/validation message was pale pink on white (unreadable) */
+    #main .validation-message{color:#a12622!important}
+    #main .export-panel{border:1px solid var(--c-line);border-top:1px solid var(--c-line);border-radius:10px;box-shadow:none}
+    #main .route-choice{box-shadow:none}
+    @media(max-width:760px){#main .summary-grid,#main .evidence-details .evidence-list{grid-template-columns:1fr}}
     @media(max-width:620px){
       body .site-header{padding:16px 0 32px}
       body .site-header .triage-hero-copy{padding-top:28px}
@@ -1833,42 +1864,35 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
         <section class="step route-step" id="route" aria-labelledby="route-title">
           <p class="eyebrow">Step 4 of 4</p>
           <h2 id="route-title">Multi-board governance route</h2>
-          <p class="lede">
-            Keep one system identity throughout the forum journey. The route lists the
-            AIG-DEC-01 Gate Map decision gates for this use, set by the governing tier:
-            Gate 2 and Gate 6 are mandatory for every use that can act, Gate 4 applies
-            wherever a procurement, new contract, licence change or contract variation is
-            needed (N/A with the reason for an existing contract or licence, a free public
-            tool or an in-house build) and Gate 5 from Medium. This proposed route prepares the next
-            handoff; an authorised decision, its dated gate event and the Register's
-            current position are linked through the same AIR-ID. No gate is passed by
-            this triage.
-          </p>
+          <p class="lede">Your proposed route through the decision gates, set by the governing tier. Keep one system identity throughout the forum journey.</p>
+          <details class="route-rules"><summary>How the gates are chosen</summary><p>The route lists the AIG-DEC-01 Gate Map decision gates for this use, set by the governing tier: Gate 2 and Gate 6 are mandatory for every use that can act, Gate 4 applies wherever a procurement, new contract, licence change or contract variation is needed (N/A with the reason for an existing contract or licence, a free public tool or an in-house build) and Gate 5 from Medium. This proposed route prepares the next handoff; an authorised decision, its dated gate event and the Register's current position are linked through the same AIR-ID. No gate is passed by this triage.</p></details>
 
           <p class="provisional-cue" id="provisionalCue" role="status">
             Synthetic example only: built-in defaults are not assessed case scores or current AIG-INV-04 assurance.
           </p>
 
           <div id="routeBanner" class="route-banner" aria-live="polite">
-            <span class="route-banner-label">Provisional triage route · not current AIG-INV-04 assurance</span>
+            <span class="route-banner-label">Provisional triage route, not current AIG-INV-04 assurance</span>
             <strong id="routeBannerName"></strong>
             <span id="routeBannerWhy" class="route-banner-why"></span>
           </div>
 
           <section class="continuity-thread" aria-label="One system, connected record trail">
             <div class="continuity-heading">
-              <span class="mini-label">ONE SYSTEM · ONE STABLE AIR-ID</span>
+              <span class="mini-label">One system, one stable AIR-ID</span>
               <strong id="continuityIdentity">Awaiting an authorised AIR-ID</strong>
             </div>
+            <p class="continuity-next" id="continuityNext"></p>
+            <details class="continuity-more"><summary>How the AIR-ID carries through the records</summary>
             <ol class="continuity-steps">
               <li><b>Identify</b><span>AIG-INV-04 Register confirms the AIR-ID and current state.</span></li>
               <li><b>Plan</b><span>Carry that ID into the proposed AIG-DEC-04 Gate Plan and named forum route.</span></li>
               <li><b>Decide and record</b><span>The authorised decision belongs in AIG-DEC-03 or approved minutes; cite it in a dated AIG-DEC-04 Gate Event, with any event-linked Conditions.</span></li>
               <li><b>Reconcile</b><span>Update AIG-INV-04 current position against the decision and latest Event ID.</span></li>
             </ol>
-            <p class="continuity-next" id="continuityNext"></p>
             <p class="continuity-caveat">This is a draft handoff, not a live link or approval. If the AIR-ID is pending, keep the intake reference separate until the Register owner issues or confirms it. AIG-INV-05 adds descriptive context, not another gate.</p>
             <a class="continuity-link" href="https://kimabercromby.github.io/AIGovernanceWalkthrough-MultiBoard/" target="_blank" rel="noopener noreferrer">Explore the connected lifecycle <span>Illustrative examples · no case details transferred ↗</span></a>
+            </details>
           </section>
 
           <div class="summary-grid" aria-live="polite">
