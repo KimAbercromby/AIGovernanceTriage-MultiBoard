@@ -6,28 +6,28 @@
   "use strict";
 
   // Suite release this tool is aligned to, with the artefact versions it relies on
-  // (from the AIG-GOV-03 Artefact Index, suite release v3.9.7, 3 October 2026).
+  // (from the AIG-GOV-03 Artefact Index, suite release v3.9.8, 3 October 2026).
   const SUITE = {
-    release: "v3.9.7",
+    release: "v3.9.8",
     date: "3 October 2026",
     status: "Proposed — for Council confirmation; not approved or adopted",
     versions: {
-      "AIG-GOV-02 Playbook": "19.9.16 draft",
-      "AIG-GOV-03 Artefact Index": "1.32 draft",
-      "AIG-INV-04 AI Register": "1.0 draft",
+      "AIG-GOV-02 Playbook": "19.9.17 draft",
+      "AIG-GOV-03 Artefact Index": "1.33 draft",
+      "AIG-INV-04 AI Register": "1.1 draft",
       "AIG-INV-05 Capabilities and System Map": "0.3 proposed design draft",
       "AIG-ASS-01 AGPI Triage Tool": "1.4 draft",
       "AIG-ASS-02 AI Risk Assessment Worksheet": "1.10 draft",
       "AIG-ASS-11 AI Security Review Checklist": "1.9 draft",
-      "AIG-DEC-01 Gate Map": "1.11 draft",
-      "AIG-DEC-02 Decision-Ready Paper": "1.6 draft",
-      "AIG-DEC-03 Governance Decision Record": "1.9 draft",
-      "AIG-DEC-04 Gate Log": "1.2 draft",
+      "AIG-DEC-01 Gate Map": "1.12 draft",
+      "AIG-DEC-02 Decision-Ready Paper": "1.7 draft",
+      "AIG-DEC-03 Governance Decision Record": "1.10 draft",
+      "AIG-DEC-04 Gate Log": "1.3 draft",
       "AIG-AGT-02 Agentic Classification Reference": "1.6 draft",
       "AIG-AGT-03 Agentic Triage": "1.5 draft",
       "AIG-AGT-04 Agent Record (ASBOM)": "0.5 working draft",
       "AIG-AGT-06 Agentic Action / Decision Record": "1.5 draft",
-      "AIG-OPS-01 Deployment and Rollout Plan": "1.10 draft",
+      "AIG-OPS-01 Deployment and Rollout Plan": "1.11 draft",
       "AIG-OPS-02 Monitoring and Review Log": "1.6 draft",
       "UC_ID_Risk_Decision_Current_View": "1.0 draft",
     },
@@ -284,41 +284,76 @@
     return out;
   }
 
-  // New investment question (AIG-INV-03 v1.8; AIG-DEC-01 v1.11 Gate 1 and 3 rule;
-  // suite v3.9.7). Unsure counts as Yes.
+  // New investment question (AIG-INV-03 v1.9; AIG-DEC-01 v1.12 Gate 1 and 3 rule;
+  // suite v3.9.8). Unsure counts as Yes. The "No" wording changed in v3.9.8 so a free new
+  // system can answer it too; records saved with the v3.9.7 wording are still read.
   const NEW_INVESTMENT = {
     unsure: "Unsure (counts as Yes)",
     yes: "Yes",
-    no: "No — existing approved system and licence, no new cost",
+    no: "No — no new funding, licences, charges, procurement, contract or licence change",
   };
   function newInvestmentOf(profile) {
     const value = profile && profile.newInvestment;
+    if (value === "No — existing approved system and licence, no new cost") return NEW_INVESTMENT.no;
     return Object.values(NEW_INVESTMENT).includes(value) ? value : NEW_INVESTMENT.unsure;
   }
-  // Gates 1 and 3 decide investment and the strategic case. They are N/A only for a
-  // new UC-ID under an existing AIR-ID that needs no new investment, at Low or Medium,
-  // and not action-capable. A new system (no AIR-ID) always counts as new investment.
-  // The tool only proposes the N/A: the governance steward confirms it in the Gate
-  // Plan with the rule, their name and date, and that the system approval is current.
-  function gates13Rule(profile, results) {
-    const reasons = [];
-    if (situationOf(profile) !== SITUATIONS.new || isFoundInUse(profile)) reasons.push("it is not a new use");
-    if (!/^AIR-[A-Z0-9]/i.test((profile && profile.registerId) || "")) reasons.push("no existing AIR-ID is entered (a new system always counts as new investment)");
-    if (newInvestmentOf(profile) !== NEW_INVESTMENT.no) reasons.push("new investment is Yes or Unsure");
-    const proc = procurementRouteOf(profile);
-    if (proc === PROCUREMENT.new) reasons.push("a new contract, licence change or variation is needed");
-    if (proc === PROCUREMENT.unknown) reasons.push("the procurement route is not yet known (counts as possible new investment)");
+  // Answers that contradict each other (decision B4, suite v3.9.8). The stricter
+  // answer still applies; the person is told why so they can correct the form.
+  function answerConflicts(profile, results) {
+    const out = [];
     const tier = results && results.effectiveTierName;
-    if (tier !== "Low" && tier !== "Medium") reasons.push("the governing tier is High or Critical");
-    if (isActionCapable(profile, results && results.triggerIds)) reasons.push("the use can act");
-    const na = reasons.length === 0;
+    // Decision E8: all ten Fast-Track answers No but a governing tier above Low.
+    if (fastTrackOf(profile) === FAST_TRACK.allNo && tier && tier !== "Low") {
+      out.push(`All ten Fast-Track answers are No, but the risk scores give ${tier}. One of them is likely wrong. Check the Fast-Track answers and the impact and likelihood scores with the AI Governance Lead. The higher tier applies until they agree.`);
+    }
+    if (newInvestmentOf(profile) === NEW_INVESTMENT.no && procurementRouteOf(profile) === PROCUREMENT.new) {
+      out.push("You said no new investment, but a new contract, licence change or contract variation is new investment. Gates 1, 3 and 4 apply. Check your answers.");
+    }
+    return out;
+  }
+  // Is the existing system's approval current? (AIG-INV-03; decision A6, suite v3.9.8.)
+  // Unsure counts as No. Only asked where an existing AIR-ID is entered.
+  const SYSTEM_APPROVAL = {
+    unsure: "Unsure (counts as No)",
+    yes: "Yes — Approved (or Approved with conditions) and Active, review not overdue",
+    no: "No — suspended, lapsed or review overdue",
+  };
+  function systemApprovalOf(profile) {
+    const value = profile && profile.systemApproval;
+    if (value === "Yes — Approved and Active, review not overdue") return SYSTEM_APPROVAL.yes; // v3.9.8 draft wording
+    return Object.values(SYSTEM_APPROVAL).includes(value) ? value : SYSTEM_APPROVAL.unsure;
+  }
+  // Gate 1 decides whether the Council takes a use or system on at all; Gate 3 decides
+  // the investment and strategic case (AIG-DEC-01 v1.12 Gate 1 and 3 rule).
+  // Gate 1 is N/A only for a new UC-ID, or a change to a use in governance (decision A5),
+  // under an existing AIR-ID with no new investment,
+  // at Low or Medium, that cannot act: a new system always goes to Gate 1, even if free.
+  // Gate 3 is N/A wherever there is no new investment, at Low or Medium, and the use
+  // cannot act, for new and existing systems alike. The tool only proposes N/A: the
+  // governance steward confirms it in the Gate Plan with the rule, their name and date.
+  function gates13Rule(profile, results) {
+    const common = [];
+    // A new use, or a change to a use in governance (re-entry, decision A5); never AI found in use.
+    if (isFoundInUse(profile)) common.push("AI found already in use goes through retrospective intake");
+    if (newInvestmentOf(profile) !== NEW_INVESTMENT.no) common.push("new investment is Yes or Unsure");
+    const proc = procurementRouteOf(profile);
+    if (proc === PROCUREMENT.new) common.push("a new contract, licence change or variation is needed");
+    if (proc === PROCUREMENT.unknown) common.push("the procurement route is not yet known (counts as possible new investment)");
+    const tier = results && results.effectiveTierName;
+    if (tier !== "Low" && tier !== "Medium") common.push("the governing tier is High or Critical");
+    if (isActionCapable(profile, results && results.triggerIds)) common.push("the use can act");
+    const existing = /^AIR-[A-Z0-9]/i.test((profile && profile.registerId) || "");
+    if (existing && systemApprovalOf(profile) !== SYSTEM_APPROVAL.yes) common.push("the system's approval is not confirmed as current (Unsure counts as No)");
+    const reasons1 = existing ? common.slice() : common.concat("no existing AIR-ID is entered (a system new to the Council always goes to Gate 1)");
+    const useWord = isReentry(profile) ? "changed use" : "new UC-ID";
+    const na1 = reasons1.length === 0;
+    const na3 = common.length === 0;
+    const base = `no new funding, licences, charges, procurement or business case; governing tier ${tier}; cannot act`;
     return {
-      na,
-      reasons,
-      rationale: na
-        ? `N/A — existing approved system, no new investment (AIG-DEC-01 Gate 1 and 3 rule): new UC-ID under ${profile.registerId}; no new funding, licences, charges, procurement or business case; governing tier ${tier}; cannot act. Governance steward confirms the system approval is current and records the rule, their name and date in column J.`
-        : "",
-    };
+      na1, na3, na: na1 && na3, reasons1, reasons3: common, reasons: reasons1,
+      rationale1: na1 ? `N/A — existing approved system, no new investment (AIG-DEC-01 Gate 1 and 3 rule): ${useWord} under ${profile.registerId}; ${base}. Governance steward checks the Register shows the approval is current and records the rule, their name and date in column J.` : "",
+      rationale3: na3 ? `N/A — no new investment (AIG-DEC-01 Gate 1 and 3 rule): ${base}. Governance steward confirms and records the rule, their name and date in column J.` : "",
+          };
   }
   const CARRIED_FROM_GATES_1_3 = [
     "Equality, human-rights and data protection screening outcome (may be by reference to a current covering assessment, with Evidence IDs; Playbook \u00a74.6), seen by the decision-maker before deciding",
@@ -473,6 +508,7 @@
     "Evidence ID(s) (AIG-INV-04 Evidence index)", "Event-time lifecycle stage",
     "Incident ref (AIG-OPS-03), precautionary pause",
     "Follow-up decision due date (precautionary pause)",
+    "Screening considered by the decision-maker (Yes / No)",
   ];
   const GATE_CONDITION_HEADERS = [
     "Condition ID", "Event ID", "AIR-ID", "Required action / condition",
@@ -1140,9 +1176,9 @@
         gate: DEC04_GATES[1],
         gateNumber: 1,
         requirement: "Gate 1 · Strategic prioritisation",
-        applicability: g13.na ? "Not applicable" : "Required",
-        planRequirement: g13.na ? "Not applicable" : "Required",
-        naRationale: g13.rationale,
+        applicability: g13.na1 ? "Not applicable" : "Required",
+        planRequirement: g13.na1 ? "Not applicable" : "Required",
+        naRationale: g13.rationale1,
         forum: configured.strategic,
         decision: retrospective
           ? "Does the purpose, ownership and continued strategic fit support retaining this live system? (Invest in discovery, or reject.)"
@@ -1156,7 +1192,7 @@
           "AGPI triage result (urgency) and provisional governing tier (AIG-ASS-01 / AIG-ASS-02)",
           "Decision-Ready Paper (AIG-DEC-02)",
         ],
-        status: g13.na ? g13Status : status(true),
+        status: g13.na1 ? g13Status : status(true),
         handoff:
           "The AGPI priority sets how quickly governance looks at this use; the route is set by the governing tier. The forum's decision belongs in AIG-DEC-03 or approved minutes, with a dated AIG-DEC-04 Gate Event.",
       },
@@ -1210,9 +1246,9 @@
         gate: DEC04_GATES[3],
         gateNumber: 3,
         requirement: "Gate 3 · Case for change / strategic alignment",
-        applicability: g13.na ? "Not applicable" : "Required",
-        planRequirement: g13.na ? "Not applicable" : "Required",
-        naRationale: g13.rationale,
+        applicability: g13.na3 ? "Not applicable" : "Required",
+        planRequirement: g13.na3 ? "Not applicable" : "Required",
+        naRationale: g13.rationale3,
         forum: configured.digital,
         decision:
           "Strategic alignment, cost-benefit and delivery dates: should the investment progress within portfolio, funding, dependency and delivery constraints?",
@@ -1223,7 +1259,7 @@
           "Versioned AI assurance opinion",
           "Material open conditions",
         ],
-        status: g13.na ? g13Status : status(true),
+        status: g13.na3 ? g13Status : status(true),
         handoff:
           "Prepare the decision question and evidence; the forum records any decision in AIG-DEC-03 or approved minutes.",
       },
@@ -1270,7 +1306,7 @@
           "Responsible AI Assessment (AIG-ASS-04)",
           "Bias testing and monitoring plan",
           "Human-in-the-loop validation",
-          ...(g13.na && gate5Required ? CARRIED_FROM_GATES_1_3 : []),
+          ...(g13.na3 && gate5Required ? CARRIED_FROM_GATES_1_3 : []),
         ],
         status: status(gate5Required),
         handoff: gate5Required
@@ -1304,7 +1340,7 @@
           ...(atLeast("High") || canAct ? ["Security Review (AIG-ASS-11) outcome confirmed"] : []),
           ...(isResidentFacingGenerativeMedium(profile, results) ? [ADVERSARIAL_TEST] : []),
           "ATRS applicability / publication owner confirmation and evidence reference (pending; case-specific)",
-          ...(g13.na && !gate5Required ? CARRIED_FROM_GATES_1_3 : []),
+          ...(g13.na3 && !gate5Required ? CARRIED_FROM_GATES_1_3 : []),
         ],
         status: status(true),
         handoff:
@@ -2227,6 +2263,8 @@
     Suspend: "Suspended",
     Decommission: "Retired",
     "Re-authorise": "Approved or Approved with conditions (after reassessment)",
+    // Suite v3.9.8 (decision H2): lifts a precautionary pause; not offered for a Gate 8 retirement.
+    Resume: "Approved or Approved with conditions (the approval in force before the precautionary pause carries over)",
   };
 
   // Retirement handoff: one row per AIG-DEC-04 column for the Gate plan, Gate events
@@ -2297,6 +2335,7 @@
     add(event, "Event-time lifecycle stage", decided ? "Retirement and Decommissioning" : "", "Controlled value once the event is recorded.");
     add(event, "Incident ref (AIG-OPS-03), precautionary pause", "", "Precautionary pause (containment) events only; blank for a retirement decision.");
     add(event, "Follow-up decision due date (precautionary pause)", "", "Precautionary pause (containment) events only; blank for a retirement decision.");
+    add(event, "Screening considered by the decision-maker (Yes / No)", "", "For a Decision that lets a use continue (Progress, Progress with condition, Re-authorise, Resume); blank for a retirement decision. AIG-DEC-04 v1.3 column X.");
     add(event, "Note (not a column) — Rationale", ret.rationale, "Proposal context only; not a record of an event that occurred.");
 
     const conditionRows = conditions.length ? conditions : [""];
@@ -2622,6 +2661,9 @@
     buildEvidenceList,
     isLightTouch,
     NEW_INVESTMENT,
+    answerConflicts,
+    SYSTEM_APPROVAL,
+    systemApprovalOf,
     newInvestmentOf,
     gates13Rule,
     lightTouchBlockReason,
