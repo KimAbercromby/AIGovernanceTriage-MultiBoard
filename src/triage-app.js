@@ -42,6 +42,7 @@
     "lifecycle",
     "dataType",
     "procurementRoute",
+    "newInvestment",
     "affectsIndividuals",
     "publicFacing",
     "dateFirstUsed",
@@ -391,7 +392,7 @@
     byId("continuityIdentity").textContent += profile.ucId
       ? ` · UC-ID: ${profile.ucId} (${profile.ucIdStatus || "verification pending"})`
       : " · UC-ID pending for this use by operator choice; not a shared system baseline";
-    const next = route[0];
+    const next = route.find((g) => g.gate && g.applicability === "Required") || route.find((g) => g.gate && g.applicability !== "Not applicable") || route[0];
     byId("continuityNext").textContent = next
       ? `Next proposed handoff: ${next.requirement} · ${next.forum}. Carry the confirmed AIR-ID forward; do not mark the gate complete here.`
       : "No gate has been proposed; the governance owner must confirm the route.";
@@ -449,7 +450,7 @@
       return {
         key: "light",
         name: "Light-touch governance pathway",
-        why: "Low risk and low governance priority do not waive duties. Complete Equality Act s149, HRA s6 and data-protection/privacy screening, verify the Council-issued AIR-ID and current AIG-INV-04 state, retain proportionate baseline documentation, named ownership, controls and review, and record the delegated decision for this UC-ID (by the officer or forum with confirmed delegation) before use (Playbook §3.8.2.1). This use reached this route through the one-page Fast-Track Screening (AIG-INV-02) with all ten answers No; the AI Governance Lead validates the route. The Fast-Track decides the route only: the equality, human-rights and privacy screening is still recorded, and can draw on the Fast-Track answers."
+        why: "Low risk and low governance priority do not waive duties. Complete Equality Act s149, HRA s6 and data-protection/privacy screening, verify the Council-issued AIR-ID and current AIG-INV-04 state, retain proportionate baseline documentation, named ownership, controls and review, and record the delegated decision for this UC-ID (by the officer or forum with confirmed delegation) before use (Playbook §3.8.2.1). This use reached this route through the one-page Fast-Track Screening (AIG-INV-02) with all ten answers No; the AI Governance Lead validates the route. For a new use of an existing approved system with no new investment, Gates 1 and 3 are proposed N/A (AIG-DEC-01 Gate 1 and 3 rule), so the plan is the intake event, the single delegated decision (Gate 6) and review. The screening may be done by reference to a current covering assessment, such as the system's DPIA, recorded in the Fast-Track Part C box (Playbook \u00a74.6). The Fast-Track decides the route only: the equality, human-rights and privacy screening is still recorded, and can draw on the Fast-Track answers."
       };
     }
 
@@ -567,7 +568,8 @@
       ` · inherent ${results.inherentTierName} · residual ${formatNumber(results.risk.residual)} (${results.residualTierName})` +
       (results.agencyTierLabel ? ` · agency ${results.agencyTierLabel.split(" ")[0]} → governing ${results.effectiveTierName}` : "");
     byId("summaryIntensity").textContent = `Provisional · ${results.assuranceIntensity} · decision route: ${results.decisionRoute}`;
-    byId("summaryNextGate").textContent = `Proposed · ${route[0].requirement}`;
+    const nextGate = route.find((g) => g.gate && g.applicability === "Required") || route.find((g) => g.gate && g.applicability !== "Not applicable") || route[0];
+    byId("summaryNextGate").textContent = `Proposed · ${nextGate.requirement}`;
     byId("summaryCommercial").textContent = `${results.gate4.label} (procurement route: ${results.gate4.route}); the commercial owner confirms`;
     byId("summaryMonitoring").textContent = results.agencyPending
       ? `${results.monitoringMinimum} The governing tier is at least ${results.effectiveTierName} until Assess agency is run.`
@@ -1450,7 +1452,7 @@
     if (target.matches && target.matches("#likelihood")) likelihoodEntered = true;
     if (target.matches && target.matches("#control")) controlEntered = true;
     if (target.matches && target.matches(
-      '[data-dimension], [data-impact], [data-trigger], #likelihood, #control, #controlEvidence, #controlEvidenceRef, #verificationRef, #governanceInvestigation, #situation, #fastTrack, #procurementRoute, #actionAuthority, #ucId, #ucIdStatus, #usePurpose'
+      '[data-dimension], [data-impact], [data-trigger], #likelihood, #control, #controlEvidence, #controlEvidenceRef, #verificationRef, #governanceInvestigation, #situation, #fastTrack, #procurementRoute, #newInvestment, #actionAuthority, #ucId, #ucIdStatus, #usePurpose'
     )) byId("triageReviewed").checked = false;
     update();
   }

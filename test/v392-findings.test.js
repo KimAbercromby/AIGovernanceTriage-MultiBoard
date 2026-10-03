@@ -2,7 +2,7 @@
 
 // One test per v3.9.2 pilot-readiness finding fixed in this tool (scenario test of
 // suite v3.9.1, 30 September 2026). Expected values come from the v3.9.2 workbooks
-// via test/fixtures/suite-v3.9.6-contract.json and from the AIG-DEC-01 v1.8 Gate 4
+// via test/fixtures/suite-v3.9.7-contract.json and from the AIG-DEC-01 v1.8 Gate 4
 // rule, Playbook §6.4.4 and AIG-OPS-02 v1.6 (Proposed — for Council confirmation).
 
 const test = require("node:test");
@@ -10,7 +10,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const logic = require("../src/triage-logic.js");
-const contract = require("./fixtures/suite-v3.9.6-contract.json");
+const contract = require("./fixtures/suite-v3.9.7-contract.json");
 
 const root = path.join(__dirname, "..");
 const app = fs.readFileSync(path.join(root, "src", "triage-app.js"), "utf8");
@@ -176,7 +176,8 @@ test("T-07: an embedded feature under an existing licence needs no DDQ; Gate 4 N
   assert.ok(evidence.some((e) => e.includes("section 5 (data protection and security) and section 8 (business continuity and exit)")));
   const row = gatePlanRows(p, r).find((x) => x[2] === "Gate 4 Procurement");
   assert.equal(row[4], "Not applicable");
-  assert.match(row[9], /^N\/A — existing contract \/ free tool: AI feature enabled under an existing contract or licence/);
+  assert.equal(row[9], "", "column J is left for the steward");
+  assert.match(row[row.length - 1], /Proposed N\/A rationale for column J[^:]*: N\/A — existing contract \/ free tool: AI feature enabled under an existing contract or licence/);
   assert.ok(contract["DEC-04"]["Gate plan"].lists["E4:E353"].includes(row[4]));
   // Legacy profile (before v3.9.2): embedded source with procurement "No" reads the same.
   assert.equal(logic.procurementRouteOf({ source: "Embedded in platform / supplier feature", procurementRequired: "No" }), "Existing contract or licence");
@@ -199,7 +200,8 @@ test("T-08: the procurement answer drives Gate 4 per the AIG-DEC-01 v1.8 rule, w
       assert.equal(gate(p, r, 4).applicability, applicability, `${source} / ${route}`);
       const row = gatePlanRows(p, r).find((x) => x[2] === "Gate 4 Procurement");
       assert.equal(row[4], planRequirement);
-      assert.ok(row[9].startsWith(rationale), `${route}: ${row[9]}`);
+      assert.equal(row[9], "");
+      if (rationale) assert.ok(row[row.length - 1].includes(`for column J (the steward confirms it and adds the authority ref, their name and date): ${rationale}`), `${route}: ${row[row.length - 1]}`);
       assert.equal(r.requirements.supplierDueDiligence, route === "New contract, licence change or contract variation");
     }
   }

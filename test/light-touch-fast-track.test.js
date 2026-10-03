@@ -1,7 +1,7 @@
 "use strict";
-// Suite v3.9.6 simulation finding: Light-touch needs an all-No Fast-Track Screening
-// (AIG-INV-02) that the rest of the profile does not contradict (Playbook §3.8.2.1;
-// AIG-DEC-01 Gate Map).
+// Copilot simulation finding (3 October 2026): Light-touch needs an all-No Fast-Track
+// Screening (AIG-INV-02) that the rest of the profile does not contradict (Playbook
+// §3.8.2.1; AIG-DEC-01 Gate Map). Suite v3.9.7 rewords Q2 and Q5 (AIG-INV-02 v1.8).
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
@@ -41,11 +41,20 @@ test("Fast Track with a Yes or Unsure: Standard route at Low, not Light-touch", 
   assert.equal(logic.paperRoute ? logic.paperRoute(p, r) : "Standard", "Standard");
 });
 
-test("all-No Fast Track contradicted by personal data (Q2) is not Light-touch (Copilot simulation)", () => {
+test("Copilot meeting notes: ordinary personal data and staff use no longer block Light-touch (AIG-INV-02 v1.8 Q2, Q5)", () => {
   const p = profile({ fastTrack: "All ten No", dataType: "Personal data" });
   const r = run(p);
-  assert.equal(logic.isLightTouch(p, r), false);
-  assert.match(logic.lightTouchBlockReason(p, r), /Q2/);
+  assert.deepEqual(logic.fastTrackConflicts(p), []);
+  assert.equal(logic.isLightTouch(p, r), true);
+});
+
+test("all-No Fast Track contradicted by the profile is not Light-touch", () => {
+  for (const [o, q] of [[{ dataType: "Special category data" }, /Q2/], [{ affectsIndividuals: "Yes" }, /Q3 or Q4/],
+    [{ publicFacing: "Yes" }, /Q5/], [{ actionAuthority: "Human approves each action" }, /Q1/]]) {
+    const p = profile({ fastTrack: "All ten No", ...o });
+    assert.match(logic.fastTrackConflicts(p).join(" "), q, JSON.stringify(o));
+    assert.equal(logic.isLightTouch(p, run(p)), false, JSON.stringify(o));
+  }
 });
 
 test("all-No Fast Track on a genuinely low use is Light-touch", () => {
@@ -67,4 +76,14 @@ test("the page asks for the Fast-Track outcome", () => {
   const html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
   assert.match(html, /<select id="fastTrack">/);
   for (const v of Object.values(logic.FAST_TRACK)) assert.ok(html.includes(`<option>${v}</option>`), v);
+});
+
+test("Gate plan export leaves column M (the workbook Row check) empty and says so", () => {
+  const p = profile({ fastTrack: "All ten No" });
+  const r = run(p);
+  const csv = logic.buildGatePlanCsv(p, logic.buildRoute(p, r, {}), r);
+  const lines = csv.replace(/^﻿/, "").trim().split("\r\n").map((l) => l.slice(1, -1).split('","'));
+  assert.equal(lines[0][12], logic.GATE_PLAN_ROW_CHECK_NOTE);
+  assert.match(lines[0][12], /paste columns A to L only/);
+  lines.slice(1).forEach((row) => assert.equal(row[12], ""));
 });
