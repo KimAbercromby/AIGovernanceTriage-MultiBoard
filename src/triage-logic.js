@@ -6,14 +6,14 @@
   "use strict";
 
   // Suite release this tool is aligned to, with the artefact versions it relies on
-  // (from the AIG-GOV-03 Artefact Index, suite release v3.9.6, 3 October 2026).
+  // (from the AIG-GOV-03 Artefact Index, suite release v3.9.7, 3 October 2026).
   const SUITE = {
-    release: "v3.9.6",
+    release: "v3.9.7",
     date: "3 October 2026",
     status: "Proposed — for Council confirmation; not approved or adopted",
     versions: {
       "AIG-GOV-02 Playbook": "19.9.15 draft",
-      "AIG-GOV-03 Artefact Index": "1.31 draft",
+      "AIG-GOV-03 Artefact Index": "1.32 draft",
       "AIG-INV-04 AI Register": "1.0 draft",
       "AIG-INV-05 Capabilities and System Map": "0.3 proposed design draft",
       "AIG-ASS-01 AGPI Triage Tool": "1.4 draft",
@@ -22,7 +22,7 @@
       "AIG-DEC-01 Gate Map": "1.10 draft",
       "AIG-DEC-02 Decision-Ready Paper": "1.5 draft",
       "AIG-DEC-03 Governance Decision Record": "1.8 draft",
-      "AIG-DEC-04 Gate Log": "1.1 draft",
+      "AIG-DEC-04 Gate Log": "1.2 draft",
       "AIG-AGT-02 Agentic Classification Reference": "1.6 draft",
       "AIG-AGT-03 Agentic Triage": "1.5 draft",
       "AIG-AGT-04 Agent Record (ASBOM)": "0.5 working draft",
@@ -268,19 +268,23 @@
     const value = profile && profile.fastTrack;
     return Object.values(FAST_TRACK).includes(value) ? value : FAST_TRACK.notDone;
   }
-  // Fast-Track answers that the rest of the profile shows cannot be No:
-  // Q1 (can it act?), Q2 (personal or special category data) and Q5 (public-facing).
+  // Fast-Track answers that the rest of the profile shows cannot be No (AIG-INV-02
+  // v1.8, suite v3.9.7): Q1 (can it act?), Q2 (special category data; ordinary
+  // personal data the user already handles is No), Q3/Q4 (outputs could materially
+  // affect individuals or services) and Q5 (resident- or public-facing; staff using
+  // it for their own work is No).
   function fastTrackConflicts(profile) {
     const p = profile || {};
     const out = [];
     const authority = p.actionAuthority || "";
     if (authority && authority !== ACTION_AUTHORITY.none) out.push("Q1 (it can act, or that is unconfirmed)");
-    if (p.dataType === "Personal data" || p.dataType === "Special category data") out.push("Q2 (it processes personal data)");
-    if (p.publicFacing === "Yes") out.push("Q5 (it is public-facing)");
+    if (p.dataType === "Special category data") out.push("Q2 (it processes special category data)");
+    if (p.affectsIndividuals === "Yes") out.push("Q3 or Q4 (its outputs could materially affect individuals or services)");
+    if (p.publicFacing === "Yes") out.push("Q5 (it is resident- or public-facing)");
     return out;
   }
 
-  // Procurement question (AIG-DEC-01 v1.9 Gate 4 rule; Playbook §5.5.1; AIG-ASS-08 v1.6;
+  // Procurement question (AIG-DEC-01 v1.10 Gate 4 rule; Playbook §5.5.1; AIG-ASS-08 v1.6;
   // Proposed — for Council confirmation). v3.9.2 (T-07, T-08).
   const PROCUREMENT = {
     unknown: "Not yet known",
@@ -646,7 +650,7 @@
     );
   }
 
-  // Agency-tier minimum pathway (AIG-DEC-01 v1.9 Agentic pathway; AIG-AGT-03 §6;
+  // Agency-tier minimum pathway (AIG-DEC-01 v1.10 Agentic pathway; AIG-AGT-03 §6;
   // Playbook F.2). Applies to action-capable uses only. T0/T1 none, T2 Medium,
   // T3 High, T4 High (Critical where actions run without evidenced per-action human
   // review), T5 Critical. Proposed — for Council confirmation.
@@ -707,7 +711,7 @@
   }
 
   // Gate 4 and the full Supplier DDQ apply only where a procurement, new contract,
-  // licence change or contract variation is needed (AIG-DEC-01 v1.9), not from the
+  // licence change or contract variation is needed (AIG-DEC-01 v1.10), not from the
   // Source answer alone (v3.9.2, T-07).
   function commercialRequired(profile) {
     return procurementRouteOf(profile) === PROCUREMENT.new;
@@ -938,8 +942,8 @@
       !(results.triggerIds || []).length && !anyAssessment && !isAgentSystem(profile, results);
   }
   // Light-touch needs everything above AND an all-No Fast Track that the rest of the
-  // profile does not contradict (suite v3.9.6 finding: a use with personal data was
-  // shown as Light-touch although Fast-Track Q2 would be Yes).
+  // profile does not contradict (Copilot simulation finding, 3 October 2026: Light-touch
+  // was shown without any Fast-Track answers being recorded).
   function isLightTouch(profile, results) {
     return lowTierCandidate(profile, results) && fastTrackOf(profile) === FAST_TRACK.allNo &&
       !fastTrackConflicts(profile).length;
@@ -1055,7 +1059,7 @@
     return match ? Number(match[1]) : null;
   }
 
-  // Prospective gate route (AIG-DEC-01 v1.9 Gate Map, gates 1 to 6), with the AI
+  // Prospective gate route (AIG-DEC-01 v1.10 Gate Map, gates 1 to 6), with the AI
   // Assurance Board's assurance input shown as a separate, non-deciding step. The
   // governing tier sets which gates apply; the AGPI priority sets urgency only.
   // Gate 2 and Gate 6 are mandatory for every action-capable use (R1, R2); Gate 4
@@ -1186,7 +1190,7 @@
         naRationale: gate4.naRationale,
         forum: configured.commercial,
         decision:
-          "Funding, tendering and contract award: is the procurement route, supplier and contract acceptable under the relevant delegated authority? Gate 4 applies wherever a procurement, new contract, licence change or contract variation is needed (AIG-DEC-01 v1.9; Proposed \u2014 for Council confirmation).",
+          "Funding, tendering and contract award: is the procurement route, supplier and contract acceptable under the relevant delegated authority? Gate 4 applies wherever a procurement, new contract, licence change or contract variation is needed (AIG-DEC-01 v1.10; Proposed \u2014 for Council confirmation).",
         evidence: gate4.applies === true || gate4.applies === null
           ? [
             "Supplier AI Due Diligence Questionnaire (AIG-ASS-08)",
@@ -1494,6 +1498,9 @@
     "UC-ID scope(s) (blank only for explicit system baseline)",
     "Decision scope (UC-ID specific / Shared system baseline)",
   ];
+  // Column M of the Gate plan sheet is the workbook's Row check formula. The export
+  // leaves it empty and says so, so pasting a whole row does not go unnoticed.
+  const GATE_PLAN_ROW_CHECK_NOTE = "Column M is the workbook Row check: paste columns A to L only, never over M";
   const GATE_PLAN_GUIDANCE_HEADERS = [
     "Guidance only, do not paste: configured forum or decision-maker",
     "Guidance only, do not paste: decision question for the forum",
@@ -1505,7 +1512,7 @@
   // AIG-DEC-01 decision gate (1 to 6). Columns A to L match the workbook exactly and
   // every controlled column holds a value from its dropdown: Gate / forum from the
   // Lists sheet, Requirement Required/Conditional (Not applicable for Gate 4 under the
-  // AIG-DEC-01 v1.9 rule, with a draft rationale in column J for the steward to confirm),
+  // AIG-DEC-01 v1.10 rule, with a draft rationale in column J for the steward to confirm),
   // Plan state Planned, Decision scope UC-ID specific. A blank spacer column separates
   // the guidance columns, which are not part of the Gate plan. Plan ID and Target date
   // stay blank for the governance steward: the tool never issues IDs. The AI
@@ -1522,7 +1529,7 @@
     const basis = results
       ? `Triage prompt: AGPI ${results.agpiScore} (${results.priority.label}; urgency only); governing tier ${results.effectiveTierName}${results.agencyPending ? " (at least; agency tier not yet assessed)" : ""}. Verify against current AIG-ASS-01 / AIG-ASS-02 before relying on it.`
       : "Add the AIG-ASS-01 / AIG-ASS-02 reference";
-    const headers = [...GATE_PLAN_HEADERS, "", ...GATE_PLAN_GUIDANCE_HEADERS];
+    const headers = [...GATE_PLAN_HEADERS, GATE_PLAN_ROW_CHECK_NOTE, ...GATE_PLAN_GUIDANCE_HEADERS];
     const rows = route.filter((gate) => gate.gate).map((gate) => [
       "",
       profile.registerId || "",
@@ -1889,7 +1896,7 @@
         : "Sections 1\u20139 (supplier responses); Section 10 \u2014 Council Evaluation (internal)",
       fields: [
         { label: "Procurement route (intake answer)", value: gate4.route },
-        { label: "Gate 4 (AIG-DEC-01 v1.9 rule)", value: gate4.label },
+        { label: "Gate 4 (AIG-DEC-01 v1.10 rule)", value: gate4.label },
       ],
       note: `${gate4.note} The commercial owner confirms the procurement position. (Proposed \u2014 for Council confirmation.)`,
     });
@@ -2581,6 +2588,7 @@
     agenticContextKey,
     currentAgenticAssessment,
     buildGatePlanCsv,
+    GATE_PLAN_ROW_CHECK_NOTE,
     REGISTER_LIFECYCLE_STAGES,
     GATE_PLAN_HEADERS,
     buildDecisionReadyHandoff,

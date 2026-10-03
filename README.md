@@ -33,10 +33,10 @@ outcome, and that every export control the tool wires up is blocked in demo mode
 ## Suite alignment and status
 
 This tool is aligned as a review aid to proposed, separate AI governance
-workbook drafts: **AI governance suite v3.9.6 (3 October 2026)**, Playbook 19.9.15,
+workbook drafts: **AI governance suite v3.9.7 (3 October 2026)**, Playbook 19.9.15,
 Gate Map AIG-DEC-01 1.10, AGPI Triage AIG-ASS-01 1.4, Risk Worksheet AIG-ASS-02 1.10,
 Deployment and Rollout Plan AIG-OPS-01 1.10, Monitoring Log AIG-OPS-02 1.6, Register
-AIG-INV-04 1.0, Gate Log AIG-DEC-04 1.1, Agent Record AIG-AGT-04 0.5 and Capabilities and System Map
+AIG-INV-04 1.0, Gate Log AIG-DEC-04 1.2, Agent Record AIG-AGT-04 0.5 and Capabilities and System Map
 AIG-INV-05 0.3. They are **proposed and unapproved**,
 not an approved or live policy, process or record. This public tool does not read
 or write controlled records and must not be treated as issued authority.
@@ -64,7 +64,7 @@ Rules applied (Proposed — for Council confirmation):
   Medium, T3 High, T4 High or Critical without evidenced per-action review, T5
   Critical). "Can it act?" Unsure counts as Yes; per-action review Unsure counts as
   No (Critical floor).
-- **Gates (AIG-DEC-01 v1.9):** Gate 2 and Gate 6 are mandatory for every
+- **Gates (AIG-DEC-01 v1.10):** Gate 2 and Gate 6 are mandatory for every
   action-capable use (T0 included) and Gate 6 grants the permitted autonomy level;
   Gate 4 applies wherever a procurement, new contract, licence change or contract
   variation is needed; for an existing contract or licence, or a free public tool, it
@@ -107,9 +107,10 @@ Rules applied (Proposed — for Council confirmation):
   export gives paste-ready rows for the Gate plan sheet only: one row per AIG-DEC-01
   decision gate 1 to 6, columns A to L, with Gate / forum from the workbook's gate
   list, Requirement Required or Conditional (Gate 4 Not applicable under the AIG-DEC-01
-  v1.8 rule, with a draft rationale for the steward to confirm) and Plan state Planned
+  v1.10 rule, with a draft rationale for the steward to confirm) and Plan state Planned
   (Plan ID and target date left blank for the governance steward), followed by
-  guidance columns that are not pasted. It never creates Gate Events or Conditions.
+  column M left empty and labelled (it is the workbook Row check formula: paste
+  columns A to L only) and guidance columns that are not pasted. It never creates Gate Events or Conditions.
 - **AIG-INV-05 Capabilities and System Map:** a proposed controlled catalogue
   artefact, not approved or adopted. Triage offers a
   clearly labelled proposal for outcome-led use cases, capabilities and a UC →
@@ -182,8 +183,8 @@ node scripts/build.js --check
 node --test test/*.test.js
 ```
 
-`test/suite-v3.9.6-contract.test.js` checks every export's field labels, order and
-controlled values against `test/fixtures/suite-v3.9.6-contract.json`, which records the
+`test/suite-v3.9.7-contract.test.js` checks every export's field labels, order and
+controlled values against `test/fixtures/suite-v3.9.7-contract.json`, which records the
 header rows and dropdown lists read from the suite workbooks (file, sheet and row).
 `test/v392-findings.test.js` has one test for each v3.9.2 pilot-readiness fix.
 Regenerate the fixture for a new suite release with

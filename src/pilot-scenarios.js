@@ -92,7 +92,7 @@
       "control": 3,
       "controlEvidence": "Implemented and evidenced",
       "triggers": [],
-      "outcomeChange": "Suite v3.9.6: Light-touch now needs an all-No Fast-Track Screening. This use processes personal data (Fast-Track Q2 Yes), so it moved from Light-touch to the Standard route at the Low tier. Its scores, priority and tier are unchanged.",
+      "outcomeChange": "Light-touch now needs an all-No Fast-Track Screening (suite v3.9.7). This use sorts residents' repair requests, so its Fast-Track Screening has at least one Yes (Q3: its output can influence how a resident is served). It moved from Light-touch to the Standard route at the Low tier. Its scores, priority and tier are unchanged.",
       "expected": {
         "agpiScore": 33.75,
         "priority": "Priority 4 – Routine",
