@@ -531,6 +531,16 @@ textarea:user-invalid {
   accent-color: var(--danger);
 }
 
+.answer-warning {
+  margin: 0.4rem 0 0;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.9rem;
+  color: var(--danger);
+  background: var(--danger-soft);
+  border-left: 4px solid var(--danger);
+  border-radius: 4px;
+}
+.answer-warning[hidden] { display: none; }
 .warning-panel {
   display: none;
   gap: 0.2rem;
@@ -1698,6 +1708,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
                 <option>No — existing approved system and licence, no new cost</option>
               </select>
               <small>New funding, extra licences or usage charges, a procurement or a business case. With no new investment, at Low or Medium and unable to act, Gate 3 (the business case) is proposed N/A. Gate 1 is also N/A for a new use of, or a change to a use of, a system already approved; a system new to the Council always goes to Gate 1, even if free (AIG-DEC-01 Gate 1 and 3 rule).</small>
+              <p id="investmentWarning" class="answer-warning" role="status" hidden></p>
             </label>
             <label class="field">
               <span>Is the system's approval current?</span>
@@ -2513,6 +2524,15 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
   function newInvestmentOf(profile) {
     const value = profile && profile.newInvestment;
     return Object.values(NEW_INVESTMENT).includes(value) ? value : NEW_INVESTMENT.unsure;
+  }
+  // Answers that contradict each other (decision B4, suite v3.9.8). The stricter
+  // answer still applies; the person is told why so they can correct the form.
+  function answerConflicts(profile) {
+    const out = [];
+    if (newInvestmentOf(profile) === NEW_INVESTMENT.no && procurementRouteOf(profile) === PROCUREMENT.new) {
+      out.push("You said no new investment, but a new contract, licence change or contract variation is new investment. Gates 1, 3 and 4 apply. Check your answers.");
+    }
+    return out;
   }
   // Is the existing system's approval current? (AIG-INV-03; decision A6, suite v3.9.8.)
   // Unsure counts as No. Only asked where an existing AIR-ID is entered.
@@ -4859,6 +4879,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     buildEvidenceList,
     isLightTouch,
     NEW_INVESTMENT,
+    answerConflicts,
     SYSTEM_APPROVAL,
     systemApprovalOf,
     newInvestmentOf,
@@ -5394,7 +5415,10 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     if (routeBanner) {
       routeBanner.className = "route-banner route-" + gRoute.key;
       byId("routeBannerName").textContent = `Provisional · ${gRoute.name}`;
-      byId("routeBannerWhy").textContent = gRoute.why;
+      const conflicts = logic.answerConflicts(profile);
+      byId("routeBannerWhy").textContent = (conflicts.length ? conflicts.join(" ") + " " : "") + gRoute.why;
+      const warn = byId("investmentWarning");
+      if (warn) { warn.textContent = conflicts.join(" "); warn.hidden = !conflicts.length; }
     }
 
     const controlStatus = byId("controlStatus");

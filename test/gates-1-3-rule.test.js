@@ -134,3 +134,14 @@ test("v3.9.8 (decision A6): Gates 1 and 3 stay unless the existing system's appr
   const sel = /<select id="systemApproval">([\s\S]*?)<\/select>/.exec(html)[1];
   assert.deepEqual([...sel.matchAll(/<option>([^<]+)<\/option>/g)].map((m) => m[1]), Object.values(logic.SYSTEM_APPROVAL));
 });
+
+test("v3.9.8 (decision B4): contradictory investment and procurement answers are flagged", () => {
+  const p = profile({ procurementRoute: "New contract, licence change or contract variation" });
+  assert.match(logic.answerConflicts(p).join(" "), /no new investment, but a new contract/);
+  const route = logic.buildRoute(p, run(p), {});
+  assert.equal(gate(route, 1).applicability, "Required");
+  assert.equal(gate(route, 4).applicability, "Required");
+  assert.deepEqual(logic.answerConflicts(profile({})), [], "no warning when answers agree");
+  const html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
+  assert.match(html, /id="investmentWarning"/);
+});

@@ -486,7 +486,10 @@
     if (routeBanner) {
       routeBanner.className = "route-banner route-" + gRoute.key;
       byId("routeBannerName").textContent = `Provisional · ${gRoute.name}`;
-      byId("routeBannerWhy").textContent = gRoute.why;
+      const conflicts = logic.answerConflicts(profile);
+      byId("routeBannerWhy").textContent = (conflicts.length ? conflicts.join(" ") + " " : "") + gRoute.why;
+      const warn = byId("investmentWarning");
+      if (warn) { warn.textContent = conflicts.join(" "); warn.hidden = !conflicts.length; }
     }
 
     const controlStatus = byId("controlStatus");

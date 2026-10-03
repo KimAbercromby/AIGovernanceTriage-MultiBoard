@@ -295,6 +295,15 @@
     const value = profile && profile.newInvestment;
     return Object.values(NEW_INVESTMENT).includes(value) ? value : NEW_INVESTMENT.unsure;
   }
+  // Answers that contradict each other (decision B4, suite v3.9.8). The stricter
+  // answer still applies; the person is told why so they can correct the form.
+  function answerConflicts(profile) {
+    const out = [];
+    if (newInvestmentOf(profile) === NEW_INVESTMENT.no && procurementRouteOf(profile) === PROCUREMENT.new) {
+      out.push("You said no new investment, but a new contract, licence change or contract variation is new investment. Gates 1, 3 and 4 apply. Check your answers.");
+    }
+    return out;
+  }
   // Is the existing system's approval current? (AIG-INV-03; decision A6, suite v3.9.8.)
   // Unsure counts as No. Only asked where an existing AIR-ID is entered.
   const SYSTEM_APPROVAL = {
@@ -2640,6 +2649,7 @@
     buildEvidenceList,
     isLightTouch,
     NEW_INVESTMENT,
+    answerConflicts,
     SYSTEM_APPROVAL,
     systemApprovalOf,
     newInvestmentOf,
