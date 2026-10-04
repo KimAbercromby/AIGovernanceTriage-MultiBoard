@@ -443,7 +443,7 @@
           : review === "No" || results.triggerIds.includes("agentic")
             ? "This system can execute actions without human review of each individual action. The mandatory agentic trigger therefore applies and the minimum governing tier is Critical (Playbook §4.4.6). "
             : "This system can act, but each individual action remains human-approved. A Critical floor is not imposed solely because the system is agentic. ") +
-          gates + agency + " Complete the Agentic Triage, Agent Record (ASBOM) and authority controls.",
+          gates + agency + " Complete the Agentic Triage and the Agent Record (ASBOM) at the level it needs: the core record for every agent that can act, extra sheets for persistence, memory, tool discovery, credential access or delegation, and the full ASBOM at T3 and above (Playbook F.3).",
       };
     }
 
@@ -1067,6 +1067,7 @@
       ["Note (not a column) — Exact use purpose / outcome", p.usePurpose || p.purpose],
       ["Note (not a column) — Use-specific triage AGPI priority (not the AIG-INV-04 system value)", r.priority.label],
       ["Note (not a column) — Agency tier set by (AIG-AGT-02/AIG-AGT-03 Tables A and B)", (a.setBy || []).join(", ")],
+      ["Note (not a column) — Record level required (workbook column BL calculates it)", `${a.recordLevel.level} (${a.recordLevel.reason})${a.recordLevel.sheets.length ? "; also complete: " + a.recordLevel.sheets.join(", ") : ""}`],
     ];
     return logic.toCsv(
       ["Target artefact", "Field label / prompt", "Field reference type", "Triage draft value", "Value status", "Review, evidence or authority still required"],
@@ -1076,7 +1077,9 @@
         field.startsWith("Note (not a column)") ? "Context note — not an Agent Record column" : exact,
         value == null ? "" : value,
         "Proposal only — not a mandate, approval or operational state",
-        field === "AGPI Priority (from AIG-INV-04)"
+        logic.AGENT_RECORD_CORE_FIELDS.includes(field) && field !== "AGPI Priority (from AIG-INV-04)" && !field.startsWith("Permitted autonomy")
+          ? "Core field: needed for every agent before go-live and answered by the Council itself (never Not disclosed by supplier). Review the current ASBOM contract and evidence."
+          : field === "AGPI Priority (from AIG-INV-04)"
           ? "Leave blank here: copy the current AIG-INV-04 value; this UC-specific triage priority is not the system summary."
           : field.startsWith("Permitted autonomy")
             ? "Granted only at Gate 6 by the go-live decision-maker and recorded in AIG-DEC-03; never inferred from the assessed level."

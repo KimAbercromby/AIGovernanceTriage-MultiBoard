@@ -6,28 +6,28 @@
   "use strict";
 
   // Suite release this tool is aligned to, with the artefact versions it relies on
-  // (from the AIG-GOV-03 Artefact Index, suite release v3.9.8, 3 October 2026).
+  // (from the AIG-GOV-03 Artefact Index, suite release v3.9.9, 4 October 2026).
   const SUITE = {
-    release: "v3.9.8",
-    date: "3 October 2026",
+    release: "v3.9.9",
+    date: "4 October 2026",
     status: "Proposed — for Council confirmation; not approved or adopted",
     versions: {
-      "AIG-GOV-02 Playbook": "19.9.17 draft",
-      "AIG-GOV-03 Artefact Index": "1.33 draft",
+      "AIG-GOV-02 Playbook": "19.9.18 draft",
+      "AIG-GOV-03 Artefact Index": "1.34 draft",
       "AIG-INV-04 AI Register": "1.1 draft",
       "AIG-INV-05 Capabilities and System Map": "0.3 proposed design draft",
       "AIG-ASS-01 AGPI Triage Tool": "1.4 draft",
       "AIG-ASS-02 AI Risk Assessment Worksheet": "1.10 draft",
-      "AIG-ASS-11 AI Security Review Checklist": "1.9 draft",
-      "AIG-DEC-01 Gate Map": "1.12 draft",
+      "AIG-ASS-11 AI Security Review Checklist": "1.10 draft",
+      "AIG-DEC-01 Gate Map": "1.13 draft",
       "AIG-DEC-02 Decision-Ready Paper": "1.7 draft",
-      "AIG-DEC-03 Governance Decision Record": "1.10 draft",
+      "AIG-DEC-03 Governance Decision Record": "1.11 draft",
       "AIG-DEC-04 Gate Log": "1.3 draft",
       "AIG-AGT-02 Agentic Classification Reference": "1.6 draft",
-      "AIG-AGT-03 Agentic Triage": "1.5 draft",
-      "AIG-AGT-04 Agent Record (ASBOM)": "0.5 working draft",
+      "AIG-AGT-03 Agentic Triage": "1.6 draft",
+      "AIG-AGT-04 Agent Record (ASBOM)": "0.6 working draft",
       "AIG-AGT-06 Agentic Action / Decision Record": "1.5 draft",
-      "AIG-OPS-01 Deployment and Rollout Plan": "1.11 draft",
+      "AIG-OPS-01 Deployment and Rollout Plan": "1.12 draft",
       "AIG-OPS-02 Monitoring and Review Log": "1.6 draft",
       "UC_ID_Risk_Decision_Current_View": "1.0 draft",
     },
@@ -904,6 +904,7 @@
       agencyFloorApplied: tier.agencyFloorApplied,
       agencyPending: tier.agencyPending,
       agencyTierLabel: agentic ? agentic.tierLabel : "",
+      agentRecordLevel: agentic ? agentRecordLevel(agentic) : null,
       actionCapable,
       perActionReview: review,
       controlEvidence,
@@ -1865,8 +1866,9 @@
           { label: "Agentic triage required?", value: "Yes — complete before routing" },
           { label: "Agency tier (triage)", value: results.agencyTierLabel || "Not yet assessed — run Assess agency" },
           { label: "Agency-tier minimum pathway", value: results.agencyMinTier || (results.agencyTierLabel ? "None" : "Pending agency tier") },
+          { label: "Agent Record level (AIG-AGT-04 column BL)", value: results.agentRecordLevel ? `${results.agentRecordLevel.level} (${results.agentRecordLevel.reason})${results.agentRecordLevel.sheets.length ? ": " + results.agentRecordLevel.sheets.join(", ") : ""}` : "Full until the agency tier is assessed (fail safe)" },
         ],
-        note: "Run AIG-AGT-03 Agentic Triage: score the five agency dimensions, record the assessed autonomy level and agency tier, test the authority boundary and kill-switch, and open the AIG-AGT-04 Agent Record / ASBOM. Gate 2 (agentic control checkpoints) and Gate 6 (grants the permitted autonomy level) are mandatory for every action-capable use (AIG-DEC-01 R1, R2). The AI Register (AIG-INV-04) records Can it act? and its Assessment summary carries the agency tier; the ASBOM holds the full composition and AIG-AGT-05 Authority Graph derives from it. Consequential actions in service are recorded in AIG-AGT-06.",
+        note: "Run AIG-AGT-03 Agentic Triage: score the five agency dimensions, record the assessed autonomy level and agency tier, test the authority boundary and kill-switch, and open the AIG-AGT-04 Agent Record / ASBOM at the level the agent needs: the core record for every agent that can act, the feature sheets its persistence, memory, tool discovery, credential access or delegation switch on, and the full ASBOM at T3 and above or with financial authority (Playbook F.3). Supplier-side detail a supplier will not give may be recorded as Not disclosed by supplier; the core fields never. Gate 2 (agentic control checkpoints) and Gate 6 (grants the permitted autonomy level) are mandatory for every action-capable use (AIG-DEC-01 R1, R2). The AI Register (AIG-INV-04) records Can it act? and its Assessment summary carries the agency tier; the ASBOM holds the full composition and AIG-AGT-05 Authority Graph derives from it. Consequential actions in service are recorded in AIG-AGT-06.",
       });
       items.push({
         artefact: "AIG-AGT-05 Agent Authority Graph",
@@ -2542,6 +2544,44 @@
     return reviewedContextKey === agenticContextKey(profile, inputs) ? assessment : null;
   }
 
+  // Proportionate Agent Record (suite v3.9.9; Playbook F.3; AIG-AGT-04 v0.6 column BL).
+  // Every agent that can act needs the core record; persistence, memory, tool discovery,
+  // credential access and delegation switch on their own sheets (the AIG-AGT-02 memory flag
+  // covers working, retrieved or persistent memory); T3 and above, or
+  // financial authority, needs the full ASBOM. Unknown tier fails safe to Full.
+  const AGENT_RECORD_CORE_FIELDS = [
+    "AIR-ID", "Agent Name", "Approved Purpose (mandate)", "Business Owner", "Operator / Platform", "Agency Tier",
+    "Agency profile ref (Agency Profile sheet — the record)",
+    "Permission Scope (summary)", "Identity / credential provenance", "Suspension mechanism", "Rollback capability?",
+    "Authority expiry / next reauthorisation", "Human Oversight Mode", "AG-ID",
+    "UC-ID(s) within this authority envelope (reference only)", "ASBOM record version",
+    "Permitted autonomy level (granted at Gate 6)", "Permitted autonomy decision ref (AIG-DEC-03)",
+  ];
+  const AGENT_RECORD_FEATURE_SHEETS = {
+    Persistence: ["Runtime Controls (stop and containment)"],
+    Memory: ["Memory Controls"],
+    "Tool discovery": ["Tool Authority Registry", "Interface Register"],
+    "Credential access": ["Tool Authority Registry", "Interface Register"],
+    Delegation: ["Authority & Delegations", "Multi-Agent Controls", "Agent Authority Graph (AIG-AGT-05)"],
+  };
+  const AGENT_RECORD_FULL_SHEETS = ["Capability Vector", "Components", "Authority & Delegations",
+    "Agent Authority Graph (AIG-AGT-05)", "Runtime Controls (all ten, Required or Not applicable)", "the feature sheets that apply"];
+  function agentRecordLevel(agentic) {
+    const tier = agentic && Number.isFinite(agentic.tierNum) ? agentic.tierNum : null;
+    const mult = (agentic && agentic.multipliers) || [];
+    if (tier === null || tier >= 3 || mult.includes("Financial authority")) {
+      return { level: "Full", sheets: AGENT_RECORD_FULL_SHEETS.slice(),
+        reason: tier === null ? "agency tier not yet assessed (fail safe)" : tier >= 3 ? `agency tier T${tier} (T3 and above)` : "financial authority" };
+    }
+    const features = Object.keys(AGENT_RECORD_FEATURE_SHEETS).filter((f) => mult.includes(f));
+    if (features.length) {
+      const sheets = [];
+      features.forEach((f) => AGENT_RECORD_FEATURE_SHEETS[f].forEach((s) => { if (!sheets.includes(s)) sheets.push(s); }));
+      return { level: "Core plus features", sheets, reason: features.join(", ").toLowerCase() };
+    }
+    return { level: "Core", sheets: [], reason: `agency tier T${tier} with no persistence, memory, tool discovery, credential access or delegation` };
+  }
+
   // Deterministic agency tier (AIG-AGT-02 / AIG-AGT-03 §6 Tables A and B): apply every
   // Table A floor and every Table B rule; the highest floor wins (minimum T0).
   function computeAgentic(input) {
@@ -2584,6 +2624,7 @@
     if (!boundariesTested) flags.push("Boundaries not tested");
     return {
       tierNum: tier, tierLabel: AGENCY_TIERS[tier], pathway: AGENCY_PATHWAYS[tier],
+      recordLevel: agentRecordLevel({ tierNum: tier, multipliers: mult }),
       autonomyLabel: autonomyLabel(autonomy), autonomy, consequence, authority, reach, controllability,
       floors: floors.map((f) => `${f.rule} → T${f.tier}`),
       setBy,
@@ -2680,6 +2721,8 @@
     AGENCY_TIERS,
     AGENCY_PATHWAYS,
     computeAgentic,
+    agentRecordLevel,
+    AGENT_RECORD_CORE_FIELDS,
     autonomyLabel,
     agenticContextKey,
     currentAgenticAssessment,
