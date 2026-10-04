@@ -34,9 +34,9 @@ outcome, and that every export control the tool wires up is blocked in demo mode
 
 This tool is aligned as a review aid to proposed, separate AI governance
 workbook drafts: **AI governance suite v3.9.9 (4 October 2026)**, Playbook 19.9.18,
-Gate Map AIG-DEC-01 1.11, AGPI Triage AIG-ASS-01 1.4, Risk Worksheet AIG-ASS-02 1.10,
-Deployment and Rollout Plan AIG-OPS-01 1.10, Monitoring Log AIG-OPS-02 1.6, Register
-AIG-INV-04 1.0, Gate Log AIG-DEC-04 1.2, Agent Record AIG-AGT-04 0.5 and Capabilities and System Map
+Gate Map AIG-DEC-01 1.13, AGPI Triage AIG-ASS-01 1.4, Risk Worksheet AIG-ASS-02 1.10,
+Deployment and Rollout Plan AIG-OPS-01 1.12, Monitoring Log AIG-OPS-02 1.6, Register
+AIG-INV-04 1.1, Gate Log AIG-DEC-04 1.3, Agent Record AIG-AGT-04 0.6 and Capabilities and System Map
 AIG-INV-05 0.3. They are **proposed and unapproved**,
 not an approved or live policy, process or record. This public tool does not read
 or write controlled records and must not be treated as issued authority.
@@ -80,8 +80,9 @@ Rules applied (Proposed — for Council confirmation):
 - **Agent Record level (suite v3.9.9; Playbook F.3):** after "Assess agency" the tool shows
   the level of AIG-AGT-04 Agent Record the agent needs: Core for every agent that can act;
   Core plus features where persistence, memory, tool discovery, credential access or
-  delegation switch on their own sheets; Full at T3 and above, with financial authority or
-  while the tier is unassessed. The Agent Record export marks the core fields, which the
+  delegation switch on their own sheets (the memory flag covers working, retrieved or
+  persistent memory); Full at T3 and above, with financial authority or
+  while the tier is unassessed. The core record includes the Agency Profile row behind the tier. The Agent Record export marks the core fields, which the
   Council must answer itself (never "Not disclosed by supplier").
 - **Answers that contradict each other (suite v3.9.8):** the stricter answer applies and
   the tool says why. "No new investment" with a new contract, licence change or

@@ -18,7 +18,7 @@
       "AIG-INV-05 Capabilities and System Map": "0.3 proposed design draft",
       "AIG-ASS-01 AGPI Triage Tool": "1.4 draft",
       "AIG-ASS-02 AI Risk Assessment Worksheet": "1.10 draft",
-      "AIG-ASS-11 AI Security Review Checklist": "1.9 draft",
+      "AIG-ASS-11 AI Security Review Checklist": "1.10 draft",
       "AIG-DEC-01 Gate Map": "1.13 draft",
       "AIG-DEC-02 Decision-Ready Paper": "1.7 draft",
       "AIG-DEC-03 Governance Decision Record": "1.11 draft",
@@ -2546,10 +2546,12 @@
 
   // Proportionate Agent Record (suite v3.9.9; Playbook F.3; AIG-AGT-04 v0.6 column BL).
   // Every agent that can act needs the core record; persistence, memory, tool discovery,
-  // credential access and delegation switch on their own sheets; T3 and above, or
+  // credential access and delegation switch on their own sheets (the AIG-AGT-02 memory flag
+  // covers working, retrieved or persistent memory); T3 and above, or
   // financial authority, needs the full ASBOM. Unknown tier fails safe to Full.
   const AGENT_RECORD_CORE_FIELDS = [
     "AIR-ID", "Agent Name", "Approved Purpose (mandate)", "Business Owner", "Operator / Platform", "Agency Tier",
+    "Agency profile ref (Agency Profile sheet — the record)",
     "Permission Scope (summary)", "Identity / credential provenance", "Suspension mechanism", "Rollback capability?",
     "Authority expiry / next reauthorisation", "Human Oversight Mode", "AG-ID",
     "UC-ID(s) within this authority envelope (reference only)", "ASBOM record version",
@@ -2562,7 +2564,7 @@
     "Credential access": ["Tool Authority Registry", "Interface Register"],
     Delegation: ["Authority & Delegations", "Multi-Agent Controls", "Agent Authority Graph (AIG-AGT-05)"],
   };
-  const AGENT_RECORD_FULL_SHEETS = ["Capability Vector", "Agency Profile", "Components", "Authority & Delegations",
+  const AGENT_RECORD_FULL_SHEETS = ["Capability Vector", "Components", "Authority & Delegations",
     "Agent Authority Graph (AIG-AGT-05)", "Runtime Controls (all ten, Required or Not applicable)", "the feature sheets that apply"];
   function agentRecordLevel(agentic) {
     const tier = agentic && Number.isFinite(agentic.tierNum) ? agentic.tierNum : null;
