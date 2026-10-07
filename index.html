@@ -2098,10 +2098,19 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
           #agencyResult{margin-top:12px;padding:12px 14px;border-left:4px solid #C8AB36;background:#f5f7fa;border-radius:6px}
           #agencyResult .ag-tier{font-size:1.2em;font-weight:700;color:#122C47;margin:0 0 6px}
           #agencyResult .ag-flag{color:#9B1C1C}
+          .env-optional{margin:2rem 0;padding:1.25rem;border:1px solid #dbe3e9;border-radius:8px;background:#f9fbfd}
+          .env-optional summary{cursor:pointer;font-weight:700;color:#122C47;font-size:1.05rem;user-select:none;display:flex;align-items:center;justify-content:space-between}
+          .env-optional summary small{font-weight:400;color:#5A5A5A;font-size:.85rem;margin-left:.5rem}
+          .env-optional[open] summary{margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid #dbe3e9}
+          .env-input{display:grid;grid-template-columns:repeat(2,1fr);gap:1.5rem 2rem;margin-bottom:1rem}
+          .env-input label{display:block;font-weight:600;font-size:.95rem;margin-bottom:.4rem;color:#122C47}
+          .env-input select{width:100%;padding:.6rem;border:1px solid #c7d4df;border-radius:5px;font-size:.95rem;background:#fff}
+          .env-flag,.env-detail{padding:.75rem;margin:.5rem 0;background:#fff;border-left:3px solid #C8AB36;color:#314556;font-size:.95rem}
+          #envResultBox{margin-top:1rem}
+          @media(max-width:620px){.env-input{grid-template-columns:1fr}}
         </style>
-        <section class="step" id="environmentalStep" aria-labelledby="environmental-title">
-          <h2 id="environmental-title">Environmental considerations</h2>
-          <p class="muted">Environmental impact assessment to support governance decisions. Complete this where your council needs to track environmental metrics for AI systems.</p>
+        <details class="env-optional" id="environmentalStep">
+          <summary>Environmental considerations <small>(optional)</small></summary>
           <div class="env-input">
             <label for="envFoundationModels">Uses foundation models?</label>
             <select id="envFoundationModels">
@@ -2136,7 +2145,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
             <div class="env-detail">Intensity: <span id="envIntensity"></span></div>
             <div class="env-detail">Supplier info needed: <span id="envSupplierNeeded"></span></div>
           </div>
-        </section>
+        </details>
         <section class="step" id="agenticStep" aria-labelledby="agentic-title">
           <h2 id="agentic-title">Agentic triage &mdash; for systems that can act</h2>
           <p class="muted">Complete this where the system can take actions. Score the five agency dimensions, flag the multipliers and capabilities, and confirm containment. The agency tier and routing follow the profile, not a sum, and a high-consequence or hard-to-contain reading (a high reversed controllability score) can raise the tier.</p>
