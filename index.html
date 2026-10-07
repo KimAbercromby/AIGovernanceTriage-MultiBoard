@@ -2043,6 +2043,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
               <button type="button" id="downloadGateReady" class="secondary"><span class="btn-main">Download Decision-Ready paper handoff</span><span class="btn-ref">AIG-DEC-02 · blank preparer and actual paper date</span></button>
               <button type="button" id="downloadGates" class="secondary"><span class="btn-main">Download Gate Log plan rows</span><span class="btn-ref">AIG-DEC-04 Gate plan · paste-ready columns A–L</span></button>
               <button type="button" id="downloadHandoff" class="secondary"><span class="btn-main">Download artefact handoff</span><span class="btn-ref">Planning prompts · not a form import</span></button>
+              <button type="button" id="downloadEnvironmental" class="secondary"><span class="btn-main">Download environmental considerations</span><span class="btn-ref">Environmental flag and intensity · guidance reference only</span></button>
               <button type="button" id="downloadAgent" class="secondary"><span class="btn-main">Download Agent Record review handoff</span><span class="btn-ref">AIG-AGT-04 · not an import-ready mandate</span></button>
               <button type="button" id="downloadCapabilities" class="secondary"><span class="btn-main">Download Capability Vector review handoff</span><span class="btn-ref">AIG-AGT-04 Capability Vector columns A–U · unselected means unknown, not No</span></button>
               <button type="button" id="downloadAgenticGovernance" class="secondary"><span class="btn-main">Download Agentic governance handoff</span><span class="btn-ref">AIG-AGT-03 / AIG-AGT-04 / AIG-AGT-05 / AIG-OPS-02 / AIG-AGT-06 · no authority granted</span></button>
@@ -2078,6 +2079,13 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
           .continuity-link span{display:block;font-weight:400;color:#3f5565;font-size:.8rem}
           @media(max-width:900px){.continuity-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
           @media(max-width:560px){.continuity-steps{grid-template-columns:1fr}}
+          #environmentalStep .env-input{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:12px 0}
+          #environmentalStep .env-input label{display:block;font-weight:600;color:#122C47;margin-bottom:6px;font-size:.95rem}
+          #environmentalStep select{width:100%;max-width:500px;padding:8px;border:1px solid #d9dee6;border-radius:6px;background:#fff}
+          #envResultBox{margin-top:16px;padding:12px 14px;border-left:4px solid #C8AB36;background:#f5f7fa;border-radius:6px}
+          #envResultBox .env-flag{font-size:1.1em;font-weight:700;color:#122C47;margin:0 0 6px}
+          #envResultBox .env-detail{font-size:.9rem;color:#314556;margin:4px 0}
+          @media(max-width:620px){#environmentalStep .env-input{grid-template-columns:1fr}}
           #agenticStep fieldset{border:1px solid #d9dee6;border-radius:8px;margin:10px 0;padding:8px 12px}
           #agenticStep legend{font-weight:700;color:#122C47;padding:0 6px}
           #agenticStep .agency-dim{display:flex;flex-direction:column;margin:6px 0}
@@ -2091,6 +2099,44 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
           #agencyResult .ag-tier{font-size:1.2em;font-weight:700;color:#122C47;margin:0 0 6px}
           #agencyResult .ag-flag{color:#9B1C1C}
         </style>
+        <section class="step" id="environmentalStep" aria-labelledby="environmental-title">
+          <h2 id="environmental-title">Environmental considerations</h2>
+          <p class="muted">Environmental impact assessment to support governance decisions. Complete this where your council needs to track environmental metrics for AI systems.</p>
+          <div class="env-input">
+            <label for="envFoundationModels">Uses foundation models?</label>
+            <select id="envFoundationModels">
+              <option value="">— Select —</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+            <label for="envCloudBased">Cloud-based infrastructure?</label>
+            <select id="envCloudBased">
+              <option value="">— Select —</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+            <label for="envComputationalIntensity">Expected computational intensity?</label>
+            <select id="envComputationalIntensity">
+              <option value="">— Select —</option>
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+              <option value="Very High">Very High</option>
+            </select>
+            <label for="envSupplierPractices">Supplier environmental practices disclosed?</label>
+            <select id="envSupplierPractices">
+              <option value="">— Select —</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+              <option value="unknown">Unknown</option>
+            </select>
+          </div>
+          <div id="envResultBox" hidden>
+            <div class="env-flag">Environmental flag: <span id="envFlag"></span></div>
+            <div class="env-detail">Intensity: <span id="envIntensity"></span></div>
+            <div class="env-detail">Supplier info needed: <span id="envSupplierNeeded"></span></div>
+          </div>
+        </section>
         <section class="step" id="agenticStep" aria-labelledby="agentic-title">
           <h2 id="agentic-title">Agentic triage &mdash; for systems that can act</h2>
           <p class="muted">Complete this where the system can take actions. Score the five agency dimensions, flag the multipliers and capabilities, and confirm containment. The agency tier and routing follow the profile, not a sum, and a high-consequence or hard-to-contain reading (a high reversed controllability score) can raise the tier.</p>
@@ -6455,6 +6501,88 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
   form.addEventListener("input", handleFormInput);
   form.addEventListener("change", handleFormInput);
   updateProvisionalCue();
+
+  // ---- Environmental section functions ----
+  function readEnvironmentalInputs() {
+    return {
+      foundationModels: byId("envFoundationModels").value,
+      cloudBased: byId("envCloudBased").value,
+      computationalIntensity: byId("envComputationalIntensity").value,
+      supplierPractices: byId("envSupplierPractices").value,
+    };
+  }
+
+  function calculateEnvironmentalFlag(env) {
+    let flag = "Green";
+    let factorCount = 0;
+
+    if (env.foundationModels === "yes") {
+      flag = "Amber";
+      factorCount++;
+    }
+    if (env.cloudBased === "yes") {
+      flag = "Amber";
+      factorCount++;
+    }
+    if (env.computationalIntensity === "High" || env.computationalIntensity === "Very High") {
+      flag = "Amber";
+      factorCount++;
+    }
+    if (env.supplierPractices === "no" || env.supplierPractices === "unknown") {
+      factorCount++;
+    }
+
+    if (factorCount > 1 && flag === "Amber") {
+      flag = "Red";
+    }
+
+    return flag;
+  }
+
+  function environmentalExport() {
+    if (!validateForExport()) return;
+    const calculation = update();
+    const env = readEnvironmentalInputs();
+
+    const systemName = calculation.profile.systemName || "Unnamed System";
+    const airId = calculation.profile.airId || "TBD";
+
+    const flag = calculateEnvironmentalFlag(env);
+
+    let csv = "AIR-ID,System Name,Environmental Flag,Intensity,Supplier Info Needed,Notes\n";
+    csv += csvEscape(airId) + "," + csvEscape(systemName) + "," + csvEscape(flag) + ",";
+    csv += csvEscape(env.computationalIntensity || "Not specified") + ",";
+    csv += csvEscape((env.supplierPractices === "no" || env.supplierPractices === "unknown") ? "Yes" : "No") + ",";
+    csv += csvEscape("Environmental considerations - guidance reference only") + "\n";
+
+    download(
+      `${safeSlug(systemName)}-environmental.csv`,
+      csv,
+      "text/csv;charset=utf-8"
+    );
+  }
+
+  function updateEnvironmentalDisplay() {
+    const env = readEnvironmentalInputs();
+    const hasAnyValue = env.foundationModels || env.cloudBased || env.computationalIntensity || env.supplierPractices;
+
+    if (!hasAnyValue) {
+      byId("envResultBox").hidden = true;
+      return;
+    }
+
+    const flag = calculateEnvironmentalFlag(env);
+    byId("envFlag").textContent = flag;
+    byId("envIntensity").textContent = env.computationalIntensity || "Not specified";
+    byId("envSupplierNeeded").textContent = (env.supplierPractices === "no" || env.supplierPractices === "unknown") ? "Yes" : "No";
+    byId("envResultBox").hidden = false;
+  }
+
+  byId("envFoundationModels").addEventListener("change", updateEnvironmentalDisplay);
+  byId("envCloudBased").addEventListener("change", updateEnvironmentalDisplay);
+  byId("envComputationalIntensity").addEventListener("change", updateEnvironmentalDisplay);
+  byId("envSupplierPractices").addEventListener("change", updateEnvironmentalDisplay);
+
   byId("downloadRegister").addEventListener("click", registerExport);
   byId("downloadCapabilitiesMap").addEventListener("click", capabilitiesMapExport);
   byId("downloadCanonical").addEventListener("click", canonicalExport);
@@ -6463,6 +6591,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
   byId("downloadGateReady").addEventListener("click", gateReadyExport);
   byId("downloadGates").addEventListener("click", gateExport);
   byId("downloadHandoff").addEventListener("click", handoffExport);
+  byId("downloadEnvironmental").addEventListener("click", environmentalExport);
   byId("downloadAgent").addEventListener("click", agentExport);
   byId("downloadCapabilities").addEventListener("click", capabilityVectorExport);
   byId("downloadAgenticGovernance").addEventListener("click", agenticGovernanceExport);
