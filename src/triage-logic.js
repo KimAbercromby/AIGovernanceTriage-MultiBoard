@@ -6,28 +6,28 @@
   "use strict";
 
   // Suite release this tool is aligned to, with the artefact versions it relies on
-  // (from the AIG-GOV-03 Artefact Index, suite release v3.9.9, 4 October 2026).
+  // (from the AIG-GOV-03 Artefact Index, suite release v3.9.10, 12 October 2026).
   const SUITE = {
-    release: "v3.9.9",
-    date: "4 October 2026",
+    release: "v3.9.10",
+    date: "12 October 2026",
     status: "Proposed — for Council confirmation; not approved or adopted",
     versions: {
-      "AIG-GOV-02 Playbook": "19.9.18 draft",
-      "AIG-GOV-03 Artefact Index": "1.34 draft",
-      "AIG-INV-04 AI Register": "1.1 draft",
+      "AIG-GOV-02 Playbook": "19.9.19 draft",
+      "AIG-GOV-03 Artefact Index": "1.35 draft",
+      "AIG-INV-04 AI Register": "1.2 draft",
       "AIG-INV-05 Capabilities and System Map": "0.3 proposed design draft",
       "AIG-ASS-01 AGPI Triage Tool": "1.4 draft",
       "AIG-ASS-02 AI Risk Assessment Worksheet": "1.10 draft",
-      "AIG-ASS-11 AI Security Review Checklist": "1.10 draft",
-      "AIG-DEC-01 Gate Map": "1.13 draft",
-      "AIG-DEC-02 Decision-Ready Paper": "1.7 draft",
-      "AIG-DEC-03 Governance Decision Record": "1.11 draft",
+      "AIG-ASS-11 AI Security Review Checklist": "1.11 draft",
+      "AIG-DEC-01 Gate Map": "1.14 draft",
+      "AIG-DEC-02 Decision-Ready Paper": "1.8 draft",
+      "AIG-DEC-03 Governance Decision Record": "1.12 draft",
       "AIG-DEC-04 Gate Log": "1.3 draft",
-      "AIG-AGT-02 Agentic Classification Reference": "1.6 draft",
-      "AIG-AGT-03 Agentic Triage": "1.6 draft",
+      "AIG-AGT-02 Agentic Classification Reference": "1.7 draft",
+      "AIG-AGT-03 Agentic Triage": "1.7 draft",
       "AIG-AGT-04 Agent Record (ASBOM)": "0.6 working draft",
-      "AIG-AGT-06 Agentic Action / Decision Record": "1.5 draft",
-      "AIG-OPS-01 Deployment and Rollout Plan": "1.12 draft",
+      "AIG-AGT-06 Agentic Action / Decision Record": "1.6 draft",
+      "AIG-OPS-01 Deployment and Rollout Plan": "1.13 draft",
       "AIG-OPS-02 Monitoring and Review Log": "1.6 draft",
       "UC_ID_Risk_Decision_Current_View": "1.0 draft",
     },
@@ -480,7 +480,7 @@
     "AI capability and systems/tools permitted (pointer)", "Date registered",
     "Date first used", "Personal / special category data?", "ATRS requirement",
     "Model Card completion", "Monitoring in place?", "Last review date",
-    "Route / pathway", "Intake type",
+    "Route / pathway", "Intake type", "Information asset reference",
   ];
   const ASSESSMENT_HEADERS = [
     "AIR-ID", "Effective Governance Priority (AIG-ASS-01, after any authorised override)",
@@ -1387,7 +1387,7 @@
     }[dataType] || "Unsure";
   }
 
-  // One handoff row per AIG-INV-04 column (AI Register A:Z, Assessment summary A:U),
+  // One handoff row per AIG-INV-04 column (AI Register A:AA, Assessment summary A:U),
   // in workbook order, excluding the formula-owned Row check columns.
   function buildRegisterDraftHandoff(profile, results, agentic) {
     const rows = [];
@@ -1450,6 +1450,7 @@
       isReentry(profile)
         ? `${situationOf(profile)}: keep the Intake type already on the AIG-INV-04 row for this AIR-ID; the change re-enters intake and triage on the same AIR-ID.`
         : "Proposed from \u201cWhat's happening?\u201d and the operational state (found already in use or Live \u2192 Retrospective); use Aggregated only for an aggregated tool-level entry.");
+    add(reg, "Information asset reference", "", "Leave blank: the Information Governance team enters the reference of the matching Information Asset Register entry. The asset owner is held there, not repeated here (suite v3.9.10).");
 
     const sum = "Assessment summary";
     add(sum, "AIR-ID", profile.registerId, identityReview);

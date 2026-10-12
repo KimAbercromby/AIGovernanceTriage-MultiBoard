@@ -33,10 +33,10 @@ outcome, and that every export control the tool wires up is blocked in demo mode
 ## Suite alignment and status
 
 This tool is aligned as a review aid to proposed, separate AI governance
-workbook drafts: **AI governance suite v3.9.9 (4 October 2026)**, Playbook 19.9.18,
-Gate Map AIG-DEC-01 1.13, AGPI Triage AIG-ASS-01 1.4, Risk Worksheet AIG-ASS-02 1.10,
-Deployment and Rollout Plan AIG-OPS-01 1.12, Monitoring Log AIG-OPS-02 1.6, Register
-AIG-INV-04 1.1, Gate Log AIG-DEC-04 1.3, Agent Record AIG-AGT-04 0.6 and Capabilities and System Map
+workbook drafts: **AI governance suite v3.9.10 (12 October 2026)**, Playbook 19.9.19,
+Gate Map AIG-DEC-01 1.14, AGPI Triage AIG-ASS-01 1.4, Risk Worksheet AIG-ASS-02 1.10,
+Deployment and Rollout Plan AIG-OPS-01 1.13, Monitoring Log AIG-OPS-02 1.6, Register
+AIG-INV-04 1.2, Gate Log AIG-DEC-04 1.3, Agent Record AIG-AGT-04 0.6 and Capabilities and System Map
 AIG-INV-05 0.3. They are **proposed and unapproved**,
 not an approved or live policy, process or record. This public tool does not read
 or write controlled records and must not be treated as issued authority.
@@ -208,8 +208,8 @@ node scripts/build.js --check
 node --test test/*.test.js
 ```
 
-`test/suite-v3.9.9-contract.test.js` checks every export's field labels, order and
-controlled values against `test/fixtures/suite-v3.9.9-contract.json`, which records the
+`test/suite-v3.9.10-contract.test.js` checks every export's field labels, order and
+controlled values against `test/fixtures/suite-v3.9.10-contract.json`, which records the
 header rows and dropdown lists read from the suite workbooks (file, sheet and row).
 `test/v392-findings.test.js` has one test for each v3.9.2 pilot-readiness fix.
 Regenerate the fixture for a new suite release with

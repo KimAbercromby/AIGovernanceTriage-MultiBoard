@@ -2280,7 +2280,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
         <p><strong>Decision support only.</strong> Numerical results do not replace professional judgement, statutory assessments, delegated authority or local terms of reference. Where uncertainty exists, apply the higher level of scrutiny until formal review is complete.</p>
         <p><strong>Privacy.</strong> This calculator runs entirely in the browser. It uses no cookies, analytics, external services or persistent storage. Refreshing the page clears all entries.</p>
       </div>
-      <p class="footer-version">Aligned to AI governance suite v3.9.9 (4 October 2026): Playbook 19.9.18, Gate Map AIG-DEC-01 1.13, AGPI AIG-ASS-01 1.4, Risk Worksheet AIG-ASS-02 1.10, Rollout Plan AIG-OPS-01 1.12, Monitoring Log AIG-OPS-02 1.6, Register AIG-INV-04 1.1, Gate Log AIG-DEC-04 1.3, Agent Record AIG-AGT-04 0.6, Capabilities and System Map AIG-INV-05 0.3. For review against proposed, unapproved standalone workbook drafts. Local static tool; no Council records are read or written.</p>
+      <p class="footer-version">Aligned to AI governance suite v3.9.10 (12 October 2026): Playbook 19.9.19, Gate Map AIG-DEC-01 1.14, AGPI AIG-ASS-01 1.4, Risk Worksheet AIG-ASS-02 1.10, Rollout Plan AIG-OPS-01 1.13, Monitoring Log AIG-OPS-02 1.6, Register AIG-INV-04 1.2, Gate Log AIG-DEC-04 1.3, Agent Record AIG-AGT-04 0.6, Capabilities and System Map AIG-INV-05 0.3. For review against proposed, unapproved standalone workbook drafts. Local static tool; no Council records are read or written.</p>
     </footer>
 
     <script id="triage-logic">
@@ -2292,28 +2292,28 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
   "use strict";
 
   // Suite release this tool is aligned to, with the artefact versions it relies on
-  // (from the AIG-GOV-03 Artefact Index, suite release v3.9.9, 4 October 2026).
+  // (from the AIG-GOV-03 Artefact Index, suite release v3.9.10, 12 October 2026).
   const SUITE = {
-    release: "v3.9.9",
-    date: "4 October 2026",
+    release: "v3.9.10",
+    date: "12 October 2026",
     status: "Proposed — for Council confirmation; not approved or adopted",
     versions: {
-      "AIG-GOV-02 Playbook": "19.9.18 draft",
-      "AIG-GOV-03 Artefact Index": "1.34 draft",
-      "AIG-INV-04 AI Register": "1.1 draft",
+      "AIG-GOV-02 Playbook": "19.9.19 draft",
+      "AIG-GOV-03 Artefact Index": "1.35 draft",
+      "AIG-INV-04 AI Register": "1.2 draft",
       "AIG-INV-05 Capabilities and System Map": "0.3 proposed design draft",
       "AIG-ASS-01 AGPI Triage Tool": "1.4 draft",
       "AIG-ASS-02 AI Risk Assessment Worksheet": "1.10 draft",
-      "AIG-ASS-11 AI Security Review Checklist": "1.10 draft",
-      "AIG-DEC-01 Gate Map": "1.13 draft",
-      "AIG-DEC-02 Decision-Ready Paper": "1.7 draft",
-      "AIG-DEC-03 Governance Decision Record": "1.11 draft",
+      "AIG-ASS-11 AI Security Review Checklist": "1.11 draft",
+      "AIG-DEC-01 Gate Map": "1.14 draft",
+      "AIG-DEC-02 Decision-Ready Paper": "1.8 draft",
+      "AIG-DEC-03 Governance Decision Record": "1.12 draft",
       "AIG-DEC-04 Gate Log": "1.3 draft",
-      "AIG-AGT-02 Agentic Classification Reference": "1.6 draft",
-      "AIG-AGT-03 Agentic Triage": "1.6 draft",
+      "AIG-AGT-02 Agentic Classification Reference": "1.7 draft",
+      "AIG-AGT-03 Agentic Triage": "1.7 draft",
       "AIG-AGT-04 Agent Record (ASBOM)": "0.6 working draft",
-      "AIG-AGT-06 Agentic Action / Decision Record": "1.5 draft",
-      "AIG-OPS-01 Deployment and Rollout Plan": "1.12 draft",
+      "AIG-AGT-06 Agentic Action / Decision Record": "1.6 draft",
+      "AIG-OPS-01 Deployment and Rollout Plan": "1.13 draft",
       "AIG-OPS-02 Monitoring and Review Log": "1.6 draft",
       "UC_ID_Risk_Decision_Current_View": "1.0 draft",
     },
@@ -2766,7 +2766,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     "AI capability and systems/tools permitted (pointer)", "Date registered",
     "Date first used", "Personal / special category data?", "ATRS requirement",
     "Model Card completion", "Monitoring in place?", "Last review date",
-    "Route / pathway", "Intake type",
+    "Route / pathway", "Intake type", "Information asset reference",
   ];
   const ASSESSMENT_HEADERS = [
     "AIR-ID", "Effective Governance Priority (AIG-ASS-01, after any authorised override)",
@@ -3673,7 +3673,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     }[dataType] || "Unsure";
   }
 
-  // One handoff row per AIG-INV-04 column (AI Register A:Z, Assessment summary A:U),
+  // One handoff row per AIG-INV-04 column (AI Register A:AA, Assessment summary A:U),
   // in workbook order, excluding the formula-owned Row check columns.
   function buildRegisterDraftHandoff(profile, results, agentic) {
     const rows = [];
@@ -3736,6 +3736,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       isReentry(profile)
         ? `${situationOf(profile)}: keep the Intake type already on the AIG-INV-04 row for this AIR-ID; the change re-enters intake and triage on the same AIR-ID.`
         : "Proposed from \u201cWhat's happening?\u201d and the operational state (found already in use or Live \u2192 Retrospective); use Aggregated only for an aggregated tool-level entry.");
+    add(reg, "Information asset reference", "", "Leave blank: the Information Governance team enters the reference of the matching Information Asset Register entry. The asset owner is held there, not repeated here (suite v3.9.10).");
 
     const sum = "Assessment summary";
     add(sum, "AIR-ID", profile.registerId, identityReview);
@@ -6510,88 +6511,6 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
   form.addEventListener("input", handleFormInput);
   form.addEventListener("change", handleFormInput);
   updateProvisionalCue();
-
-  // ---- Environmental section functions ----
-  function readEnvironmentalInputs() {
-    return {
-      foundationModels: byId("envFoundationModels").value,
-      cloudBased: byId("envCloudBased").value,
-      computationalIntensity: byId("envComputationalIntensity").value,
-      supplierPractices: byId("envSupplierPractices").value,
-    };
-  }
-
-  function calculateEnvironmentalFlag(env) {
-    let flag = "Green";
-    let factorCount = 0;
-
-    if (env.foundationModels === "yes") {
-      flag = "Amber";
-      factorCount++;
-    }
-    if (env.cloudBased === "yes") {
-      flag = "Amber";
-      factorCount++;
-    }
-    if (env.computationalIntensity === "High" || env.computationalIntensity === "Very High") {
-      flag = "Amber";
-      factorCount++;
-    }
-    if (env.supplierPractices === "no" || env.supplierPractices === "unknown") {
-      factorCount++;
-    }
-
-    if (factorCount > 1 && flag === "Amber") {
-      flag = "Red";
-    }
-
-    return flag;
-  }
-
-  function environmentalExport() {
-    if (!validateForExport()) return;
-    const calculation = update();
-    const env = readEnvironmentalInputs();
-
-    const systemName = calculation.profile.systemName || "Unnamed System";
-    const airId = calculation.profile.airId || "TBD";
-
-    const flag = calculateEnvironmentalFlag(env);
-
-    let csv = "AIR-ID,System Name,Environmental Flag,Intensity,Supplier Info Needed,Notes\n";
-    csv += csvEscape(airId) + "," + csvEscape(systemName) + "," + csvEscape(flag) + ",";
-    csv += csvEscape(env.computationalIntensity || "Not specified") + ",";
-    csv += csvEscape((env.supplierPractices === "no" || env.supplierPractices === "unknown") ? "Yes" : "No") + ",";
-    csv += csvEscape("Environmental considerations - guidance reference only") + "\n";
-
-    download(
-      `${safeSlug(systemName)}-environmental.csv`,
-      csv,
-      "text/csv;charset=utf-8"
-    );
-  }
-
-  function updateEnvironmentalDisplay() {
-    const env = readEnvironmentalInputs();
-    const hasAnyValue = env.foundationModels || env.cloudBased || env.computationalIntensity || env.supplierPractices;
-
-    if (!hasAnyValue) {
-      byId("envResultBox").hidden = true;
-      return;
-    }
-
-    const flag = calculateEnvironmentalFlag(env);
-    byId("envFlag").textContent = flag;
-    byId("envIntensity").textContent = env.computationalIntensity || "Not specified";
-    byId("envSupplierNeeded").textContent = (env.supplierPractices === "no" || env.supplierPractices === "unknown") ? "Yes" : "No";
-    byId("envResultBox").hidden = false;
-  }
-
-  byId("envFoundationModels").addEventListener("change", updateEnvironmentalDisplay);
-  byId("envCloudBased").addEventListener("change", updateEnvironmentalDisplay);
-  byId("envComputationalIntensity").addEventListener("change", updateEnvironmentalDisplay);
-  byId("envSupplierPractices").addEventListener("change", updateEnvironmentalDisplay);
-
   byId("downloadRegister").addEventListener("click", registerExport);
   byId("downloadCapabilitiesMap").addEventListener("click", capabilitiesMapExport);
   byId("downloadCanonical").addEventListener("click", canonicalExport);
@@ -6600,7 +6519,6 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
   byId("downloadGateReady").addEventListener("click", gateReadyExport);
   byId("downloadGates").addEventListener("click", gateExport);
   byId("downloadHandoff").addEventListener("click", handoffExport);
-  byId("downloadEnvironmental").addEventListener("click", environmentalExport);
   byId("downloadAgent").addEventListener("click", agentExport);
   byId("downloadCapabilities").addEventListener("click", capabilityVectorExport);
   byId("downloadAgenticGovernance").addEventListener("click", agenticGovernanceExport);
