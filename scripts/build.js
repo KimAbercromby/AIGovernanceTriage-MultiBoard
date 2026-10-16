@@ -10,6 +10,8 @@ const html = fs.readFileSync(htmlPath, "utf8");
 const sources = [
   ["triage-logic", "src/triage-logic.js"],
   ["triage-app", "src/triage-app.js"],
+  ["platform-agent-app", "src/platform-agent-app.js"],
+  ["environmental-app", "src/environmental-app.js"],
   ["retire-app", "src/retire-app.js"],
   ["pilot-scenarios", "src/pilot-scenarios.js"],
   ["pilot-demo", "src/pilot-demo.js"],

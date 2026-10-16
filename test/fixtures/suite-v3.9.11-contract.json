@@ -1,10 +1,10 @@
 {
-  "suite": "v3.9.10 (12 October 2026)",
+  "suite": "v3.9.11 (16 October 2026)",
   "generatedBy": "scripts/extract-suite-fixture.py",
   "versions": {
-    "AIG-GOV-01": "v1.35 draft",
-    "AIG-GOV-02": "v19.9.19 draft",
-    "AIG-GOV-03": "v1.35 draft",
+    "AIG-GOV-01": "v1.37 draft",
+    "AIG-GOV-02": "v19.9.23 draft",
+    "AIG-GOV-03": "v1.37 draft",
     "AIG-GOV-04": "v1.5 draft",
     "AIG-GOV-05": "v1.5 draft",
     "AIG-GOV-06": "v1.12 draft",
@@ -32,13 +32,13 @@
     "AIG-OPS-01": "v1.13 draft",
     "AIG-OPS-02": "v1.6 draft",
     "AIG-OPS-03": "v1.10 draft",
-    "AIG-OPS-04": "v1.6 draft",
+    "AIG-OPS-04": "v1.7 draft",
     "AIG-OPS-05": "v1.8 draft",
     "AIG-OPS-06": "v1.4 draft",
     "AIG-AGT-01": "v1.6 draft",
     "AIG-AGT-02": "v1.7 draft",
     "AIG-AGT-03": "v1.7 draft",
-    "AIG-AGT-04": "v0.6 working draft",
+    "AIG-AGT-04": "v0.7 working draft",
     "AIG-AGT-05": "v1.6 draft",
     "AIG-AGT-06": "v1.6 draft",
     "AIG-AIMS-01": "v1.6 draft",
@@ -905,6 +905,57 @@
         "ASBOM record version"
       ],
       "formulaColumns": []
+    },
+    "Platform Agent Inventory": {
+      "source": {
+        "file": "AIG-AGT-04_Agent_Record_ASBOM_Proposed.xlsx",
+        "sheet": "Platform Agent Inventory",
+        "row": 4
+      },
+      "headers": [
+        "Platform AIR-ID",
+        "Platform",
+        "Agent name",
+        "What it does",
+        "Built by",
+        "Named owner",
+        "Shared with",
+        "Pattern UC-ID",
+        "Agent UC-ID",
+        "Class",
+        "LGA tier",
+        "Triggers met (Yes or Unsure)",
+        "Can it act? (F.8)",
+        "Individual triage needed",
+        "Next step",
+        "Next inventory review",
+        "Screened on"
+      ],
+      "formulaColumns": [],
+      "lists": {
+        "G5:G203": [
+          "Just the person who built it",
+          "A team or service",
+          "The whole organisation"
+        ],
+        "J5:J203": [
+          "Personal agent (LGA Tier 1)",
+          "Approved-pattern agent (LGA Tier 2)",
+          "Pattern not yet approved",
+          "Individually governed agent (LGA Tier 3)",
+          "Not an agent on an approved platform"
+        ],
+        "K5:K203": [
+          "Tier 1",
+          "Tier 2",
+          "Tier 2 (once the pattern is approved)",
+          "Tier 3"
+        ],
+        "N5:N203": [
+          "Yes",
+          "No"
+        ]
+      }
     }
   },
   "INV-05": {
