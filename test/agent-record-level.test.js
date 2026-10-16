@@ -47,7 +47,7 @@ test("an unassessed agency tier fails safe to Full", () => {
 });
 
 test("the core field list names real AIG-AGT-04 Agent Record columns", () => {
-  const contract = require("./fixtures/suite-v3.9.10-contract.json");
+  const contract = require("./fixtures/suite-v3.9.11-contract.json");
   const headers = contract["AGT-04"]["Agent Record"].headers;
   logic.AGENT_RECORD_CORE_FIELDS.forEach((f) => assert.ok(headers.includes(f), f));
   assert.ok(headers.includes("Record level required (Core / Core plus features / Full)"));

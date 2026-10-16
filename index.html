@@ -1043,7 +1043,14 @@ footer p {
     @media (prefers-reduced-motion: reduce) { .step-summary::after { transition: none; } }
       .provisional-cue { margin: 0 0 1.1rem; padding: 0.7rem 0.9rem; color: var(--navy-2); background: var(--gold-soft); border-left: 3px solid var(--gold); border-radius: 0 6px 6px 0; font-size: 0.9rem; }
     .provisional-cue[hidden] { display: none; }
-  </style>
+  .platform-result.pa-personal,.platform-result.pa-pattern{border-left:4px solid #2e7d32}
+.platform-result.pa-patternCandidate{border-left:4px solid #C8AB36}
+.platform-result.pa-individual{border-left:4px solid #b3261e}
+.platform-result.pa-notPlatform{border-left:4px solid #122C47}
+.platform-result ol,.platform-result ul{margin:4px 0 8px 20px}
+.platform-step .export-actions{display:flex;flex-wrap:wrap;gap:10px;margin:14px 23px}
+.platform-step #paDetails>h3,.platform-step #paDetails>.sublede,.platform-step #paDetails>.form-grid,.platform-step #paDetails>.result-panel,.platform-step #paDetails>.provisional-cue{margin-left:23px;margin-right:23px}
+</style>
   <style id="professional-ui-v5">
 :root{
   --navy:#0a2342;--navy2:#133a63;--gold:#c9a442;--goldsoft:#f5edd6;
@@ -1554,11 +1561,72 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       </div>
 
       <nav class="step-nav" aria-label="Calculator steps">
+        <a href="#platformAgent">0. Platform agent?</a>
         <a href="#profile">1. System profile</a>
         <a href="#priority">2. AGPI priority</a>
         <a href="#risk">3. Risk &amp; escalation</a>
         <a href="#route">4. Board route</a>
       </nav>
+
+      <details class="step platform-step" id="platformAgent" open>
+        <summary class="step-summary">
+          <p class="eyebrow">Before you start</p>
+          <h2 id="platform-title">Is this an agent built on an approved platform? <span class="ref">Playbook Appendix F.8</span></h2>
+        </summary>
+        <p class="lede">
+          Platforms already on the AI Register, such as Microsoft 365 Copilot, let staff build their own agents.
+          The platform is governed once under its own AIR-ID. Each agent built on it is then personal, an approved
+          pattern, or individually governed. Only individually governed agents, and new patterns, need the full triage
+          below. Proposed — for Council confirmation.
+        </p>
+        <div class="form-grid">
+          <label class="field span-2">
+            <span>Is it an agent that staff built on a platform already on the AI Register?</span>
+            <select id="paOnPlatform">
+              <option value="No">No — triage it in its own right</option>
+              <option value="Yes">Yes — built on an approved platform (for example Copilot Studio or Copilot agent builder)</option>
+              <option value="Unsure">Unsure</option>
+            </select>
+          </label>
+        </div>
+        <div id="paDetails" hidden>
+          <div class="form-grid">
+            <label class="field"><span>Platform AIR-ID <small>existing identifier only</small></span><input id="paPlatformAirId" autocomplete="off" placeholder="AIR-XXXX"></label>
+            <label class="field"><span>Platform</span><input id="paPlatformName" autocomplete="off" placeholder="Microsoft 365 Copilot"></label>
+            <label class="field"><span>Agent name</span><input id="paAgentName" autocomplete="off"></label>
+            <label class="field"><span>Built by</span><input id="paBuiltBy" autocomplete="off"></label>
+            <label class="field span-2"><span>What does the agent do?</span><textarea id="paPurpose" rows="2"></textarea></label>
+            <label class="field"><span>Named owner</span><input id="paOwner" autocomplete="off"></label>
+            <label class="field"><span>Who is it shared with?</span>
+              <select id="paAudience">
+                <option>Just the person who built it</option>
+                <option>A team or service</option>
+                <option>The whole organisation</option>
+              </select>
+            </label>
+            <label class="field"><span>Does it match a pattern the AI Governance Lead has approved?</span>
+              <select id="paMatchesPattern"><option>No</option><option>Yes</option><option>Unsure</option></select>
+            </label>
+            <label class="field"><span>Pattern UC-ID <small>if it matches one</small></span><input id="paPatternUcId" autocomplete="off" placeholder="UC-XXXX"></label>
+          </div>
+          <h3>Triggers for individual governance</h3>
+          <p class="sublede">Answer each one. Unsure is treated as Yes.</p>
+          <div class="form-grid" id="paTriggers"></div>
+          <div class="result-panel platform-result" id="paResult" role="status" aria-live="polite">
+            <p class="result-title"><span id="paClass">—</span> <span class="pa-tier" id="paTier"></span></p>
+            <p id="paWhy"></p>
+            <ul id="paTriggersMet"></ul>
+            <p><strong>Can it act?</strong> <span id="paCanAct"></span></p>
+            <p><strong>Next steps</strong></p>
+            <ol id="paNext"></ol>
+          </div>
+          <p class="export-actions">
+            <button type="button" id="paDownload"><span class="btn-main">Download platform agent screening record</span><span class="btn-ref">For the platform’s agent inventory · not a suite workbook import</span></button>
+            <button type="button" id="paPrefill" class="secondary" hidden><span class="btn-main">Pre-fill the triage below</span><span class="btn-ref">Copies these answers into Step 1 · check every field</span></button>
+          </p>
+          <p class="provisional-cue" id="paMessage" role="note"></p>
+        </div>
+      </details>
 
       <form id="triageForm" novalidate>
         <details class="step" id="profile" open>
@@ -2107,8 +2175,12 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
           .env-input select{width:100%;padding:.6rem;border:1px solid #c7d4df;border-radius:5px;font-size:.95rem;background:#fff}
           .env-flag,.env-detail{padding:.75rem;margin:.5rem 0;background:#fff;border-left:3px solid #C8AB36;color:#314556;font-size:.95rem}
           #envResultBox{margin-top:1rem}
+          #envResultBox[data-flag="Green"]{border-left-color:#2e7d32}#envResultBox[data-flag="Red"]{border-left-color:#b3261e}
           @media(max-width:620px){.env-input{grid-template-columns:1fr}}
-        </style>
+        #main .platform-result li,#main .platform-result span{color:var(--c-ink)}
+#main .platform-result .result-title span{color:var(--navy)}
+.platform-step #paMessage:empty{display:none}
+</style>
         <details class="env-optional" id="environmentalStep">
           <summary>Environmental considerations <small>(optional)</small></summary>
           <div class="env-input">
@@ -2144,6 +2216,8 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
             <div class="env-flag">Environmental flag: <span id="envFlag"></span></div>
             <div class="env-detail">Intensity: <span id="envIntensity"></span></div>
             <div class="env-detail">Supplier info needed: <span id="envSupplierNeeded"></span></div>
+            <div class="env-detail">Why: <span id="envWhy"></span></div>
+            <div class="env-detail">Next step: <span id="envAction"></span></div>
           </div>
         </details>
         <section class="step" id="agenticStep" aria-labelledby="agentic-title">
@@ -2280,7 +2354,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
         <p><strong>Decision support only.</strong> Numerical results do not replace professional judgement, statutory assessments, delegated authority or local terms of reference. Where uncertainty exists, apply the higher level of scrutiny until formal review is complete.</p>
         <p><strong>Privacy.</strong> This calculator runs entirely in the browser. It uses no cookies, analytics, external services or persistent storage. Refreshing the page clears all entries.</p>
       </div>
-      <p class="footer-version">Aligned to AI governance suite v3.9.10 (12 October 2026): Playbook 19.9.19, Gate Map AIG-DEC-01 1.14, AGPI AIG-ASS-01 1.4, Risk Worksheet AIG-ASS-02 1.10, Rollout Plan AIG-OPS-01 1.13, Monitoring Log AIG-OPS-02 1.6, Register AIG-INV-04 1.2, Gate Log AIG-DEC-04 1.3, Agent Record AIG-AGT-04 0.6, Capabilities and System Map AIG-INV-05 0.3. For review against proposed, unapproved standalone workbook drafts. Local static tool; no Council records are read or written.</p>
+      <p class="footer-version">Aligned to AI governance suite v3.9.11 (16 October 2026): Playbook 19.9.23, Gate Map AIG-DEC-01 1.14, AGPI AIG-ASS-01 1.4, Risk Worksheet AIG-ASS-02 1.10, Rollout Plan AIG-OPS-01 1.13, Monitoring Log AIG-OPS-02 1.6, Register AIG-INV-04 1.2, Gate Log AIG-DEC-04 1.3, Agent Record AIG-AGT-04 0.7, Capabilities and System Map AIG-INV-05 0.3. For review against proposed, unapproved standalone workbook drafts. Local static tool; no Council records are read or written.</p>
     </footer>
 
     <script id="triage-logic">
@@ -2292,14 +2366,14 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
   "use strict";
 
   // Suite release this tool is aligned to, with the artefact versions it relies on
-  // (from the AIG-GOV-03 Artefact Index, suite release v3.9.10, 12 October 2026).
+  // (from the AIG-GOV-03 Artefact Index, suite release v3.9.11, 16 October 2026).
   const SUITE = {
-    release: "v3.9.10",
-    date: "12 October 2026",
+    release: "v3.9.11",
+    date: "16 October 2026",
     status: "Proposed — for Council confirmation; not approved or adopted",
     versions: {
-      "AIG-GOV-02 Playbook": "19.9.19 draft",
-      "AIG-GOV-03 Artefact Index": "1.35 draft",
+      "AIG-GOV-02 Playbook": "19.9.23 draft",
+      "AIG-GOV-03 Artefact Index": "1.37 draft",
       "AIG-INV-04 AI Register": "1.2 draft",
       "AIG-INV-05 Capabilities and System Map": "0.3 proposed design draft",
       "AIG-ASS-01 AGPI Triage Tool": "1.4 draft",
@@ -2311,7 +2385,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       "AIG-DEC-04 Gate Log": "1.3 draft",
       "AIG-AGT-02 Agentic Classification Reference": "1.7 draft",
       "AIG-AGT-03 Agentic Triage": "1.7 draft",
-      "AIG-AGT-04 Agent Record (ASBOM)": "0.6 working draft",
+      "AIG-AGT-04 Agent Record (ASBOM)": "0.7 working draft",
       "AIG-AGT-06 Agentic Action / Decision Record": "1.6 draft",
       "AIG-OPS-01 Deployment and Rollout Plan": "1.13 draft",
       "AIG-OPS-02 Monitoring and Review Log": "1.6 draft",
@@ -4928,6 +5002,212 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     };
   }
 
+  // ---------------------------------------------------------------------------
+  // Agents built on an approved platform (Playbook Appendix F.8, v19.9.23;
+  // consistent with the LGA playbook for agentic AI in local government, Oct 2026).
+  // Proposed — for Council confirmation. The platform is governed once under its
+  // own AIR-ID; each agent built on it is personal, an approved pattern, or
+  // individually governed. Any trigger answered Yes or Unsure means individual
+  // governance (“Unsure” is treated as yes).
+  const PLATFORM_AGENT_TRIGGERS = [
+    { id: "actsUnconfirmed", text: "Takes actions without the user confirming each one" },
+    { id: "changesRecords", text: "Changes records in line-of-business systems, sends communications outside the Council or spends money" },
+    { id: "residentFacing", text: "Is resident-facing" },
+    { id: "sensitiveData", text: "Uses special category data, or data its users could not otherwise access" },
+    { id: "influencesDecisions", text: "Influences decisions on eligibility, enforcement, prioritisation or safeguarding" },
+    { id: "orgWide", text: "Is shared across the whole organisation" },
+    { id: "callsAgent", text: "Calls another agent" },
+  ];
+  const PLATFORM_AGENT_AUDIENCE = {
+    self: "Just the person who built it",
+    team: "A team or service",
+    org: "The whole organisation",
+  };
+  const PLATFORM_AGENT_CLASSES = {
+    notPlatform: "Not an agent on an approved platform",
+    personal: "Personal agent (LGA Tier 1)",
+    patternCandidate: "Pattern not yet approved",
+    pattern: "Approved-pattern agent (LGA Tier 2)",
+    individual: "Individually governed agent (LGA Tier 3)",
+  };
+  const PLATFORM_AGENT_HEADERS = [
+    "Platform AIR-ID", "Platform", "Agent name", "What it does", "Built by",
+    "Named owner", "Shared with", "Pattern UC-ID", "Agent UC-ID", "Class",
+    "LGA tier", "Triggers met (Yes or Unsure)", "Can it act? (F.8)",
+    "Individual triage needed", "Next step", "Next inventory review", "Screened on",
+  ];
+
+  function platformAgentScreen(input) {
+    const a = input || {};
+    if (a.onPlatform !== "Yes") {
+      return {
+        cls: "notPlatform",
+        label: PLATFORM_AGENT_CLASSES.notPlatform,
+        lgaTier: "",
+        triageNeeded: true,
+        triggersMet: [],
+        canAct: "Answer the “can it act?” screen in Step 1 as normal",
+        nextSteps: ["Carry on with the full triage (Steps 1 to 4)."],
+        why: a.onPlatform === "Unsure"
+          ? "Unsure whether it sits on an approved platform, so it is triaged in its own right."
+          : "This is not an agent built on a platform already on the AI Register, so it is triaged in its own right.",
+      };
+    }
+    const answers = a.triggers || {};
+    const met = PLATFORM_AGENT_TRIGGERS.filter((t) => {
+      const v = t.id === "orgWide" && a.audience === PLATFORM_AGENT_AUDIENCE.org ? "Yes" : answers[t.id];
+      return v === "Yes" || v === "Unsure" || v === undefined || v === "";
+    }).map((t) => ({
+      id: t.id,
+      text: t.text,
+      answer: t.id === "orgWide" && a.audience === PLATFORM_AGENT_AUDIENCE.org ? "Yes" : (answers[t.id] || "Unsure"),
+    }));
+    if (met.length) {
+      return {
+        cls: "individual",
+        label: PLATFORM_AGENT_CLASSES.individual,
+        lgaTier: "Tier 3",
+        triageNeeded: true,
+        triggersMet: met,
+        canAct: "Answered for this agent on its own (Rules R1 and R2, F.2)",
+        nextSteps: [
+          "Give the agent its own UC-ID under the platform AIR-ID and complete Intake (AIG-INV-03).",
+          "Complete the full triage (Steps 1 to 4) and the Agentic Triage (AIG-AGT-03).",
+          "Create its own Agent Record (AIG-AGT-04) and take it through Gates 2 and 6.",
+          "Keep it switched off for live use until the gates are passed.",
+        ],
+        why: `${met.length} trigger${met.length > 1 ? "s" : ""} met (Yes or Unsure counts), so the agent is governed individually.`,
+      };
+    }
+    if (a.audience === PLATFORM_AGENT_AUDIENCE.self) {
+      return {
+        cls: "personal",
+        label: PLATFORM_AGENT_CLASSES.personal,
+        lgaTier: "Tier 1",
+        triageNeeded: false,
+        triggersMet: [],
+        canAct: "Assisted (T1) at platform level, covered by the platform’s Gate 2 and Gate 6 evidence",
+        nextSteps: [
+          "No individual intake or triage. Covered by the platform’s Register entry and the AI Acceptable Use Policy (§5.4).",
+          "The user checks every output.",
+          "It is picked up by the quarterly inventory review if it is later shared or gains connectors or actions.",
+        ],
+        why: "Built for the builder’s own use, within data they can already access, and no trigger is met.",
+      };
+    }
+    if (a.matchesPattern === "Yes" && String(a.patternUcId || "").trim()) {
+      return {
+        cls: "pattern",
+        label: PLATFORM_AGENT_CLASSES.pattern,
+        lgaTier: "Tier 2",
+        triageNeeded: false,
+        triggersMet: [],
+        canAct: "Assisted (T1) at platform level, covered by the platform’s Gate 2 and Gate 6 evidence",
+        nextSteps: [
+          `List this instance in the platform’s agent inventory under pattern ${String(a.patternUcId).trim()} with a named Service Owner.`,
+          "No separate triage for this instance: the pattern was triaged once under the platform AIR-ID.",
+          "Reviewed in the quarterly inventory review.",
+        ],
+        why: "Shared with a team, matches an approved pattern, and no trigger is met.",
+      };
+    }
+    return {
+      cls: "patternCandidate",
+      label: PLATFORM_AGENT_CLASSES.patternCandidate,
+      lgaTier: "Tier 2 (once the pattern is approved)",
+      triageNeeded: true,
+      triggersMet: [],
+      canAct: "Assisted (T1) at platform level, once the pattern is approved",
+      nextSteps: [
+        "Ask the AI Governance Lead to approve this as a pattern: one UC-ID under the platform AIR-ID.",
+        "Triage the pattern once in the full triage (Steps 1 to 4; Light-touch or Standard route, §3.8.1). Later agents that match it need no triage.",
+        "Until then, the agent is shared no wider than the person who built it.",
+      ],
+      why: a.matchesPattern === "Yes"
+        ? "It says it matches an approved pattern but no pattern UC-ID was given, so the pattern cannot be checked."
+        : "Shared with a team, no trigger is met, but no approved pattern covers it yet.",
+    };
+  }
+
+  function nextQuarterReview(date) {
+    const d = date instanceof Date ? date : new Date(date || Date.now());
+    const q = Math.floor(d.getMonth() / 3);
+    const next = new Date(Date.UTC(d.getFullYear() + (q === 3 ? 1 : 0), ((q + 1) % 4) * 3, 1));
+    return `By ${formatDate(next)} (quarterly inventory review)`;
+  }
+
+  function buildPlatformAgentRow(input, screen, screenedOn) {
+    const a = input || {};
+    const s = screen || platformAgentScreen(a);
+    const date = screenedOn || new Date();
+    return [
+      a.platformAirId || "",
+      a.platformName || "",
+      a.agentName || "",
+      a.agentPurpose || "",
+      a.builtBy || "",
+      a.owner || "",
+      a.audience || "",
+      s.cls === "pattern" || s.cls === "patternCandidate" ? (a.patternUcId || "Pending") : "",
+      s.cls === "individual" ? "Pending — issue at Intake" : "",
+      s.label,
+      s.lgaTier,
+      s.triggersMet.map((t) => `${t.text} (${t.answer})`).join("; "),
+      s.canAct,
+      s.triageNeeded ? "Yes" : "No",
+      s.nextSteps.join(" "),
+      s.cls === "notPlatform" ? "" : nextQuarterReview(date),
+      formatDate(date),
+    ];
+  }
+
+  function buildPlatformAgentCsv(input, screen, screenedOn) {
+    return toCsv(PLATFORM_AGENT_HEADERS, [buildPlatformAgentRow(input, screen, screenedOn)]);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Environmental flag (Playbook §4.3.15). Recorded against the AIR-ID; it does not
+  // change the risk tier. Four answers give Green, Amber or Red exactly as §4.3.15
+  // states. Separate download; never part of the AI Register export.
+  const ENVIRONMENTAL_HEADERS = ["AIR-ID", "System", "Flag", "Intensity", "Supplier Info Needed", "Notes"];
+  const ENVIRONMENTAL_ACTIONS = {
+    Green: "No further action needed; the flag is recorded (Playbook §4.3.15).",
+    Amber: "The Service Owner records in the Responsible AI Assessment (AIG-ASS-04) whether a smaller, existing or non-AI option would meet the need, and procurement asks the supplier about its environmental practices (§5.5.2) (Playbook §4.3.15).",
+    Red: "The Amber steps apply; the decision record (AIG-DEC-03) notes why a lower-impact option was not chosen; after go-live, monitoring includes usage and, where the supplier can provide it, energy data (Appendix E.1) (Playbook §4.3.15).",
+  };
+
+  function environmentalFlag(input) {
+    const a = input || {};
+    const fm = a.foundationModels, cloud = a.cloudBased, intensity = a.intensity, supplier = a.supplierPractices;
+    if (!fm || !cloud || !intensity || !supplier) {
+      return { complete: false, flag: "", reasons: [], supplierInfoNeeded: "", action: "Answer all four questions to see the environmental flag." };
+    }
+    const notDisclosed = supplier === "no" || supplier === "unknown";
+    const reasons = [];
+    if (fm === "yes") reasons.push("uses a foundation model");
+    if (intensity === "High" || intensity === "Very High") reasons.push(`${intensity.toLowerCase()} computational intensity`);
+    if (notDisclosed) reasons.push(supplier === "no" ? "supplier environmental practices not disclosed" : "supplier environmental practices unknown");
+    const flag = fm === "yes" && intensity === "Very High" && notDisclosed ? "Red" : reasons.length ? "Amber" : "Green";
+    if (flag === "Green") reasons.push("no foundation model, low or medium intensity, and supplier practices disclosed");
+    return { complete: true, flag, reasons, supplierInfoNeeded: notDisclosed ? "Yes" : "No", action: ENVIRONMENTAL_ACTIONS[flag] };
+  }
+
+  function buildEnvironmentalCsv(profile, input) {
+    const r = environmentalFlag(input);
+    const a = input || {};
+    const yn = (v) => (v === "yes" ? "Yes" : v === "no" ? "No" : v === "unknown" ? "Unknown" : "");
+    const notes = [
+      `Foundation model: ${yn(a.foundationModels)}`,
+      `Cloud infrastructure: ${yn(a.cloudBased)}`,
+      `Supplier practices disclosed: ${yn(a.supplierPractices)}`,
+      `Why: ${r.reasons.join("; ")}`,
+      `Next step: ${r.action}`,
+    ].join(". ");
+    return toCsv(ENVIRONMENTAL_HEADERS, [[
+      (profile && profile.registerId) || "", (profile && profile.systemName) || "", r.flag, a.intensity || "", r.supplierInfoNeeded, notes,
+    ]]);
+  }
+
   return {
     SUITE,
     DEC04_GATES,
@@ -5035,6 +5315,17 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     retirementNextGate,
     buildRetirementGateLogRow,
     buildRetirementDecisionRecord,
+    PLATFORM_AGENT_TRIGGERS,
+    PLATFORM_AGENT_AUDIENCE,
+    PLATFORM_AGENT_CLASSES,
+    PLATFORM_AGENT_HEADERS,
+    platformAgentScreen,
+    buildPlatformAgentRow,
+    buildPlatformAgentCsv,
+    ENVIRONMENTAL_HEADERS,
+    ENVIRONMENTAL_ACTIONS,
+    environmentalFlag,
+    buildEnvironmentalCsv,
   };
 });
     </script>
@@ -6639,6 +6930,230 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
   byId("actionAuthority").addEventListener("change", invalidateAgency);
   const assessBtn = byId("assessAgency");
   if (assessBtn) assessBtn.addEventListener("click", renderAgentic);
+})();
+    </script>
+    <script id="platform-agent-app">
+(function () {
+  "use strict";
+  // Agents built on an approved platform (Playbook Appendix F.8). Runs before the
+  // main triage and sits outside its form, so it never changes the established
+  // AGPI, risk or agency calculations. Pre-fill only copies answers into Step 1.
+  const logic = window.TriageLogic;
+  const byId = (id) => document.getElementById(id);
+  if (!logic || !byId("platformAgent")) return;
+
+  const triggerBox = byId("paTriggers");
+  logic.PLATFORM_AGENT_TRIGGERS.forEach((t) => {
+    const label = document.createElement("label");
+    label.className = "field";
+    const span = document.createElement("span");
+    span.textContent = t.text;
+    const select = document.createElement("select");
+    select.id = `paTrig-${t.id}`;
+    select.dataset.paTrigger = t.id;
+    ["Unsure", "No", "Yes"].forEach((v) => {
+      const o = document.createElement("option");
+      o.textContent = v;
+      select.appendChild(o);
+    });
+    label.append(span, select);
+    triggerBox.appendChild(label);
+  });
+
+  function readInput() {
+    return {
+      onPlatform: byId("paOnPlatform").value,
+      platformAirId: byId("paPlatformAirId").value.trim(),
+      platformName: byId("paPlatformName").value.trim(),
+      agentName: byId("paAgentName").value.trim(),
+      agentPurpose: byId("paPurpose").value.trim(),
+      builtBy: byId("paBuiltBy").value.trim(),
+      owner: byId("paOwner").value.trim(),
+      audience: byId("paAudience").value,
+      matchesPattern: byId("paMatchesPattern").value,
+      patternUcId: byId("paPatternUcId").value.trim(),
+      triggers: Object.fromEntries(
+        Array.from(document.querySelectorAll("[data-pa-trigger]")).map((s) => [s.dataset.paTrigger, s.value]),
+      ),
+    };
+  }
+
+  function fillList(el, items) {
+    el.replaceChildren();
+    items.forEach((text) => {
+      const li = document.createElement("li");
+      li.textContent = text;
+      el.appendChild(li);
+    });
+  }
+
+  function render() {
+    const input = readInput();
+    byId("paDetails").hidden = input.onPlatform !== "Yes";
+    const orgSelect = byId("paTrig-orgWide");
+    if (input.audience === logic.PLATFORM_AGENT_AUDIENCE.org) {
+      orgSelect.value = "Yes";
+      orgSelect.disabled = true;
+    } else {
+      orgSelect.disabled = false;
+    }
+    const s = logic.platformAgentScreen(readInput());
+    const panel = byId("paResult");
+    panel.className = `result-panel platform-result pa-${s.cls}`;
+    byId("paClass").textContent = s.label;
+    byId("paTier").textContent = "";
+    byId("paWhy").textContent = s.why;
+    fillList(byId("paTriggersMet"), s.triggersMet.map((t) => `${t.text}: ${t.answer}`));
+    byId("paCanAct").textContent = s.canAct;
+    fillList(byId("paNext"), s.nextSteps);
+    byId("paPrefill").hidden = !(s.cls === "individual" || s.cls === "patternCandidate");
+    return { input: readInput(), screen: s };
+  }
+
+  function slug(text) {
+    return (text || "agent").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "agent";
+  }
+
+  function download(filename, contents) {
+    const blob = new Blob([contents], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
+
+  function setField(id, value) {
+    const el = byId(id);
+    if (!el || value == null) return;
+    el.value = value;
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+    el.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function yes(v) { return v === "Yes" || v === "Unsure"; }
+
+  function prefill() {
+    const { input, screen } = render();
+    const t = input.triggers;
+    setField("situation", "New use");
+    setField("registerId", input.platformAirId);
+    setField("systemName", input.platformName);
+    setField("purpose", input.platformName
+      ? `${input.platformName}: platform already on the AI Register; staff can build agents on it (Appendix F.8).`
+      : "");
+    setField("serviceOwner", input.owner);
+    setField("source", "Embedded in platform / supplier feature");
+    setField("procurementRoute", "Existing contract or licence");
+    setField("publicFacing", t.residentFacing === "Yes" ? "Yes" : "No");
+    setField("affectsIndividuals", yes(t.influencesDecisions) || t.residentFacing === "Yes" ? "Yes" : "No");
+    if (t.sensitiveData === "Yes") setField("dataType", "Special category data");
+    if (screen.cls === "individual") {
+      setField("capability", "Agentic AI");
+      setField("usePurpose", `${input.agentName ? input.agentName + ": " : ""}${input.agentPurpose}`);
+      const authority = t.actsUnconfirmed === "Yes" ? "Acts within defined bounds — monitored"
+        : t.actsUnconfirmed === "Unsure" ? "Unsure — not yet confirmed"
+        : yes(t.changesRecords) || yes(t.callsAgent) ? "Human approves each action"
+        : "None — outputs only";
+      setField("actionAuthority", authority);
+    } else {
+      setField("capability", "Generative AI");
+      setField("actionAuthority", "None — outputs only");
+      setField("usePurpose", `Approved pattern: ${input.agentPurpose}`);
+      if (input.patternUcId) {
+        setField("ucId", input.patternUcId);
+        setField("ucIdStatus", "Provisional — operator-entered, unverified");
+      }
+    }
+    byId("paMessage").textContent = "Step 1 has been pre-filled from this screen. Check every field, then score Steps 2 and 3.";
+    const profile = byId("profile");
+    if (profile) { profile.open = true; profile.scrollIntoView({ behavior: "smooth" }); }
+  }
+
+  byId("platformAgent").addEventListener("input", render);
+  byId("platformAgent").addEventListener("change", render);
+  byId("paDownload").addEventListener("click", () => {
+    const { input, screen } = render();
+    if (!input.agentName) {
+      byId("paMessage").textContent = "Add the agent name before downloading the screening record.";
+      byId("paAgentName").focus();
+      return;
+    }
+    byId("paMessage").textContent = "";
+    download(`platform-agent-screening-${slug(input.agentName)}.csv`, logic.buildPlatformAgentCsv(input, screen));
+  });
+  byId("paPrefill").addEventListener("click", prefill);
+  render();
+})();
+    </script>
+    <script id="environmental-app">
+(function () {
+  "use strict";
+  // Environmental considerations (Playbook §4.3.15): live flag and separate CSV
+  // download. Optional section; never touches the AI Register export or the tier.
+  const logic = window.TriageLogic;
+  const byId = (id) => document.getElementById(id);
+  if (!logic || !byId("environmentalStep") || !byId("downloadEnvironmental")) return;
+
+  function readEnv() {
+    return {
+      foundationModels: byId("envFoundationModels").value,
+      cloudBased: byId("envCloudBased").value,
+      intensity: byId("envComputationalIntensity").value,
+      supplierPractices: byId("envSupplierPractices").value,
+    };
+  }
+
+  function render() {
+    const r = logic.environmentalFlag(readEnv());
+    const box = byId("envResultBox");
+    box.hidden = !r.complete;
+    box.dataset.flag = r.flag;
+    byId("envFlag").textContent = r.flag;
+    byId("envIntensity").textContent = readEnv().intensity;
+    byId("envSupplierNeeded").textContent = r.supplierInfoNeeded;
+    byId("envWhy").textContent = r.reasons.join("; ");
+    byId("envAction").textContent = r.action;
+    return r;
+  }
+
+  function slug(text) {
+    return (text || "ai-system").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "ai-system";
+  }
+
+  byId("environmentalStep").addEventListener("change", render);
+  byId("downloadEnvironmental").addEventListener("click", () => {
+    const r = render();
+    const msg = byId("validationMessage");
+    const name = byId("systemName").value.trim();
+    if (!name) {
+      msg.textContent = "Add the system or model name before downloading the environmental considerations.";
+      byId("systemName").focus();
+      return;
+    }
+    if (!r.complete) {
+      msg.textContent = "Answer the four environmental questions (Environmental considerations, optional) before downloading them.";
+      const step = byId("environmentalStep");
+      step.open = true;
+      byId("envFoundationModels").focus();
+      return;
+    }
+    msg.textContent = "";
+    const csv = logic.buildEnvironmentalCsv({ registerId: byId("registerId").value.trim(), systemName: name }, readEnv());
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${slug(name)}-environmental-considerations.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+  });
+  render();
 })();
     </script>
     <script id="retire-app">

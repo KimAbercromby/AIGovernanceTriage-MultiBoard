@@ -33,15 +33,34 @@ outcome, and that every export control the tool wires up is blocked in demo mode
 ## Suite alignment and status
 
 This tool is aligned as a review aid to proposed, separate AI governance
-workbook drafts: **AI governance suite v3.9.10 (12 October 2026)**, Playbook 19.9.19,
+workbook drafts: **AI governance suite v3.9.11 (16 October 2026)**, Playbook 19.9.23,
 Gate Map AIG-DEC-01 1.14, AGPI Triage AIG-ASS-01 1.4, Risk Worksheet AIG-ASS-02 1.10,
 Deployment and Rollout Plan AIG-OPS-01 1.13, Monitoring Log AIG-OPS-02 1.6, Register
-AIG-INV-04 1.2, Gate Log AIG-DEC-04 1.3, Agent Record AIG-AGT-04 0.6 and Capabilities and System Map
+AIG-INV-04 1.2, Gate Log AIG-DEC-04 1.3, Agent Record AIG-AGT-04 0.7 and Capabilities and System Map
 AIG-INV-05 0.3. They are **proposed and unapproved**,
 not an approved or live policy, process or record. This public tool does not read
 or write controlled records and must not be treated as issued authority.
 
 Rules applied (Proposed — for Council confirmation):
+
+- **Agents built on an approved platform (Playbook Appendix F.8).** A first
+  question asks whether the use is an agent that staff built on a platform already
+  on the AI Register (for example Microsoft 365 Copilot). If so, seven triggers sort
+  it into personal (LGA Tier 1), approved pattern (LGA Tier 2), pattern not yet
+  approved, or individually governed (LGA Tier 3); any trigger answered Yes or Unsure
+  means individually governed, and sharing with the whole organisation is itself a
+  trigger. Personal and approved-pattern agents need no triage of their own; a new
+  pattern is triaged once; an individually governed agent gets the full triage and
+  the Agentic Triage. The screening record download matches the Platform Agent
+  Inventory sheet of the Agent Record (AIG-AGT-04 v0.7) column for column. "Pre-fill
+  the triage below" copies the answers into step 1. The screen sits outside the
+  triage form and never changes the AGPI, risk or agency calculations.
+- **Environmental considerations (Playbook §4.3.15).** Optional. Four answers give
+  Green (no foundation model, low or medium intensity, supplier practices disclosed),
+  Red (foundation model at very high intensity with supplier practices not disclosed
+  or unknown) or otherwise Amber, with the §4.3.15 next steps. Separate CSV download
+  (AIR-ID, System, Flag, Intensity, Supplier Info Needed, Notes); it never changes the
+  tier or the AI Register export.
 
 - **Priority is urgency only.** AGPI bands per AIG-ASS-01; a Resident Impact or Legal &
   Regulatory Exposure score of 5 sets at least Priority 2; a use with a §4.4.6 trigger
@@ -208,8 +227,8 @@ node scripts/build.js --check
 node --test test/*.test.js
 ```
 
-`test/suite-v3.9.10-contract.test.js` checks every export's field labels, order and
-controlled values against `test/fixtures/suite-v3.9.10-contract.json`, which records the
+`test/suite-v3.9.11-contract.test.js` checks every export's field labels, order and
+controlled values against `test/fixtures/suite-v3.9.11-contract.json`, which records the
 header rows and dropdown lists read from the suite workbooks (file, sheet and row).
 `test/v392-findings.test.js` has one test for each v3.9.2 pilot-readiness fix.
 Regenerate the fixture for a new suite release with

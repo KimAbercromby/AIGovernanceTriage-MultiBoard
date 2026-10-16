@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Regenerate test/fixtures/suite-v3.9.10-contract.json from the suite workbooks and documents.
+"""Regenerate test/fixtures/suite-v3.9.11-contract.json from the suite workbooks and documents.
 
-Usage: python3 scripts/extract-suite-fixture.py <folder with the v3.9.10 .xlsx/.docx sources>
+Usage: python3 scripts/extract-suite-fixture.py <folder with the v3.9.11 .xlsx/.docx sources>
 
 The fixture records, for every workbook sheet or form the tool's exports
 target, the exact header row (file, sheet, row) and the controlled lists
@@ -17,7 +17,7 @@ import openpyxl
 from openpyxl.utils import get_column_letter
 
 SRC = Path(sys.argv[1])
-SUITE = "v3.9.10 (12 October 2026)"
+SUITE = "v3.9.11 (16 October 2026)"
 
 
 def header(file, sheet, row):
@@ -178,6 +178,7 @@ fixture = {
         "Capability Vector": {**header(AGT04, "Capability Vector", 4), "lists": lists(AGT04, "Capability Vector")},
         "Runtime Controls": {**header(AGT04, "Runtime Controls", 4), "controlIds": list_column(AGT04, "Runtime Controls", "C", 5, 14)},
         "Authority & Delegations": header(AGT04, "Authority & Delegations", 4),
+        "Platform Agent Inventory": {**header(AGT04, "Platform Agent Inventory", 4), "lists": lists(AGT04, "Platform Agent Inventory")},
     },
     "INV-05": {
         s: {**header(INV05, s, 3), "lists": lists(INV05, s)}
@@ -190,6 +191,6 @@ fixture = {
     "OPS-01": ops01_section8(),
 }
 
-out = Path(__file__).resolve().parent.parent / "test" / "fixtures" / "suite-v3.9.10-contract.json"
+out = Path(__file__).resolve().parent.parent / "test" / "fixtures" / "suite-v3.9.11-contract.json"
 out.write_text(json.dumps(fixture, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 print(f"Wrote {out}")
