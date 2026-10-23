@@ -16,6 +16,8 @@
     "downloadRisk", "downloadGateReady", "downloadGates", "downloadHandoff",
     "downloadAgent", "downloadCapabilities", "downloadAgenticGovernance",
     "downloadSummary", "copySummary", "printResult",
+    "downloadEnvironmental", "paDownload",
+    "retireDownloadGateLog", "retireDownloadDecision", "retireCopy", "retirePrint",
   ];
   const BLOCKED_MESSAGE =
     "Exports are switched off in demo mode. This is fictional demo data, not a Council record. Choose “Clear demo” to start a real triage.";

@@ -170,6 +170,7 @@ fixture = {
             "source": {"file": ASS02, "sheet": "Risk Assessment"},
             "lists": lists(ASS02, "Risk Assessment"),
             "formulas": formulas(ASS02, "Risk Assessment", ["C43", "C82", "E41"]),
+            "escalationTriggers": list_column(ASS02, "Risk Assessment", "A", 50, 56),
             "evidenceLabels": {c: openpyxl.load_workbook(SRC / ASS02)["Risk Assessment"][c].value for c in ["D37", "D38", "D39", "D40"]},
         },
     },
@@ -192,5 +193,5 @@ fixture = {
 }
 
 out = Path(__file__).resolve().parent.parent / "test" / "fixtures" / "suite-v3.9.11-contract.json"
-out.write_text(json.dumps(fixture, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+out.write_text(json.dumps(fixture, indent=2, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
 print(f"Wrote {out}")

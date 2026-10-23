@@ -83,7 +83,7 @@ Rules applied (Proposed — for Council confirmation):
   Medium, T3 High, T4 High or Critical without evidenced per-action review, T5
   Critical). "Can it act?" Unsure counts as Yes; per-action review Unsure counts as
   No (Critical floor).
-- **Gates 1 and 3 (AIG-DEC-01 v1.12 Gate 1 and 3 rule):** Gate 1 decides whether the
+- **Gates 1 and 3 (AIG-DEC-01 v1.14 Gate 1 and 3 rule):** Gate 1 decides whether the
   Council takes a use or system on; Gate 3 decides the investment and business case.
   With no new investment ("New investment needed?" No; Unsure counts as Yes), at Low
   or Medium, for a use that cannot act, Gate 3 is proposed Not applicable. Gate 1 is
@@ -108,7 +108,7 @@ Rules applied (Proposed — for Council confirmation):
   contract variation keeps Gates 1, 3 and 4; an all-No Fast-Track Screening with a
   governing tier above Low keeps the higher tier and asks for the answers and scores to
   be checked with the AI Governance Lead.
-- **Gates (AIG-DEC-01 v1.13):** Gate 2 and Gate 6 are mandatory for every
+- **Gates (AIG-DEC-01 v1.14):** Gate 2 and Gate 6 are mandatory for every
   action-capable use (T0 included) and Gate 6 grants the permitted autonomy level;
   Gate 4 applies wherever a procurement, new contract, licence change or contract
   variation is needed; for an existing contract or licence, or a free public tool, it
