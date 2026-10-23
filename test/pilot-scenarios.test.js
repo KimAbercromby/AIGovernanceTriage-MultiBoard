@@ -79,9 +79,14 @@ test("agentic scenarios respect the tool's autonomy minimum for their action aut
 
 test("demo mode blocks every export, copy and print control the tool wires up", () => {
   const blocked = new Set([...demo.match(/const EXPORT_IDS = \[([\s\S]*?)\]/)[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]));
-  const wired = [...triageApp.matchAll(/byId\("([A-Za-z]+)"\)\.addEventListener\("click"/g)]
-    .map((m) => m[1]).filter((id) => /^(download|copy|print)/.test(id));
-  assert.ok(wired.length >= 14);
+  // Every app script, not just triage-app.js: the environmental, platform-agent and
+  // retirement sections have their own export, copy and print buttons.
+  const srcDir = path.join(__dirname, "..", "src");
+  const allApps = fs.readdirSync(srcDir).filter((f) => /-app\.js$/.test(f))
+    .map((f) => fs.readFileSync(path.join(srcDir, f), "utf8")).join("\n");
+  const wired = [...allApps.matchAll(/byId\("([A-Za-z]+)"\)\.addEventListener\("click"/g)]
+    .map((m) => m[1]).filter((id) => /^(download|copy|print)|Download|Copy$|Print$/.test(id));
+  assert.ok(wired.length >= 20);
   wired.forEach((id) => assert.ok(blocked.has(id), `export not blocked in demo mode: ${id}`));
   blocked.forEach((id) => assert.ok(html.includes(`id="${id}"`), `blocked id missing from page: ${id}`));
 });

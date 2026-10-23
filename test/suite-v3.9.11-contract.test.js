@@ -567,3 +567,9 @@ test("v3.9.1: Gate 6 evidence carries the AIG-OPS-01 section 8 business continui
   // the new row follows the existing section 8 rows
   assert.deepEqual(rows.map((r) => r[0]).slice(0, 3), ["Safe-withdrawal / rollback procedure", "Who can invoke suspension", "Fallback process if the system is unavailable"]);
 });
+
+test("escalation trigger wording is exactly AIG-ASS-02 Risk Assessment A50:A56 (Playbook §4.4.6)", () => {
+  const expected = contract["ASS-02"]["Risk Assessment"].escalationTriggers;
+  assert.equal(expected.length, 7);
+  assert.deepEqual(logic.TRIGGERS.map((t) => t.text), expected);
+});

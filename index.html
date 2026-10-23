@@ -2491,31 +2491,31 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
   const TRIGGERS = [
     {
       id: "specialData",
-      text: "Processing of special category personal data as defined by the UK GDPR",
+      text: "Processing of special category personal data (UK GDPR)",
     },
     {
       id: "vulnerable",
-      text: "AI used in relation to vulnerable residents, including children, adults with care and support needs, and individuals experiencing homelessness",
+      text: "Use in relation to vulnerable residents (children, adults with care/support needs, people experiencing homelessness)",
     },
     {
       id: "housingCare",
-      text: "AI that directly influences housing allocation, social care assessments or homelessness prevention decisions",
+      text: "Directly influences housing allocation, social care assessments or homelessness prevention decisions",
     },
     {
       id: "novel",
-      text: "Novel or first-of-type AI deployment for which the organisation has no prior operational experience",
+      text: "Novel or first-of-type AI deployment with no prior Council operational experience",
     },
     {
       id: "statutory",
-      text: "AI that produces or directly informs statutory decisions",
+      text: "Produces or directly informs statutory decisions",
     },
     {
       id: "materialChange",
-      text: "Significant supplier, model, data or scope change that materially alters an existing deployment",
+      text: "Significant AI supplier or model changes that materially alter the risk profile of an existing deployment",
     },
     {
       id: "agentic",
-      text: "AI systems capable of executing actions autonomously — including initiating transactions, modifying records, sending communications or invoking other systems — without human review of each individual action",
+      text: "Executes actions autonomously without human review of each individual action",
     },
   ];
 
@@ -2644,7 +2644,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     return out;
   }
 
-  // New investment question (AIG-INV-03 v1.9; AIG-DEC-01 v1.12 Gate 1 and 3 rule;
+  // New investment question (AIG-INV-03 v1.9; AIG-DEC-01 Gate 1 and 3 rule;
   // suite v3.9.8). Unsure counts as Yes. The "No" wording changed in v3.9.8 so a free new
   // system can answer it too; records saved with the v3.9.7 wording are still read.
   const NEW_INVESTMENT = {
@@ -2684,7 +2684,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     return Object.values(SYSTEM_APPROVAL).includes(value) ? value : SYSTEM_APPROVAL.unsure;
   }
   // Gate 1 decides whether the Council takes a use or system on at all; Gate 3 decides
-  // the investment and strategic case (AIG-DEC-01 v1.12 Gate 1 and 3 rule).
+  // the investment and strategic case (AIG-DEC-01 Gate 1 and 3 rule).
   // Gate 1 is N/A only for a new UC-ID, or a change to a use in governance (decision A5),
   // under an existing AIR-ID with no new investment,
   // at Low or Medium, that cannot act: a new system always goes to Gate 1, even if free.
@@ -2721,7 +2721,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     "Versioned AI assurance opinion, where one is given",
   ];
 
-  // Procurement question (AIG-DEC-01 v1.11 Gate 4 rule; Playbook §5.5.1; AIG-ASS-08 v1.6;
+  // Procurement question (AIG-DEC-01 Gate 4 rule; Playbook §5.5.1; AIG-ASS-08 v1.6;
   // Proposed — for Council confirmation). v3.9.2 (T-07, T-08).
   const PROCUREMENT = {
     unknown: "Not yet known",
@@ -3088,7 +3088,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     );
   }
 
-  // Agency-tier minimum pathway (AIG-DEC-01 v1.11 Agentic pathway; AIG-AGT-03 §6;
+  // Agency-tier minimum pathway (AIG-DEC-01 Agentic pathway; AIG-AGT-03 §6;
   // Playbook F.2). Applies to action-capable uses only. T0/T1 none, T2 Medium,
   // T3 High, T4 High (Critical where actions run without evidenced per-action human
   // review), T5 Critical. Proposed — for Council confirmation.
@@ -3149,7 +3149,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
   }
 
   // Gate 4 and the full Supplier DDQ apply only where a procurement, new contract,
-  // licence change or contract variation is needed (AIG-DEC-01 v1.11), not from the
+  // licence change or contract variation is needed (AIG-DEC-01), not from the
   // Source answer alone (v3.9.2, T-07).
   function commercialRequired(profile) {
     return procurementRouteOf(profile) === PROCUREMENT.new;
@@ -3498,7 +3498,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     return match ? Number(match[1]) : null;
   }
 
-  // Prospective gate route (AIG-DEC-01 v1.11 Gate Map, gates 1 to 6), with the AI
+  // Prospective gate route (AIG-DEC-01 Gate Map, gates 1 to 6), with the AI
   // Assurance Board's assurance input shown as a separate, non-deciding step. The
   // governing tier sets which gates apply; the AGPI priority sets urgency only.
   // Gate 2 and Gate 6 are mandatory for every action-capable use (R1, R2); Gate 4
@@ -3635,7 +3635,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
         naRationale: gate4.naRationale,
         forum: configured.commercial,
         decision:
-          "Funding, tendering and contract award: is the procurement route, supplier and contract acceptable under the relevant delegated authority? Gate 4 applies wherever a procurement, new contract, licence change or contract variation is needed (AIG-DEC-01 v1.11; Proposed \u2014 for Council confirmation).",
+          "Funding, tendering and contract award: is the procurement route, supplier and contract acceptable under the relevant delegated authority? Gate 4 applies wherever a procurement, new contract, licence change or contract variation is needed (AIG-DEC-01; Proposed \u2014 for Council confirmation).",
         evidence: gate4.applies === true || gate4.applies === null
           ? [
             "Supplier AI Due Diligence Questionnaire (AIG-ASS-08)",
@@ -3810,7 +3810,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
       isReentry(profile)
         ? `${situationOf(profile)}: keep the Intake type already on the AIG-INV-04 row for this AIR-ID; the change re-enters intake and triage on the same AIR-ID.`
         : "Proposed from \u201cWhat's happening?\u201d and the operational state (found already in use or Live \u2192 Retrospective); use Aggregated only for an aggregated tool-level entry.");
-    add(reg, "Information asset reference", "", "Leave blank: the Information Governance team enters the reference of the matching Information Asset Register entry. The asset owner is held there, not repeated here (suite v3.9.10).");
+    add(reg, "Information asset reference", "", "Leave blank: the Information Governance team enters the reference of the matching Information Asset Register entry. The asset owner is held there, not repeated here.");
 
     const sum = "Assessment summary";
     add(sum, "AIR-ID", profile.registerId, identityReview);
@@ -3960,7 +3960,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
   // AIG-DEC-01 decision gate (1 to 6). Columns A to L match the workbook exactly and
   // every controlled column holds a value from its dropdown: Gate / forum from the
   // Lists sheet, Requirement Required/Conditional (Not applicable for Gate 4 under the
-  // AIG-DEC-01 v1.11 rule, with a draft rationale in column J for the steward to confirm),
+  // AIG-DEC-01 rule, with a draft rationale in column J for the steward to confirm),
   // Plan state Planned, Decision scope UC-ID specific. A blank spacer column separates
   // the guidance columns, which are not part of the Gate plan. Plan ID and Target date
   // stay blank for the governance steward: the tool never issues IDs. The AI
@@ -4346,7 +4346,7 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
         : "Sections 1\u20139 (supplier responses); Section 10 \u2014 Council Evaluation (internal)",
       fields: [
         { label: "Procurement route (intake answer)", value: gate4.route },
-        { label: "Gate 4 (AIG-DEC-01 v1.11 rule)", value: gate4.label },
+        { label: "Gate 4 (AIG-DEC-01 rule)", value: gate4.label },
       ],
       note: `${gate4.note} The commercial owner confirms the procurement position. (Proposed \u2014 for Council confirmation.)`,
     });
@@ -8000,6 +8000,8 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     "downloadRisk", "downloadGateReady", "downloadGates", "downloadHandoff",
     "downloadAgent", "downloadCapabilities", "downloadAgenticGovernance",
     "downloadSummary", "copySummary", "printResult",
+    "downloadEnvironmental", "paDownload",
+    "retireDownloadGateLog", "retireDownloadDecision", "retireCopy", "retirePrint",
   ];
   const BLOCKED_MESSAGE =
     "Exports are switched off in demo mode. This is fictional demo data, not a Council record. Choose “Clear demo” to start a real triage.";
