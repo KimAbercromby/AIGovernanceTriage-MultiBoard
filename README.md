@@ -15,7 +15,7 @@ A **Pilot lab** panel at the top of the triage form loads one of eleven uses of 
 made-up system, *DEMO: Riverside Repairs Assistant* (AIR-DEMO-01, UC-DEMO-01 to
 UC-DEMO-11). Together they produce every AGPI priority (1 to 5), every risk tier
 (Low to Critical) and agency tiers T1 to T5, using the tool's own logic. Under the
-suite v3.9 tier-assignment table (AIG-AGT-02 / AIG-AGT-03 Tables A and B) UC-DEMO-06
+suite version 1.0 draft tier-assignment table (AIG-AGT-02 / AIG-AGT-03 Tables A and B) UC-DEMO-06
 moved from T0 to T1 (its Consequence score of 1 sets a T1 floor), so no scenario now
 shows T0; its scores were left unchanged.
 
@@ -33,11 +33,11 @@ outcome, and that every export control the tool wires up is blocked in demo mode
 ## Suite alignment and status
 
 This tool is aligned as a review aid to proposed, separate AI governance
-workbook drafts: **AI governance suite v3.9.11 (16 October 2026)**, Playbook 19.9.23,
-Gate Map AIG-DEC-01 1.14, AGPI Triage AIG-ASS-01 1.4, Risk Worksheet AIG-ASS-02 1.10,
-Deployment and Rollout Plan AIG-OPS-01 1.13, Monitoring Log AIG-OPS-02 1.6, Register
-AIG-INV-04 1.2, Gate Log AIG-DEC-04 1.3, Agent Record AIG-AGT-04 0.7 and Capabilities and System Map
-AIG-INV-05 0.3. They are **proposed and unapproved**,
+workbook drafts: **AI governance suite version 1.0 draft (16 October 2026)**, the Playbook,
+Gate Map AIG-DEC-01, AGPI Triage AIG-ASS-01, Risk Worksheet AIG-ASS-02,
+Deployment and Rollout Plan AIG-OPS-01, Monitoring Log AIG-OPS-02, Register
+AIG-INV-04, Gate Log AIG-DEC-04, Agent Record AIG-AGT-04 0.7 and Capabilities and System Map
+AIG-INV-05. They are **proposed and unapproved**,
 not an approved or live policy, process or record. This public tool does not read
 or write controlled records and must not be treated as issued authority.
 
@@ -52,7 +52,7 @@ Rules applied (Proposed — for Council confirmation):
   trigger. Personal and approved-pattern agents need no triage of their own; a new
   pattern is triaged once; an individually governed agent gets the full triage and
   the Agentic Triage. The screening record download matches the Platform Agent
-  Inventory sheet of the Agent Record (AIG-AGT-04 v0.7) column for column. "Pre-fill
+  Inventory sheet of the Agent Record (AIG-AGT-04) column for column. "Pre-fill
   the triage below" copies the answers into step 1. The screen sits outside the
   triage form and never changes the AGPI, risk or agency calculations.
 - **Environmental considerations (Playbook §4.3.15).** Optional. Four answers give
@@ -83,7 +83,7 @@ Rules applied (Proposed — for Council confirmation):
   Medium, T3 High, T4 High or Critical without evidenced per-action review, T5
   Critical). "Can it act?" Unsure counts as Yes; per-action review Unsure counts as
   No (Critical floor).
-- **Gates 1 and 3 (AIG-DEC-01 v1.12 Gate 1 and 3 rule):** Gate 1 decides whether the
+- **Gates 1 and 3 (AIG-DEC-01 Gate 1 and 3 rule):** Gate 1 decides whether the
   Council takes a use or system on; Gate 3 decides the investment and business case.
   With no new investment ("New investment needed?" No; Unsure counts as Yes), at Low
   or Medium, for a use that cannot act, Gate 3 is proposed Not applicable. Gate 1 is
@@ -96,19 +96,19 @@ Rules applied (Proposed — for Council confirmation):
   benefits; any assurance opinion) moves to Gate 5 where it applies, otherwise Gate 6.
   Column J of an N/A row is left for the governance steward; the proposed rationale is
   in the handoff guidance column.
-- **Agent Record level (suite v3.9.9; Playbook F.3):** after "Assess agency" the tool shows
+- **Agent Record level (suite version 1.0 draft; Playbook F.3):** after "Assess agency" the tool shows
   the level of AIG-AGT-04 Agent Record the agent needs: Core for every agent that can act;
   Core plus features where persistence, memory, tool discovery, credential access or
   delegation switch on their own sheets (the memory flag covers working, retrieved or
   persistent memory); Full at T3 and above, with financial authority or
   while the tier is unassessed. The core record includes the Agency Profile row behind the tier. The Agent Record export marks the core fields, which the
   Council must answer itself (never "Not disclosed by supplier").
-- **Answers that contradict each other (suite v3.9.8):** the stricter answer applies and
+- **Answers that contradict each other (suite version 1.0 draft):** the stricter answer applies and
   the tool says why. "No new investment" with a new contract, licence change or
   contract variation keeps Gates 1, 3 and 4; an all-No Fast-Track Screening with a
   governing tier above Low keeps the higher tier and asks for the answers and scores to
   be checked with the AI Governance Lead.
-- **Gates (AIG-DEC-01 v1.13):** Gate 2 and Gate 6 are mandatory for every
+- **Gates (AIG-DEC-01):** Gate 2 and Gate 6 are mandatory for every
   action-capable use (T0 included) and Gate 6 grants the permitted autonomy level;
   Gate 4 applies wherever a procurement, new contract, licence change or contract
   variation is needed; for an existing contract or licence, or a free public tool, it
