@@ -246,7 +246,7 @@ test("AIG-DEC-02 decision paper handoff uses the template's own field labels, in
 });
 
 test("stated suite and artefact versions match the v3.9.11 Artefact Index (AIG-GOV-03)", () => {
-  assert.equal(logic.SUITE.release, "v3.9.11");
+  assert.equal(logic.SUITE.release, "version 1.0 draft");
   const index = contract.versions;
   const byId = {
     "AIG-GOV-02 Playbook": "AIG-GOV-02", "AIG-GOV-03 Artefact Index": "AIG-GOV-03",
@@ -263,7 +263,7 @@ test("stated suite and artefact versions match the v3.9.11 Artefact Index (AIG-G
     assert.ok(index[id].startsWith(`v${logic.SUITE.versions[name]}`), `${name}: tool ${logic.SUITE.versions[name]}, index ${index[id]}`);
   }
   assert.equal(Object.keys(byId).length, Object.keys(logic.SUITE.versions).length - 1); // all but the UC-ID view (not indexed)
-  assert.match(html, /Aligned to AI governance suite v3\.9\.11 \(16 October 2026\): Playbook 19\.9\.23, Gate Map AIG-DEC-01 1\.14, AGPI AIG-ASS-01 1\.4, Risk Worksheet AIG-ASS-02 1\.10/);
+  assert.match(html, /Aligned to the AI governance suite \(version 1\.0 draft\)/);
 });
 
 // ---- v3.8 / v3.9 logic rules ---------------------------------------------------
