@@ -6,10 +6,10 @@
   "use strict";
 
   // Suite release this tool is aligned to, with the artefact versions it relies on
-  // (from the AIG-GOV-03 Artefact Index, suite release v3.9.11, 16 October 2026).
+  // (from the AIG-GOV-03 Artefact Index).
   const SUITE = {
-    release: "v3.9.11",
-    date: "16 October 2026",
+    release: "version 1.0 draft",
+    date: "",
     status: "Proposed — for Council confirmation; not approved or adopted",
     versions: {
       "AIG-GOV-02 Playbook": "19.9.23 draft",
@@ -32,7 +32,7 @@
       "UC_ID_Risk_Decision_Current_View": "1.0 draft",
     },
   };
-  SUITE.label = `AI governance suite ${SUITE.release} (${SUITE.date}; Playbook ${SUITE.versions["AIG-GOV-02 Playbook"]})`;
+  SUITE.label = `AI governance suite ${SUITE.release}`;
 
   const DIMENSIONS = [
     {
@@ -269,7 +269,7 @@
     return Object.values(FAST_TRACK).includes(value) ? value : FAST_TRACK.notDone;
   }
   // Fast-Track answers that the rest of the profile shows cannot be No (AIG-INV-02
-  // v1.8, suite v3.9.7): Q1 (can it act?), Q2 (special category data; ordinary
+  // v1.8, suite version 1.0 draft): Q1 (can it act?), Q2 (special category data; ordinary
   // personal data the user already handles is No), Q3/Q4 (outputs could materially
   // affect individuals or services) and Q5 (resident- or public-facing; staff using
   // it for their own work is No).
@@ -284,8 +284,8 @@
     return out;
   }
 
-  // New investment question (AIG-INV-03 v1.9; AIG-DEC-01 v1.12 Gate 1 and 3 rule;
-  // suite v3.9.8). Unsure counts as Yes. The "No" wording changed in v3.9.8 so a free new
+  // New investment question (AIG-INV-03; AIG-DEC-01 Gate 1 and 3 rule;
+  // suite version 1.0 draft). Unsure counts as Yes. The "No" wording changed in v3.9.8 so a free new
   // system can answer it too; records saved with the v3.9.7 wording are still read.
   const NEW_INVESTMENT = {
     unsure: "Unsure (counts as Yes)",
@@ -297,7 +297,7 @@
     if (value === "No — existing approved system and licence, no new cost") return NEW_INVESTMENT.no;
     return Object.values(NEW_INVESTMENT).includes(value) ? value : NEW_INVESTMENT.unsure;
   }
-  // Answers that contradict each other (decision B4, suite v3.9.8). The stricter
+  // Answers that contradict each other (decision B4, suite version 1.0 draft). The stricter
   // answer still applies; the person is told why so they can correct the form.
   function answerConflicts(profile, results) {
     const out = [];
@@ -311,7 +311,7 @@
     }
     return out;
   }
-  // Is the existing system's approval current? (AIG-INV-03; decision A6, suite v3.9.8.)
+  // Is the existing system's approval current? (AIG-INV-03; decision A6, suite version 1.0 draft.)
   // Unsure counts as No. Only asked where an existing AIR-ID is entered.
   const SYSTEM_APPROVAL = {
     unsure: "Unsure (counts as No)",
@@ -324,7 +324,7 @@
     return Object.values(SYSTEM_APPROVAL).includes(value) ? value : SYSTEM_APPROVAL.unsure;
   }
   // Gate 1 decides whether the Council takes a use or system on at all; Gate 3 decides
-  // the investment and strategic case (AIG-DEC-01 v1.12 Gate 1 and 3 rule).
+  // the investment and strategic case (AIG-DEC-01 Gate 1 and 3 rule).
   // Gate 1 is N/A only for a new UC-ID, or a change to a use in governance (decision A5),
   // under an existing AIR-ID with no new investment,
   // at Low or Medium, that cannot act: a new system always goes to Gate 1, even if free.
@@ -361,7 +361,7 @@
     "Versioned AI assurance opinion, where one is given",
   ];
 
-  // Procurement question (AIG-DEC-01 v1.11 Gate 4 rule; Playbook §5.5.1; AIG-ASS-08 v1.6;
+  // Procurement question (AIG-DEC-01 Gate 4 rule; Playbook §5.5.1; AIG-ASS-08;
   // Proposed — for Council confirmation). v3.9.2 (T-07, T-08).
   const PROCUREMENT = {
     unknown: "Not yet known",
@@ -431,7 +431,7 @@
   }
 
   // Monitoring minimum for the governing tier (Playbook §6.4.4 controlled minimum
-  // cadence table; AIG-OPS-02 v1.6 Sampling Method), as the Route Finder states it.
+  // cadence table; AIG-OPS-02 Sampling Method), as the Route Finder states it.
   // For action-capable uses the Monitoring and Review Plan raises the cadence; the size
   // of the raise is a Council decision (AIG-OPS-02 column AP). v3.9.2 (T-12, W-08).
   const MONITORING_MINIMUM = {
@@ -615,7 +615,7 @@
   //  - AGPI band from the weighted score;
   //  - priority floor (v3.8): Resident Impact = 5 or Legal & Regulatory Exposure = 5
   //    makes the priority at least Priority 2 – High;
-  //  - trigger floor (v3.9.2, AIG-ASS-01 v1.4 rows 23-24): a use with a §4.4.6
+  //  - trigger floor (v3.9.2, AIG-ASS-01 rows 23-24): a use with a §4.4.6
   //    mandatory trigger (Yes or Unsure) cannot be Priority 5; it is at least Priority 4.
   //  - Governance Investigation Required (B19 = Yes) replaces the priority with
   //    "Governance Investigation Required — route to discovery" (B17).
@@ -651,7 +651,7 @@
     return {
       ...priority,
       band,
-      // AIG-ASS-01 v1.4 B17 applies both floors, or shows the investigation route.
+      // AIG-ASS-01 B17 applies both floors, or shows the investigation route.
       ass01Label: investigation ? INVESTIGATION_LABEL : priority.label,
       governanceInvestigation: investigation,
       floorApplied,
@@ -728,7 +728,7 @@
     );
   }
 
-  // Agency-tier minimum pathway (AIG-DEC-01 v1.11 Agentic pathway; AIG-AGT-03 §6;
+  // Agency-tier minimum pathway (AIG-DEC-01 Agentic pathway; AIG-AGT-03 §6;
   // Playbook F.2). Applies to action-capable uses only. T0/T1 none, T2 Medium,
   // T3 High, T4 High (Critical where actions run without evidenced per-action human
   // review), T5 Critical. Proposed — for Council confirmation.
@@ -789,7 +789,7 @@
   }
 
   // Gate 4 and the full Supplier DDQ apply only where a procurement, new contract,
-  // licence change or contract variation is needed (AIG-DEC-01 v1.11), not from the
+  // licence change or contract variation is needed (AIG-DEC-01), not from the
   // Source answer alone (v3.9.2, T-07).
   function commercialRequired(profile) {
     return procurementRouteOf(profile) === PROCUREMENT.new;
@@ -1056,7 +1056,7 @@
       evidence.push("Responsible AI Assessment");
     }
     // Playbook §4.5.9: the AI Security Review Checklist is a High/Critical minimum and
-    // applies to action-capable systems at every tier (AIG-ASS-11). Since suite v3.9.4 the
+    // applies to action-capable systems at every tier (AIG-ASS-11). Since suite version 1.0 draft the
     // item names the Section 8 threat model, required at these tiers and for any
     // action-capable AI (a §4.4.6 trigger always sets at least High).
     if (tier === "High" || tier === "Critical" || triggered || canAct) {
@@ -1116,7 +1116,7 @@
 
   // v3.9.1 (Proposed — for Council confirmation): AIG-OPS-01 section 8 "Rollback and Contingency" adds the
   // business continuity link (Civil Contingencies Act 2004; AIG-AIMS-05 REQ-054); the label and question are
-  // quoted exactly from AIG-OPS-01 v1.8 (unchanged from v1.6) and are evidenced at Gate 6 (go-live).
+  // quoted exactly from AIG-OPS-01 (unchanged from v1.6) and are evidenced at Gate 6 (go-live).
   const BUSINESS_CONTINUITY_LINK =
     "AIG-OPS-01 section 8, Business continuity link (Proposed — for Council confirmation): Is this service a prioritised activity in the Council's business continuity plan? Yes / No / Not known. If yes, give the plan reference and confirm the fallback above is consistent with it.";
 
@@ -1138,7 +1138,7 @@
     return match ? Number(match[1]) : null;
   }
 
-  // Prospective gate route (AIG-DEC-01 v1.11 Gate Map, gates 1 to 6), with the AI
+  // Prospective gate route (AIG-DEC-01 Gate Map, gates 1 to 6), with the AI
   // Assurance Board's assurance input shown as a separate, non-deciding step. The
   // governing tier sets which gates apply; the AGPI priority sets urgency only.
   // Gate 2 and Gate 6 are mandatory for every action-capable use (R1, R2); Gate 4
@@ -1275,7 +1275,7 @@
         naRationale: gate4.naRationale,
         forum: configured.commercial,
         decision:
-          "Funding, tendering and contract award: is the procurement route, supplier and contract acceptable under the relevant delegated authority? Gate 4 applies wherever a procurement, new contract, licence change or contract variation is needed (AIG-DEC-01 v1.11; Proposed \u2014 for Council confirmation).",
+          "Funding, tendering and contract award: is the procurement route, supplier and contract acceptable under the relevant delegated authority? Gate 4 applies wherever a procurement, new contract, licence change or contract variation is needed (AIG-DEC-01; Proposed \u2014 for Council confirmation).",
         evidence: gate4.applies === true || gate4.applies === null
           ? [
             "Supplier AI Due Diligence Questionnaire (AIG-ASS-08)",
@@ -1450,7 +1450,7 @@
       isReentry(profile)
         ? `${situationOf(profile)}: keep the Intake type already on the AIG-INV-04 row for this AIR-ID; the change re-enters intake and triage on the same AIR-ID.`
         : "Proposed from \u201cWhat's happening?\u201d and the operational state (found already in use or Live \u2192 Retrospective); use Aggregated only for an aggregated tool-level entry.");
-    add(reg, "Information asset reference", "", "Leave blank: the Information Governance team enters the reference of the matching Information Asset Register entry. The asset owner is held there, not repeated here (suite v3.9.10).");
+    add(reg, "Information asset reference", "", "Leave blank: the Information Governance team enters the reference of the matching Information Asset Register entry. The asset owner is held there, not repeated here (suite version 1.0 draft).");
 
     const sum = "Assessment summary";
     add(sum, "AIR-ID", profile.registerId, identityReview);
@@ -1600,7 +1600,7 @@
   // AIG-DEC-01 decision gate (1 to 6). Columns A to L match the workbook exactly and
   // every controlled column holds a value from its dropdown: Gate / forum from the
   // Lists sheet, Requirement Required/Conditional (Not applicable for Gate 4 under the
-  // AIG-DEC-01 v1.11 rule, with a draft rationale in column J for the steward to confirm),
+  // AIG-DEC-01 rule, with a draft rationale in column J for the steward to confirm),
   // Plan state Planned, Decision scope UC-ID specific. A blank spacer column separates
   // the guidance columns, which are not part of the Gate plan. Plan ID and Target date
   // stay blank for the governance steward: the tool never issues IDs. The AI
@@ -1986,7 +1986,7 @@
         : "Sections 1\u20139 (supplier responses); Section 10 \u2014 Council Evaluation (internal)",
       fields: [
         { label: "Procurement route (intake answer)", value: gate4.route },
-        { label: "Gate 4 (AIG-DEC-01 v1.11 rule)", value: gate4.label },
+        { label: "Gate 4 (AIG-DEC-01 rule)", value: gate4.label },
       ],
       note: `${gate4.note} The commercial owner confirms the procurement position. (Proposed \u2014 for Council confirmation.)`,
     });
@@ -2266,7 +2266,7 @@
     Suspend: "Suspended",
     Decommission: "Retired",
     "Re-authorise": "Approved or Approved with conditions (after reassessment)",
-    // Suite v3.9.8 (decision H2): lifts a precautionary pause; not offered for a Gate 8 retirement.
+    // Suite version 1.0 draft (decision H2): lifts a precautionary pause; not offered for a Gate 8 retirement.
     Resume: "Approved or Approved with conditions (the approval in force before the precautionary pause carries over)",
   };
 
@@ -2338,7 +2338,7 @@
     add(event, "Event-time lifecycle stage", decided ? "Retirement and Decommissioning" : "", "Controlled value once the event is recorded.");
     add(event, "Incident ref (AIG-OPS-03), precautionary pause", "", "Precautionary pause (containment) events only; blank for a retirement decision.");
     add(event, "Follow-up decision due date (precautionary pause)", "", "Precautionary pause (containment) events only; blank for a retirement decision.");
-    add(event, "Screening considered by the decision-maker (Yes / No)", "", "For a Decision that lets a use continue (Progress, Progress with condition, Re-authorise, Resume); blank for a retirement decision. AIG-DEC-04 v1.3 column X.");
+    add(event, "Screening considered by the decision-maker (Yes / No)", "", "For a Decision that lets a use continue (Progress, Progress with condition, Re-authorise, Resume); blank for a retirement decision. AIG-DEC-04 column X.");
     add(event, "Note (not a column) — Rationale", ret.rationale, "Proposal context only; not a record of an event that occurred.");
 
     const conditionRows = conditions.length ? conditions : [""];
@@ -2545,7 +2545,7 @@
     return reviewedContextKey === agenticContextKey(profile, inputs) ? assessment : null;
   }
 
-  // Proportionate Agent Record (suite v3.9.9; Playbook F.3; AIG-AGT-04 v0.6 column BL).
+  // Proportionate Agent Record (suite version 1.0 draft; Playbook F.3; AIG-AGT-04 column BL).
   // Every agent that can act needs the core record; persistence, memory, tool discovery,
   // credential access and delegation switch on their own sheets (the AIG-AGT-02 memory flag
   // covers working, retrieved or persistent memory); T3 and above, or

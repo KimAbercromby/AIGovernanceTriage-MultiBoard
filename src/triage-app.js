@@ -860,7 +860,7 @@
     return logic.buildCanonicalRecord(calculation, latestAgentic ? readAgentic() : null, latestAgentic);
   }
 
-  // Rows 1-18 are the AIG-ASS-01 v1.4 "AGPI Triage" column A labels, in sheet order
+  // Rows 1-18 are the AIG-ASS-01 "AGPI Triage" column A labels, in sheet order
   // (rows 5-8, 10-19, 21-24). Formula-owned results are given as check values; notes
   // after them are context only.
   function agpiPrefillCsv(calculation) {

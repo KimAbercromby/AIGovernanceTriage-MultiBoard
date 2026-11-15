@@ -5,7 +5,7 @@
   "use strict";
   // FICTIONAL DEMONSTRATION DATA ONLY. These eleven uses of one made-up system
   // show every AGPI priority and risk tier, and agency tiers T1 to T5 (under the
-  // suite v3.9 tier-assignment table none of them reaches T0; since v3.9.2 a T0
+  // suite version 1.0 draft tier-assignment table none of them reaches T0; since v3.9.2 a T0
   // profile can be assessed, but the demo scores were left unchanged). They are not Council
   // records, the identifiers are not Council-issued, and nothing here is stored,
   // exported or sent anywhere. Loading a scenario blocks every export.
@@ -92,7 +92,7 @@
       "control": 3,
       "controlEvidence": "Implemented and evidenced",
       "triggers": [],
-      "outcomeChange": "Light-touch now needs an all-No Fast-Track Screening (suite v3.9.7). This use sorts residents' repair requests, so its Fast-Track Screening has at least one Yes (Q3: its output can influence how a resident is served). It moved from Light-touch to the Standard route at the Low tier. Its scores, priority and tier are unchanged.",
+      "outcomeChange": "Light-touch now needs an all-No Fast-Track Screening (suite version 1.0 draft). This use sorts residents' repair requests, so its Fast-Track Screening has at least one Yes (Q3: its output can influence how a resident is served). It moved from Light-touch to the Standard route at the Low tier. Its scores, priority and tier are unchanged.",
       "expected": {
         "agpiScore": 33.75,
         "priority": "Priority 4 – Routine",
@@ -255,7 +255,7 @@
         "pathway": "Light-touch governance pathway",
         "agencyTier": "T1 assisted"
       },
-      "outcomeChange": "Suite v3.9: the agency tier now follows the AIG-AGT-02 / AIG-AGT-03 tier-assignment table (Table A: Consequence 1 sets a T1 floor), so this scenario's agency tier moved from T0 informational to T1 assisted. Its scores are unchanged; priority, risk tier and pathway are unchanged.",
+      "outcomeChange": "Suite version 1.0 draft: the agency tier now follows the AIG-AGT-02 / AIG-AGT-03 tier-assignment table (Table A: Consequence 1 sets a T1 floor), so this scenario's agency tier moved from T0 informational to T1 assisted. Its scores are unchanged; priority, risk tier and pathway are unchanged.",
       "agentic": {
         "dimensions": {
           "consequence": 1,
