@@ -1005,6 +1005,7 @@ footer p {
     .mode-btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
     .step-nav[hidden] { display: none; }
     #retireMode[hidden] { display: none; }
+    #platformAgent[hidden] { display: none; }
     .retire-scale-note { background: var(--gold-soft); border-left: 5px solid var(--gold); padding: 0.85rem 1rem; border-radius: 0 6px 6px 0; margin: 1.1rem 0; color: var(--navy-2); }
     .retire-group { margin: 1.6rem 0; }
     .retire-group > h3 { color: var(--navy); border-bottom: 2px solid var(--gold); padding-bottom: 0.3rem; margin-bottom: 0.9rem; }
@@ -7331,6 +7332,8 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
     byId("retireMode").hidden = !retiring;
     if (stepNav) stepNav.hidden = retiring;
     if (triageForm) triageForm.hidden = retiring;
+    const platformAgent = byId("platformAgent");
+    if (platformAgent) platformAgent.hidden = retiring;
     byId("modeRetire").classList.toggle("is-active", retiring);
     byId("modeRetire").setAttribute("aria-pressed", String(retiring));
     byId("modeTriage").classList.toggle("is-active", !retiring);
