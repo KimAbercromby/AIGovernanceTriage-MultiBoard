@@ -172,6 +172,8 @@
     byId("retireMode").hidden = !retiring;
     if (stepNav) stepNav.hidden = retiring;
     if (triageForm) triageForm.hidden = retiring;
+    const platformAgent = byId("platformAgent");
+    if (platformAgent) platformAgent.hidden = retiring;
     byId("modeRetire").classList.toggle("is-active", retiring);
     byId("modeRetire").setAttribute("aria-pressed", String(retiring));
     byId("modeTriage").classList.toggle("is-active", !retiring);
