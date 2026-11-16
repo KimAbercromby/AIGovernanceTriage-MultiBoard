@@ -273,14 +273,22 @@
   // personal data the user already handles is No), Q3/Q4 (outputs could materially
   // affect individuals or services) and Q5 (resident- or public-facing; staff using
   // it for their own work is No).
+  // "Could outputs materially affect individuals or services?" and "Public-facing or
+  // resident-facing output?" accept Unsure. Unsure counts as Yes until confirmed: where
+  // there is uncertainty the higher level of scrutiny applies (Playbook §3.10.1).
+  const UNSURE_COUNTS_AS_YES = "Unsure (counts as Yes)";
+  function yesOrUnsure(value) {
+    return value === "Yes" || value === UNSURE_COUNTS_AS_YES;
+  }
+
   function fastTrackConflicts(profile) {
     const p = profile || {};
     const out = [];
     const authority = p.actionAuthority || "";
     if (authority && authority !== ACTION_AUTHORITY.none) out.push("Q1 (it can act, or that is unconfirmed)");
     if (p.dataType === "Special category data") out.push("Q2 (it processes special category data)");
-    if (p.affectsIndividuals === "Yes") out.push("Q3 or Q4 (its outputs could materially affect individuals or services)");
-    if (p.publicFacing === "Yes") out.push("Q5 (it is resident- or public-facing)");
+    if (yesOrUnsure(p.affectsIndividuals)) out.push(p.affectsIndividuals === "Yes" ? "Q3 or Q4 (its outputs could materially affect individuals or services)" : "Q3 or Q4 (whether its outputs could affect individuals or services is not yet known)");
+    if (yesOrUnsure(p.publicFacing)) out.push(p.publicFacing === "Yes" ? "Q5 (it is resident- or public-facing)" : "Q5 (whether it is resident- or public-facing is not yet known)");
     return out;
   }
 
@@ -951,7 +959,7 @@
       results.effectiveTierName === "High" ||
       results.effectiveTierName === "Critical" ||
       results.risk.impact >= 4;
-    const affectsPeople = profile.affectsIndividuals === "Yes";
+    const affectsPeople = yesOrUnsure(profile.affectsIndividuals);
 
     let dpia = "Screening required — DPO/privacy owner confirmation";
     // Playbook §4.5.9 / AIG-ASS-05: a completed DPIA is normally required for High and
@@ -979,7 +987,7 @@
       ? "Potential engagement — legal owner applicability confirmation pending"
       : "Screening required — legal owner applicability confirmation pending";
     const atrs =
-      profile.publicFacing === "Yes" ||
+      yesOrUnsure(profile.publicFacing) ||
       affectsPeople ||
       triggerSet.has("statutory")
         ? "Potential applicability — owner confirmation pending"
@@ -1129,7 +1137,7 @@
 
   function isResidentFacingGenerativeMedium(profile, results) {
     return results.effectiveTierName === "Medium" &&
-      profile.publicFacing === "Yes" &&
+      yesOrUnsure(profile.publicFacing) &&
       profile.capability === "Generative AI";
   }
 
@@ -1825,7 +1833,7 @@
   // approval and any event-linked conditions remain with their formal owners.
   function buildArtefactHandoff(profile, results) {
     const requirements = assessmentRequirements(profile, results);
-    const yn = (v) => (v === "Yes" ? "Yes" : v === "No" ? "No" : "Not stated");
+    const yn = (v) => (v === "Yes" ? "Yes" : v === "No" ? "No" : v === UNSURE_COUNTS_AS_YES ? "Unsure (treated as Yes until confirmed)" : "Not stated");
     const items = [];
 
     items.push({
@@ -1935,8 +1943,8 @@
       });
 
     if (
-      profile.publicFacing === "Yes" ||
-      profile.affectsIndividuals === "Yes" ||
+      yesOrUnsure(profile.publicFacing) ||
+      yesOrUnsure(profile.affectsIndividuals) ||
       results.triggerIds.includes("statutory")
     ) {
       items.push({
@@ -2919,6 +2927,8 @@
     fastTrackOf,
     fastTrackConflicts,
     buildRoute,
+    UNSURE_COUNTS_AS_YES,
+    yesOrUnsure,
     buildRegisterDraftHandoff,
     buildCapabilitiesMapHandoff,
     fieldReferenceType,

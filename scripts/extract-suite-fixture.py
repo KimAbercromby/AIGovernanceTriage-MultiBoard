@@ -129,6 +129,22 @@ def ops01_section8():
     raise SystemExit("OPS-01 section 8 table not found")
 
 
+def inv02_questions():
+    """AIG-INV-02 Part B: the ten Fast-Track eligibility questions, word for word."""
+    d = docx.Document(SRC / "AIG-INV-02_AI_Fast_Track_Screening.docx")
+    for t in d.tables:
+        if t.rows[0].cells[0].text.startswith("Eligibility question"):
+            qs = [r.cells[0].text.strip() for r in t.rows[1:]]
+            if len(qs) != 10:
+                raise SystemExit(f"INV-02 Part B has {len(qs)} questions, expected 10")
+            return {
+                "source": {"file": "AIG-INV-02_AI_Fast_Track_Screening.docx", "section": "Part B. Fast-track eligibility"},
+                "answers": t.rows[1].cells[-1].text.strip(),
+                "questions": qs,
+            }
+    raise SystemExit("INV-02 Part B table not found")
+
+
 INV04 = "AIG-INV-04_AI_Register_Proposed.xlsx"
 DEC04 = "AIG-DEC-04_Gate_Log_Proposed.xlsx"
 ASS01 = "AIG-ASS-01_AGPI_Triage_Tool_Proposed.xlsx"
@@ -142,6 +158,7 @@ fixture = {
     "suite": SUITE,
     "generatedBy": "scripts/extract-suite-fixture.py",
     "versions": docx_versions(),
+    "INV-02 Part B": inv02_questions(),
     "INV-04": {
         "AI Register": {**header(INV04, "AI Register", 3), "lists": lists(INV04, "AI Register")},
         "Assessment summary": {**header(INV04, "Assessment summary", 3), "lists": lists(INV04, "Assessment summary")},

@@ -42,6 +42,24 @@
   };
   const REQUIRED = ["systemName", "purpose", "usePurpose"];
 
+  // AIG-INV-02 Part B: the ten Fast-Track eligibility questions, word for word. The form
+  // is the only place they are held; test/role-mode.test.js checks this copy against it.
+  // All ten No means provisionally eligible for Light-touch, which the AI Governance Lead
+  // validates (Part C); any Yes or Unsure means full Intake and triage.
+  const FAST_TRACK_QUESTIONS = [
+    "Can it take or initiate any action, rather than only produce information for a person to act on (for example sending communications, updating records, invoking tools/APIs, creating transactions or instructing another system)?",
+    "Does it process special-category or criminal offence data or confidential/restricted data, create profiles or inferences about identifiable people, or give access to personal data the user could not already open? (Ordinary personal data the user already handles in their own work, such as names in their own emails or meeting notes, is No.)",
+    "Could its output influence or support a decision about a resident, employee or other individual, even where a human makes the final decision?",
+    "Could it affect access to services, benefits, housing, care, safeguarding, enforcement, eligibility or another statutory function?",
+    "Does it interact directly with residents or the public, or publish content externally? (Staff using it themselves for their own work is No.)",
+    "Does it connect to live databases, operational systems, APIs, credentials or tools, including any write access?",
+    "Is it novel, first-of-type, materially changed, fine-tuned, self-learning, agentic, multi-agent, or using dynamic model/tool routing? (A new use of an existing approved system that is itself unchanged is not “materially changed”.)",
+    "Could an incorrect output or action cause material legal, equality, privacy, security, safety, financial, service-delivery or reputational harm?",
+    "Does it create significant procurement exposure, a new supplier dependency or material operational reliance on a supplier/service?",
+    "Is anything about its data, capability, integration, authority, intended use or operating environment currently unknown or uncertain?"
+  ];
+  const FT_VALUES = { all: "All ten No", any: "One or more Yes or Unsure", none: "Not done (full Intake)" };
+
   const body = document.body;
   const profile = byId("profile");
   if (!profile) return;
@@ -78,6 +96,69 @@
     if (control && !(control.id in SERVICE_OWNER_FIELDS)) field.classList.add("lead-only-field");
   });
 
+  // ---- Service Owner: the ten Fast-Track questions ----
+  const ft = document.createElement("section");
+  ft.className = "step so-fasttrack";
+  ft.id = "soFastTrack";
+  ft.setAttribute("aria-labelledby", "soFastTrackTitle");
+  ft.innerHTML =
+    '<p class="eyebrow">Quick screening (Fast-Track, AIG-INV-02)</p>' +
+    '<h2 id="soFastTrackTitle">Ten quick questions</h2>' +
+    "<p>If every answer is No, your use may be able to take the light-touch route, which is quicker. " +
+    "Any Yes or Not sure simply means the normal route, which is fine and common. Answer honestly: the AI Governance Lead checks these answers with you.</p>" +
+    '<ol class="ft-list">' +
+    FAST_TRACK_QUESTIONS.map(function (q, i) {
+      const name = "soFt" + i;
+      return '<li><fieldset><legend>' + q.replace(/&/g, "&amp;").replace(/</g, "&lt;") + "</legend>" +
+        ["Yes", "No", "Unsure"].map(function (v) {
+          return '<label><input type="radio" name="' + name + '" value="' + v + '"> ' + (v === "Unsure" ? "Not sure" : v) + "</label>";
+        }).join("") + "</fieldset></li>";
+    }).join("") +
+    "</ol>" +
+    '<p class="ft-result" id="soFtResult" role="status"></p>';
+  profile.insertAdjacentElement("afterend", ft);
+
+  function fastTrackAnswers() {
+    return FAST_TRACK_QUESTIONS.map(function (q, i) {
+      const c = ft.querySelector('input[name="soFt' + i + '"]:checked');
+      return { question: q, answer: c ? c.value : "" };
+    });
+  }
+  function fastTrackOutcome(answers) {
+    if (answers.some((a) => a.answer === "Yes" || a.answer === "Unsure")) return FT_VALUES.any;
+    if (answers.every((a) => a.answer === "No")) return FT_VALUES.all;
+    return FT_VALUES.none;
+  }
+  function syncFastTrack() {
+    const answers = fastTrackAnswers();
+    const outcome = fastTrackOutcome(answers);
+    const answered = answers.filter((a) => a.answer).length;
+    const field = byId("fastTrack");
+    if (field && body.classList.contains("role-so")) {
+      field.value = outcome;
+      field.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    // Earlier answers can contradict an all-No screen (for example "it can act"). Use the
+    // tool's own check, so the Service Owner sees the same conflict the Lead would.
+    let conflicts = [];
+    if (outcome === FT_VALUES.all && window.TriageLogic && window.TriageLogic.fastTrackConflicts) {
+      const p = {};
+      Object.keys(SERVICE_OWNER_FIELDS).forEach((id) => { const el = byId(id); if (el) p[id] = el.value; });
+      conflicts = window.TriageLogic.fastTrackConflicts(p);
+    }
+    byId("soFtResult").textContent =
+      conflicts.length ? "Your earlier answers suggest at least one of these should be Yes or Not sure: " + conflicts.join("; ") + ". Please check, as this changes the route." :
+      outcome === FT_VALUES.all ? "All ten answers are No: your use may be suitable for the light-touch route. The AI Governance Lead will confirm." :
+      outcome === FT_VALUES.any ? "At least one Yes or Not sure: your use will follow the normal route. That is fine; the AI Governance Lead will guide you." :
+      answered ? answered + " of 10 answered." : "";
+  }
+  ft.addEventListener("change", syncFastTrack);
+  // Re-check when an earlier answer changes, but not for the fastTrack field this
+  // function sets itself (that would loop).
+  profile.addEventListener("change", function (e) {
+    if (body.classList.contains("role-so") && e.target && e.target.id !== "fastTrack") syncFastTrack();
+  });
+
   // ---- Service Owner finish panel ----
   const finish = document.createElement("section");
   finish.className = "step so-finish";
@@ -96,7 +177,7 @@
     "Use the Route Finder</a> to see the steps for your kind of case and who does each one.</p>" +
     '<p class="so-small">Your answers stay in this browser until you download them, and are cleared when you close or reload the page. ' +
     "Please do not include names or details of residents or staff.</p>";
-  profile.insertAdjacentElement("afterend", finish);
+  ft.insertAdjacentElement("afterend", finish);
 
   function slug(s) {
     return (String(s || "ai-system").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "ai-system").slice(0, 60);
@@ -116,9 +197,12 @@
       const el = byId(id);
       if (el) fields[id] = el.value.trim();
     });
+    const ftAnswers = fastTrackAnswers();
+    fields.fastTrack = fastTrackOutcome(ftAnswers);
     const record = {
       kind: FILE_KIND,
       version: 1,
+      fastTrackAnswers: ftAnswers,
       created_at: new Date().toISOString(),
       note: "Answers from the Service Owner for the AI Governance Lead to check. These are facts about the system and its use; they are not a triage result, a score or a decision.",
       fields,
@@ -145,7 +229,8 @@
     "complete the rest of Step 1 and do the scoring. The file is read in this browser only.</p>" +
     '<p class="export-actions"><label class="file-button"><input type="file" id="soFile" accept=".json,application/json">' +
     '<span>Choose answers file…</span></label></p>' +
-    '<p class="provisional-cue" id="soLoadMessage" role="status"></p>';
+    '<p class="provisional-cue" id="soLoadMessage" role="status"></p>' +
+    '<div class="so-ft-answers" id="soFtAnswers"></div>';
   profile.insertAdjacentElement("beforebegin", loader);
 
   function optionMatches(select, value) {
@@ -177,6 +262,31 @@
         el.dispatchEvent(new Event("change", { bubbles: true }));
         filled.push(id);
       });
+      const ftField = byId("fastTrack");
+      const ftValue = data.fields.fastTrack;
+      if (ftField && ftValue && optionMatches(ftField, ftValue)) {
+        ftField.value = ftValue;
+        ftField.classList.add("from-service-owner");
+        ftField.dispatchEvent(new Event("change", { bubbles: true }));
+        filled.push("fastTrack");
+      }
+      const list = byId("soFtAnswers");
+      list.innerHTML = "";
+      const answers = Array.isArray(data.fastTrackAnswers) ? data.fastTrackAnswers : [];
+      if (answers.some((a) => a && a.answer)) {
+        const h = document.createElement("p");
+        h.innerHTML = "<strong>The Service Owner’s Fast-Track answers</strong> (AIG-INV-02 Part B). Validate them before relying on the result: any Yes or Unsure means full triage.";
+        const ol = document.createElement("ol");
+        answers.forEach((a) => {
+          const li = document.createElement("li");
+          li.textContent = (a.question || "") + " ";
+          const b = document.createElement("strong");
+          b.textContent = a.answer || "not answered";
+          li.appendChild(b);
+          ol.appendChild(li);
+        });
+        list.append(h, ol);
+      }
       msg.textContent = filled.length + " answers loaded from the Service Owner and marked in Step 1. Check each one with them, then complete the rest." +
         (skipped.length ? " " + skipped.length + " answer(s) could not be used and were left blank: check them with the Service Owner." : "");
       profile.open = true;

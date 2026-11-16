@@ -51,3 +51,21 @@ test("the answers file is labelled as facts, not a triage result or decision", (
   assert.match(src, /kind: FILE_KIND/);
   assert.match(src, /they are not a triage result, a score or a decision/);
 });
+
+test("the ten Fast-Track questions are word for word the AIG-INV-02 Part B questions", () => {
+  const contract = require("./fixtures/suite-v3.9.11-contract.json");
+  const ours = Function(`return ${src.match(/const FAST_TRACK_QUESTIONS = (\[[\s\S]*?\]);/)[1]}`)();
+  assert.equal(ours.length, 10);
+  assert.deepEqual(ours, contract["INV-02 Part B"].questions);
+  assert.equal(contract["INV-02 Part B"].answers, "Yes / No / Unsure");
+});
+
+test("Fast-Track answers set the tool's own fastTrack values, and any Yes or Unsure means full triage", () => {
+  const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+  for (const v of ["All ten No", "One or more Yes or Unsure", "Not done (full Intake)"]) {
+    assert.match(src, new RegExp(v.replace(/[()]/g, "\\$&")));
+    assert.match(html, new RegExp(`<option>${v.replace(/[()]/g, "\\$&")}</option>`));
+  }
+  assert.match(src, /a\.answer === "Yes" \|\| a\.answer === "Unsure"/);
+  assert.match(src, /fastTrackAnswers: ftAnswers/);
+});
