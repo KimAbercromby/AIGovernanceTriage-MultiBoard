@@ -248,3 +248,12 @@ self-contained/static deployment. Node.js is only needed for build and tests.
 All calculations happen in the browser. The tool uses no cookies, analytics,
 external services, persistent storage or credentials. Refreshing clears entered
 values. Do not enter sensitive personal or special-category information.
+
+## Two views: Service Owner and AI Governance Lead
+
+The tool opens with a choice of two views (Playbook §3.8: the Service Owner supplies the facts; the AI Governance Lead scores priority and risk and sets the route).
+
+- **Service Owner view** (`index.html#service-owner`): 19 plain-English questions about the system and its use, ending with **Download my answers for the AI Governance Lead** (a small JSON file to email). No scores, codes, routes or identifier fields are shown, so a Service Owner never scores their own case. Send Service Owners this link directly.
+- **AI Governance Lead view** (default, `index.html#lead`): the full triage. **Start from a Service Owner's answers** loads that file into Step 1 and highlights every loaded answer for checking. A select answer that does not match an option, or a malformed AIR-ID, is left blank and reported. The route waits until the system name and both purposes are filled in, instead of showing a result from default scores. The platform-agent screen (Playbook F.8) is folded away by default.
+
+The view layer is `src/role-mode.js`. It changes only what is shown and how Step 1 questions are worded; it never changes a value, option text or calculation. `test/role-mode.test.js` checks this.

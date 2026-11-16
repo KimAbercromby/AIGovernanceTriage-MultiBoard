@@ -15,6 +15,7 @@ const sources = [
   ["retire-app", "src/retire-app.js"],
   ["pilot-scenarios", "src/pilot-scenarios.js"],
   ["pilot-demo", "src/pilot-demo.js"],
+  ["role-mode", "src/role-mode.js"],
 ];
 
 let output = html;
