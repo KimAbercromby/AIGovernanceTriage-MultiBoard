@@ -260,7 +260,8 @@ test("stated suite and artefact versions match the v3.9.11 Artefact Index (AIG-G
     "AIG-OPS-02 Monitoring and Review Log": "AIG-OPS-02",
   };
   for (const [name, id] of Object.entries(byId)) {
-    assert.ok(index[id].startsWith(`v${logic.SUITE.versions[name]}`), `${name}: tool ${logic.SUITE.versions[name]}, index ${index[id]}`);
+    // The Artefact Index writes both "V1.0 draft" and "v1.0 draft"; compare without case.
+    assert.ok(index[id].toLowerCase().startsWith(`v${logic.SUITE.versions[name]}`.toLowerCase()), `${name}: tool ${logic.SUITE.versions[name]}, index ${index[id]}`);
   }
   assert.equal(Object.keys(byId).length, Object.keys(logic.SUITE.versions).length - 1); // all but the UC-ID view (not indexed)
   assert.match(html, /Aligned to the AI governance suite \(version 1\.0 draft\)/);

@@ -2,58 +2,58 @@
   "suite": "v3.9.11 (16 October 2026)",
   "generatedBy": "scripts/extract-suite-fixture.py",
   "versions": {
-    "AIG-GOV-01": "v1.37 draft",
-    "AIG-GOV-02": "v19.9.23 draft",
-    "AIG-GOV-03": "v1.37 draft",
-    "AIG-GOV-04": "v1.5 draft",
-    "AIG-GOV-05": "v1.5 draft",
-    "AIG-GOV-06": "v1.12 draft",
-    "AIG-INV-01": "v1.10 draft",
-    "AIG-INV-02": "v1.10 draft",
-    "AIG-INV-03": "v1.11 draft",
-    "AIG-INV-04": "v1.2 draft",
-    "AIG-INV-05": "v0.3 proposed design draft",
-    "AIG-ASS-01": "v1.4 draft",
-    "AIG-ASS-02": "v1.10 draft",
-    "AIG-ASS-03": "v1.13 draft",
-    "AIG-ASS-04": "v1.6 draft",
-    "AIG-ASS-05": "v1.6 draft",
-    "AIG-ASS-06": "v1.6 draft",
-    "AIG-ASS-07": "v1.5 draft",
-    "AIG-ASS-08": "v1.9 draft",
-    "AIG-ASS-09": "v1.6 draft",
-    "AIG-ASS-10": "v1.7 draft",
-    "AIG-ASS-11": "v1.11 draft",
-    "AIG-ASS-12": "v1.5 draft",
-    "AIG-DEC-01": "v1.14 draft",
-    "AIG-DEC-02": "v1.8 draft",
-    "AIG-DEC-03": "v1.12 draft",
-    "AIG-DEC-04": "v1.3 draft",
-    "AIG-OPS-01": "v1.13 draft",
-    "AIG-OPS-02": "v1.6 draft",
-    "AIG-OPS-03": "v1.10 draft",
-    "AIG-OPS-04": "v1.7 draft",
-    "AIG-OPS-05": "v1.8 draft",
-    "AIG-OPS-06": "v1.4 draft",
-    "AIG-AGT-01": "v1.6 draft",
-    "AIG-AGT-02": "v1.7 draft",
-    "AIG-AGT-03": "v1.7 draft",
-    "AIG-AGT-04": "v0.7 working draft",
-    "AIG-AGT-05": "v1.6 draft",
-    "AIG-AGT-06": "v1.6 draft",
-    "AIG-AIMS-01": "v1.6 draft",
-    "AIG-AIMS-02": "v1.2 draft",
-    "AIG-AIMS-03": "v1.2 draft",
-    "AIG-AIMS-04": "v1.3 draft",
-    "AIG-AIMS-05": "v1.9 draft",
-    "AIG-AIMS-06": "v1.8 draft",
-    "AIG-AIMS-07": "v1.1 draft",
-    "AIG-AIMS-08": "v1.2 draft",
-    "AIG-AIMS-09": "v1.1 draft",
-    "AIG-AIMS-10": "v1.3 draft",
-    "AIG-AIMS-11": "v1.6 draft",
-    "AIG-AIMS-12": "v1.5 draft",
-    "AIG-AIMS-13": "v1.5 draft"
+    "AIG-GOV-01": "v1.0 draft",
+    "AIG-GOV-02": "v1.0 draft",
+    "AIG-GOV-03": "v1.0 draft",
+    "AIG-GOV-04": "V1.0 draft",
+    "AIG-GOV-05": "V1.0 draft",
+    "AIG-GOV-06": "V1.0 draft",
+    "AIG-INV-01": "V1.0 draft",
+    "AIG-INV-02": "V1.0 draft",
+    "AIG-INV-03": "V1.0 draft",
+    "AIG-INV-04": "V1.0 draft",
+    "AIG-INV-05": "V1.0 draft",
+    "AIG-ASS-01": "V1.0 draft",
+    "AIG-ASS-02": "V1.0 draft",
+    "AIG-ASS-03": "V1.0 draft",
+    "AIG-ASS-04": "V1.0 draft",
+    "AIG-ASS-05": "V1.0 draft",
+    "AIG-ASS-06": "V1.0 draft",
+    "AIG-ASS-07": "V1.0 draft",
+    "AIG-ASS-08": "V1.0 draft",
+    "AIG-ASS-09": "V1.0 draft",
+    "AIG-ASS-10": "V1.0 draft",
+    "AIG-ASS-11": "V1.0 draft",
+    "AIG-ASS-12": "V1.0 draft",
+    "AIG-DEC-01": "V1.0 draft",
+    "AIG-DEC-02": "V1.0 draft",
+    "AIG-DEC-03": "V1.0 draft",
+    "AIG-DEC-04": "V1.0 draft",
+    "AIG-OPS-01": "V1.0 draft",
+    "AIG-OPS-02": "V1.0 draft",
+    "AIG-OPS-03": "V1.0 draft",
+    "AIG-OPS-04": "v1.0 draft",
+    "AIG-OPS-05": "V1.0 draft",
+    "AIG-OPS-06": "V1.0 draft",
+    "AIG-AGT-01": "V1.0 draft",
+    "AIG-AGT-02": "V1.0 draft",
+    "AIG-AGT-03": "V1.0 draft",
+    "AIG-AGT-04": "V1.0 draft",
+    "AIG-AGT-05": "V1.0 draft",
+    "AIG-AGT-06": "V1.0 draft",
+    "AIG-AIMS-01": "V1.0 draft",
+    "AIG-AIMS-02": "V1.0 draft",
+    "AIG-AIMS-03": "V1.0 draft",
+    "AIG-AIMS-04": "V1.0 draft",
+    "AIG-AIMS-05": "V1.0 draft",
+    "AIG-AIMS-06": "V1.0 draft",
+    "AIG-AIMS-07": "V1.0 draft",
+    "AIG-AIMS-08": "V1.0 draft",
+    "AIG-AIMS-09": "V1.0 draft",
+    "AIG-AIMS-10": "V1.0 draft",
+    "AIG-AIMS-11": "V1.0 draft",
+    "AIG-AIMS-12": "V1.0 draft",
+    "AIG-AIMS-13": "V1.0 draft"
   },
   "INV-04": {
     "AI Register": {
@@ -95,23 +95,13 @@
         "O"
       ],
       "lists": {
-        "G4:G206": [
-          "Idea and Innovation",
-          "Registration and Intake",
-          "Risk Assessment and Review",
-          "Approval and Assurance",
-          "Deployment and Operation",
-          "Monitoring and Review",
-          "Retirement and Decommissioning"
-        ],
-        "H4:H206": [
-          "Pending",
-          "Approved",
-          "Approved with conditions",
-          "Rejected",
-          "On hold",
-          "Suspended",
-          "Superseded"
+        "Y4:Y206": [
+          "Light-touch",
+          "Low",
+          "Medium",
+          "High",
+          "Critical",
+          "To be determined"
         ],
         "I4:I206": [
           "Not live",
@@ -130,35 +120,45 @@
           "No",
           "Unsure"
         ],
+        "W4:W206": [
+          "Yes",
+          "No",
+          "Not yet live"
+        ],
+        "Z4:Z206": [
+          "New",
+          "Retrospective",
+          "Aggregated"
+        ],
+        "H4:H206": [
+          "Pending",
+          "Approved",
+          "Approved with conditions",
+          "Rejected",
+          "On hold",
+          "Suspended",
+          "Superseded"
+        ],
         "U4:U206": [
           "Required",
           "Recommended",
           "Not required",
           "To assess"
         ],
+        "G4:G206": [
+          "Idea and Innovation",
+          "Registration and Intake",
+          "Risk Assessment and Review",
+          "Approval and Assurance",
+          "Deployment and Operation",
+          "Monitoring and Review",
+          "Retirement and Decommissioning"
+        ],
         "V4:V206": [
           "Complete",
           "In progress",
           "Not started",
           "Not applicable"
-        ],
-        "W4:W206": [
-          "Yes",
-          "No",
-          "Not yet live"
-        ],
-        "Y4:Y206": [
-          "Light-touch",
-          "Low",
-          "Medium",
-          "High",
-          "Critical",
-          "To be determined"
-        ],
-        "Z4:Z206": [
-          "New",
-          "Retrospective",
-          "Aggregated"
         ]
       }
     },
@@ -196,6 +196,12 @@
         "V"
       ],
       "lists": {
+        "S4:S206": [
+          "Tier A — solely automated significant decision (Art 22A)",
+          "Tier B — AI materially influences a human decision",
+          "Tier C — no bearing on decisions about individuals",
+          "Unsure — assess"
+        ],
         "B4:B206": [
           "Priority 1 – Critical",
           "Priority 2 – High",
@@ -208,12 +214,6 @@
           "Medium",
           "High",
           "Critical"
-        ],
-        "S4:S206": [
-          "Tier A — solely automated significant decision (Art 22A)",
-          "Tier B — AI materially influences a human decision",
-          "Tier C — no bearing on decisions about individuals",
-          "Unsure — assess"
         ]
       }
     }
