@@ -266,9 +266,9 @@ test("W-11: High needs an independent assurance review; Critical independent cha
   const p = profile();
   const high = run(p, { triggers: ["novel"] });
   assert.equal(high.effectiveTierName, "High");
-  assert.ok(logic.buildEvidenceList(p, high).includes("Independent assurance review (Playbook §4.5.3, §4.5.9)"));
+  assert.ok(logic.buildEvidenceList(p, high).includes("Independent assurance review (Playbook §4.5.9, §6.3)"));
   const critical = run(p, { triggers: ["statutory"] });
-  assert.ok(logic.buildEvidenceList(p, critical).includes("Independent challenge and independent assurance (Playbook §3.10.2)"));
+  assert.ok(logic.buildEvidenceList(p, critical).includes("Independent challenge and independent assurance (Playbook §3.10.1, §4.5.9)"));
   const low = run(p);
   assert.ok(!logic.buildEvidenceList(p, low).some((e) => /Independent (assurance|challenge)/.test(e)));
 });
