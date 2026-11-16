@@ -3169,9 +3169,9 @@ button.ghost{background:transparent;color:#536676;border-color:transparent}
   // AIG-ASS-02 Risk Assessment C60: the decision/assurance route for the governing tier.
   function decisionRouteFor(tierName) {
     return {
-      Critical: "Critical — relevant delegated decision forum + Executive Sponsor/Leadership oversight; AI Assurance Board assurance opinion/recommendation",
-      High: "High — relevant delegated decision forum; AI Assurance Board assurance opinion/recommendation",
-      Medium: "Medium — AI Governance Working Group review; decision by the officer or forum with confirmed delegation",
+      Critical: "Critical — relevant delegated decision forum + SRO and Executive Sponsor/Leadership oversight; escalation to the relevant executive member or committee and the Audit and Risk Committee; AI Assurance Board assurance opinion/recommendation",
+      High: "High — relevant delegated decision forum; AI Assurance Board formal recommendation and single assurance opinion",
+      Medium: "Medium — AI Governance Working Group review; AI Assurance Board assurance opinion/recommendation; decision by the officer or forum with confirmed delegation",
       Low: "Low — decision by the officer or forum with confirmed delegation (Service Owner/Service Manager only if delegated); Service Owner self-assessment and annual review",
     }[tierName] || "Incomplete — assessment required";
   }
